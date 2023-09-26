@@ -2,13 +2,27 @@ package com.android.sabsigan
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        var ss : String? //commit use
+        setContent {
+            ArtistCard()
+        }
 
+    }
+
+    @Composable
+    fun ArtistCard() {
+        Text(text = "Adddddd",
+            color = Color(250, 0, 0)
+        )
     }
 }
