@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Beta.WifiSeletorActivity">
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:background="@drawable/wifi_gradient"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.35">
+
+        <LinearLayout
+            android:id="@+id/WiFiLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/wifi_gradient_blue">
+
+            <ImageView
+                android:id="@+id/WiFiIcon"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:padding="20dp"
+                android:src="@drawable/wifi"
+                app:tint="@color/white" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="현재 연결된 Wi-Fi는 ㅇㅇㅇ입니다."
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginBottom="48dp"
+        android:layout_marginHorizontal="32dp"
+        android:clickable="true"
+        app:cardCornerRadius="20dp"
+        app:cardBackgroundColor="#D1DBE2"
+        app:cardElevation="10dp"
+        android:outlineSpotShadowColor="#F2F5F9"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="시작하기"
+            android:textSize="20sp"
+            android:textColor="#9AA5B8"
+            android:textStyle="bold"/>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
