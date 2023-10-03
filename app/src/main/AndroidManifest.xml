@@ -12,7 +12,7 @@
         android:theme="@style/Theme.Sabsigan"
         tools:targetApi="31">
         <activity
-            android:name=".Beta.MainActivity"
+            android:name=".Beta.Main2Activity"
             android:exported="false" />
         <activity
             android:name=".Beta.WifiSeletorActivity"
