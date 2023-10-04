@@ -2,6 +2,8 @@ package com.android.sabsigan.Beta
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import com.android.sabsigan.R
@@ -18,13 +20,32 @@ class WifiSeletorActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // 와이파이 아이콘 애니메이션
-        var rightAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_right);
-        var leftAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_left);
-        var radiate = AnimationUtils.loadAnimation(this, R.anim.radiate);
+        var rightAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_right)
+        var leftAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_left)
+        var radiate = AnimationUtils.loadAnimation(this, R.anim.radiate)
+        var radiate2 = AnimationUtils.loadAnimation(this, R.anim.radiate)
 
-        binding.WiFiLayout.startAnimation(rightAnimation);
-        binding.WiFiIcon.startAnimation(leftAnimation);
-        binding.wave.startAnimation(radiate);
+
+//        binding.WiFiLayout.setBackgroundResource(R.drawable.wifi_gradient_red) // 붉은색
+//        binding.WiFiIcon.setImageResource(R.drawable.wifi_off)
+//        binding.wave1.setImageResource(R.drawable.ring_red)
+//        binding.wave2.setImageResource(R.drawable.ring_red)
+//
+//        binding.WiFiLayout.setBackgroundResource(R.drawable.wifi_gradient_blue) // 푸른색
+//        binding.WiFiIcon.setImageResource(R.drawable.wifi)
+//        binding.wave1.setImageResource(R.drawable.ring_blue)
+//        binding.wave2.setImageResource(R.drawable.ring_blue)
+
+        binding.WiFiLayout.startAnimation(rightAnimation)
+        binding.WiFiIcon.startAnimation(leftAnimation)
+        binding.wave1.startAnimation(radiate)
+
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            binding.wave2.startAnimation(radiate2)
+        }, 600)
+
+        //------------------------------------- 나중에 메서드로
     }
 
     override fun onDestroy() {

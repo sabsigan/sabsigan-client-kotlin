@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#f2f5f9"
     tools:context=".Beta.WifiSeletorActivity">
 
     <FrameLayout
@@ -15,15 +14,21 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.35">
+        app:layout_constraintVertical_bias="0.15">
 
         <ImageView
-            android:id="@+id/wave"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:id="@+id/wave1"
+            android:layout_width="110dp"
+            android:layout_height="110dp"
             android:layout_gravity="center"
-            android:padding="20dp"
-            android:background="@drawable/ring_blue"/>
+            android:src="@drawable/ring_blue"/>
+
+        <ImageView
+            android:id="@+id/wave2"
+            android:layout_width="110dp"
+            android:layout_height="110dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ring_blue"/>
 
         <LinearLayout
             android:id="@+id/WiFiLayout"
@@ -32,13 +37,13 @@
             android:layout_gravity="center"
             android:background="@drawable/wifi_gradient_blue"
             android:elevation="20dp"
-            android:outlineSpotShadowColor="#1976D2">
+            android:outlineSpotShadowColor="#1E88E5">
 
             <ImageView
                 android:id="@+id/WiFiIcon"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
-                android:padding="20dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:padding="22dp"
                 android:src="@drawable/wifi"
                 app:tint="@color/white" />
 
