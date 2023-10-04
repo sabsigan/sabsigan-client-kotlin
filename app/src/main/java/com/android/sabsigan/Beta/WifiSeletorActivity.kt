@@ -20,9 +20,11 @@ class WifiSeletorActivity : AppCompatActivity() {
         // 와이파이 아이콘 애니메이션
         var rightAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_right);
         var leftAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_left);
+        var radiate = AnimationUtils.loadAnimation(this, R.anim.radiate);
 
         binding.WiFiLayout.startAnimation(rightAnimation);
         binding.WiFiIcon.startAnimation(leftAnimation);
+        binding.wave.startAnimation(radiate);
     }
 
     override fun onDestroy() {
