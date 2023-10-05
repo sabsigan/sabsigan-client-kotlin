@@ -1,4 +1,4 @@
-package com.android.sabsigan.Beta
+package com.android.sabsigan.beta
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

@@ -1,8 +1,7 @@
-package com.android.sabsigan.Beta
+package com.android.sabsigan.beta
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.android.sabsigan.R
 import com.android.sabsigan.databinding.ActivityMain2Binding
 
 class Main2Activity : AppCompatActivity() {

@@ -10,16 +10,15 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.Sabsigan"
-        tools:targetApi="31">
+        tools:targetApi="33">
         <activity
-            android:name=".Beta.WifiSelector2Activity"
-            android:exported="true" />
+            android:name=".beta.Main2Activity"
+            android:exported="true"
+            android:screenOrientation="portrait"/>
         <activity
-            android:name=".Beta.Main2Activity"
-            android:exported="false" />
-        <activity
-            android:name=".Beta.WifiSeletorActivity"
-            android:exported="true" />
+            android:name=".beta.WifiSelectorActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">
