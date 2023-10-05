@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#f3f5f9"
     tools:context=".beta.WifiSelectorActivity">
 
     <FrameLayout
@@ -14,7 +15,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.15">
+        app:layout_constraintVertical_bias="0.18">
 
         <ImageView
             android:id="@+id/wave1"
@@ -52,6 +53,7 @@
     </FrameLayout>
 
     <LinearLayout
+        android:id="@+id/textLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingTop="24dp"
@@ -60,11 +62,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/frameLayout">
 
-        <TextView
-            android:id="@+id/textView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="현재 연결된 Wi-Fi는 ㅇㅇㅇ입니다." />
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
@@ -77,5 +74,21 @@
             android:text="현재 연결된 Wi-Fi는 ㅇㅇㅇ입니다." />
 
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/infoLayout"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginHorizontal="32dp"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textLayout"
+        app:layout_constraintVertical_bias="0.2">
+    </LinearLayout>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

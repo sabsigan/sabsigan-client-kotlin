@@ -11,6 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Sabsigan"
         tools:targetApi="33">
+
         <activity
             android:name=".beta.Main2Activity"
             android:exported="true"
