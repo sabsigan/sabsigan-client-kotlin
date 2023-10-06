@@ -12,11 +12,17 @@ class ViewPagerAdapter(fa:FragmentActivity): FragmentStateAdapter(fa) {
         return mFragmentList.get(position)
     }
 
-    public fun setFragmentList( fragmentList: List<Fragment>) {
+    fun setFragmentList(fragmentList: List<Fragment>) {
         mFragmentList = fragmentList.toMutableList()
     }
 
-    public fun addFragment( fragment: Fragment) {
+    fun addFragment(fragment: Fragment) {
         mFragmentList.add(fragment)
+        notifyItemChanged(mFragmentList.size - 1)
+    }
+
+    fun removeFragment() {
+        mFragmentList.removeLast()
+        notifyItemChanged(mFragmentList.size)
     }
 }

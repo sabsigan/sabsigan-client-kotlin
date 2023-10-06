@@ -10,7 +10,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginHorizontal="16dp"
+        android:layout_marginHorizontal="30dp"
         android:background="@drawable/rounded_top">
 
         <TextView
@@ -22,7 +22,6 @@
             android:layout_centerInParent="true"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="@color/black"
             android:text="연결된 와이파이 속도"/>
 
     </RelativeLayout>

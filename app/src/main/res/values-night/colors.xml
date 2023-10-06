@@ -11,8 +11,8 @@
 
     <!-- 테스트 색 -->
 
-    <color name="background_0">#FFFFFFFF</color>
-    <color name="background_1">#ECEFF1</color>
+    <color name="background_0">#1e1e1e</color>
+    <color name="background_1">#263238</color>
 
     <color name="Blue_50">#E3F2FD</color>
     <color name="Blue_100">#BBDEFB</color>

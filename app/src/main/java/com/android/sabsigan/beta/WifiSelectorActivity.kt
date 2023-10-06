@@ -14,16 +14,22 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.viewpager2.widget.ViewPager2
 import com.android.sabsigan.R
-import com.android.sabsigan.beta.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.databinding.ActivityWifiSelectorBinding
+import java.lang.Math.abs
+
 
 class WifiSelectorActivity : AppCompatActivity() {
     private var mBinding: ActivityWifiSelectorBinding? = null
     // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
     private val binding get() = mBinding!!
-//    private var wifiConnectReceiver = WifiConnectReceiver()
 
+    private lateinit var adapter: ViewPagerAdapter
+
+    private val RED_50 = "#FFEBEE" // 임시 색상
+    private val BLUE_50 = "#E3F2FD"
     private val RED = "#E57373" // 임시 색상
     private val BLUE = "#64B5F6"
     private val RED_SHADOW = "#E53935"
@@ -36,34 +42,34 @@ class WifiSelectorActivity : AppCompatActivity() {
         mBinding = ActivityWifiSelectorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        adapter = ViewPagerAdapter(this)
+
         registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
-
-        startAnimation() // 와이파이 아이콘 애니메이션
-
-        
-        val fragmentlist = listOf(WifiListFragment(), WifiInfoFragment(), WifiRateFragment())
-        val adapter = ViewPagerAdapter(this)
-        adapter.setFragmentList(fragmentlist)
-        binding.viewPager.adapter = adapter
-        binding.viewPager.setCurrentItem(1, false)
+        startAnimation() // 와이파이 아이콘 애니메이션 시작
+        setFragment() // 프래그먼트 호출
     }
 
     override fun onPause() {
         super.onPause()
         stopAnimation() // 애니메이션 제거
-        unregisterReceiver(networkReceiver)
+
+        if (!isReceiverRegistered(this, networkReceiver))
+            unregisterReceiver(networkReceiver)
     }
 
     override fun onResume() {
         super.onResume()
         startAnimation() // 애니메이션 재시작
-        registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
+
+        if (isReceiverRegistered(this, networkReceiver))
+            registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mBinding = null
-        unregisterReceiver(networkReceiver)
+
+        if (!isReceiverRegistered(this, networkReceiver))
+            unregisterReceiver(networkReceiver)
     }
 
     private fun startAnimation() {
@@ -88,7 +94,8 @@ class WifiSelectorActivity : AppCompatActivity() {
         binding.wave2.clearAnimation()
     }
 
-    fun setConnectedColor() { // 와이파이 연결 됐을 때 색
+    private fun setConnectedColor() { // 와이파이 연결 됐을 때 색
+//        binding.defaultLayout.setBackgroundColor(Color.parseColor(BLUE_50))
         binding.WiFiIconLayout.setBackgroundResource(R.drawable.wifi_gradient_blue) // 푸른색
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
             Color.parseColor(BLUE_SHADOW).also { binding.WiFiIconLayout.outlineSpotShadowColor = it }
@@ -99,6 +106,7 @@ class WifiSelectorActivity : AppCompatActivity() {
     }
 
     private fun setUnconnectedColor() {// 와이파이 연결 안 됐을 때 색
+//        binding.defaultLayout.setBackgroundColor(Color.parseColor(RED_50))
         binding.WiFiIconLayout.setBackgroundResource(R.drawable.wifi_gradient_red) // 붉은색
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
             Color.parseColor(RED_SHADOW).also { binding.WiFiIconLayout.outlineSpotShadowColor = it }
@@ -106,6 +114,40 @@ class WifiSelectorActivity : AppCompatActivity() {
         binding.WiFiIcon.setImageResource(R.drawable.wifi_off)
         binding.wave1.setColorFilter(Color.parseColor(RED))
         binding.wave2.setColorFilter(Color.parseColor(RED))
+    }
+
+    private fun setFragment() {
+        val fragmentlist = listOf(WifiListFragment(), WifiInfoFragment(), WifiRateFragment())
+        adapter.setFragmentList(fragmentlist)
+
+        binding.viewPager.orientation = ViewPager2.ORIENTATION_HORIZONTAL
+        binding.viewPager.adapter = adapter
+        binding.viewPager.offscreenPageLimit = 1
+        binding.indicator.setViewPager2(binding.viewPager) // 인디케이터 뷰페이저 연결
+
+        val nextItemVisibleWidth = resources.getDimension(R.dimen.next_item_visible_width)
+        val currentItemMargin = resources.getDimension(R.dimen.viewpager_horizontal_margin)
+        val pageTranslation = nextItemVisibleWidth + currentItemMargin
+
+        val itemDecoration = PagerMarginItemDecoration(
+            this,
+            R.dimen.viewpager_horizontal_margin
+        )
+
+        binding.viewPager.setPageTransformer { page: View, position: Float ->
+            page.translationX = -pageTranslation * position
+            page.scaleY = 1 - (0.25f * abs(position))
+//            page.alpha = 0.25f + (1 - abs(position))
+        }
+
+        binding.viewPager.addItemDecoration(itemDecoration)
+        binding.viewPager.setCurrentItem(1, false)
+    }
+
+    private fun isReceiverRegistered(context: Context, receiver: BroadcastReceiver): Boolean {
+        val intentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION) // 리시버가 등록된 인텐트 필터를 여기에 설정
+
+        return context.registerReceiver(networkReceiver, intentFilter) != null
     }
 
     private val networkReceiver = object : BroadcastReceiver() {
@@ -120,15 +162,15 @@ class WifiSelectorActivity : AppCompatActivity() {
                 if (wifiInfo != null && wifiInfo.isConnected) {
                     // 와이파이 연결됐을 때 처리
                     setConnectedColor()
-                    Toast.makeText(context, "와이파이가 연결되었습니다.", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(context, "와이파이가 연결되었습니다.", Toast.LENGTH_SHORT).show()
                 } else if (mobileInfo != null && mobileInfo.isConnected) {
                     // 와이파이 연결됐을 때 처리
                     setUnconnectedColor()
-                    Toast.makeText(context, "데이터가 연결되었습니다.", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(context, "데이터가 연결되었습니다.", Toast.LENGTH_SHORT).show()
                 } else {
                     // 와이파이 연결이 끊겼을 때 처리
                     setUnconnectedColor()
-                    Toast.makeText(context, "인터넷이 끊겼습니다.", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(context, "인터넷이 끊겼습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
