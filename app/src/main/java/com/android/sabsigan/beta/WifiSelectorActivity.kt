@@ -45,7 +45,7 @@ class WifiSelectorActivity : AppCompatActivity() {
         val adapter = ViewPagerAdapter(this)
         adapter.setFragmentList(fragmentlist)
         binding.viewPager.adapter = adapter
-c        binding.viewPager.setCurrentItem(1, false)
+        binding.viewPager.setCurrentItem(1, false)
     }
 
     override fun onPause() {
