@@ -20,11 +20,6 @@
             android:name=".beta.broadcastReceiver.WifiConnectReceiver"
             android:enabled="true"
             android:exported="true"></receiver>
-
-        <activity
-            android:name=".beta.Main2Activity"
-            android:exported="true"
-            android:screenOrientation="portrait" />
         <activity
             android:name=".beta.WifiSelectorActivity"
             android:exported="true"
