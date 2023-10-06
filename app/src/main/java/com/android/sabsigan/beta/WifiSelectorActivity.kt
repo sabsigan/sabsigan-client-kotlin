@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -39,11 +40,12 @@ class WifiSelectorActivity : AppCompatActivity() {
 
         startAnimation() // 와이파이 아이콘 애니메이션
 
-        binding.WiFiIconLayout.setOnClickListener { // 테스트 코드
-//            test *= -1
-//            if (test > 0)   setConnectedColor()
-//            else            setUnconnectedColor()
-        }
+        
+        val fragmentlist = listOf(WifiListFragment(), WifiInfoFragment(), WifiRateFragment())
+        val adapter = ViewPagerAdapter(this)
+        adapter.setFragmentList(fragmentlist)
+        binding.viewPager.adapter = adapter
+c        binding.viewPager.setCurrentItem(1, false)
     }
 
     override fun onPause() {
