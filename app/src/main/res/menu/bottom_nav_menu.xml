@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+        android:id="@+id/navigation_user"
+        android:icon="@drawable/baseline_person_24"
+        android:title="@string/title_user" />
+
     <item
-        android:id="@+id/home"
-        android:title="유저"
-        android:icon="@drawable/baseline_group_24" />
-    <item
-        android:id="@+id/chatting"
-        android:title="채팅"
-        android:icon="@drawable/baseline_forum_24"/>
+        android:id="@+id/navigation_chatting"
+        android:icon="@drawable/baseline_chat_bubble_outline_24"
+        android:title="@string/title_chatting" />
+
 </menu>
