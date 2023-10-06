@@ -1,3 +1,6 @@
 <resources>
-    <string name="app_name">Sabsigan</string>
+    <string name="app_name">삽시간</string>
+    <string name="title_activity_main2">MainActivity2</string>
+    <string name="title_user">유저</string>
+    <string name="title_chatting">채팅</string>
 </resources>
