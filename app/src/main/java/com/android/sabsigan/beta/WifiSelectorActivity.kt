@@ -1,29 +1,35 @@
 package com.android.sabsigan.beta
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.ConnectivityManager
+import android.net.wifi.ScanResult
+import android.net.wifi.WifiInfo
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.view.animation.AnimationUtils
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.viewpager2.widget.ViewPager2
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.android.sabsigan.R
 import com.android.sabsigan.databinding.ActivityWifiSelectorBinding
+import io.reactivex.annotations.NonNull
 import java.lang.Math.abs
 
-
 class WifiSelectorActivity : AppCompatActivity() {
-    private var mBinding: ActivityWifiSelectorBinding? = null
-    // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
+    private var mBinding: ActivityWifiSelectorBinding? = null    // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
     private val binding get() = mBinding!!
 
     private lateinit var adapter: ViewPagerAdapter
@@ -35,7 +41,6 @@ class WifiSelectorActivity : AppCompatActivity() {
     private val RED_SHADOW = "#E53935"
     private val BLUE_SHADOW = "#1E88E5"
 
-    private var test = 1;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,32 +49,47 @@ class WifiSelectorActivity : AppCompatActivity() {
 
         adapter = ViewPagerAdapter(this)
 
-        registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
-        startAnimation() // 와이파이 아이콘 애니메이션 시작
-        setFragment() // 프래그먼트 호출
+        if (checkPermissions())
+            startPorcess()
+        else
+            requestPermissions()
+
+        binding.startView.setOnClickListener {
+            startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        stopAnimation() // 애니메이션 제거
 
-        if (!isReceiverRegistered(this, networkReceiver))
+        if (isReceiverRegistered(this))
             unregisterReceiver(networkReceiver)
+
+        stopAnimation() // 애니메이션 제거
     }
 
     override fun onResume() {
         super.onResume()
-        startAnimation() // 애니메이션 재시작
 
-        if (isReceiverRegistered(this, networkReceiver))
-            registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
+        if (checkPermissions()) {
+            if (!isReceiverRegistered(this))
+                registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
+
+            startAnimation() // 애니메이션 시작
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        if (!isReceiverRegistered(this, networkReceiver))
+        if (isReceiverRegistered(this))
             unregisterReceiver(networkReceiver)
+    }
+
+    private fun startPorcess() {
+        registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
+        startAnimation() // 와이파이 아이콘 애니메이션 시작
+        setFragment() // 프래그먼트 호출
     }
 
     private fun startAnimation() {
@@ -120,9 +140,8 @@ class WifiSelectorActivity : AppCompatActivity() {
         val fragmentlist = listOf(WifiListFragment(), WifiInfoFragment(), WifiRateFragment())
         adapter.setFragmentList(fragmentlist)
 
-        binding.viewPager.orientation = ViewPager2.ORIENTATION_HORIZONTAL
         binding.viewPager.adapter = adapter
-        binding.viewPager.offscreenPageLimit = 1
+        binding.viewPager.offscreenPageLimit = 2
         binding.indicator.setViewPager2(binding.viewPager) // 인디케이터 뷰페이저 연결
 
         val nextItemVisibleWidth = resources.getDimension(R.dimen.next_item_visible_width)
@@ -144,26 +163,114 @@ class WifiSelectorActivity : AppCompatActivity() {
         binding.viewPager.setCurrentItem(1, false)
     }
 
-    private fun isReceiverRegistered(context: Context, receiver: BroadcastReceiver): Boolean {
-        val intentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION) // 리시버가 등록된 인텐트 필터를 여기에 설정
+    private fun checkPermissions(): Boolean {
+        val locationPermission = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
 
-        return context.registerReceiver(networkReceiver, intentFilter) != null
+        if (locationPermission == PackageManager.PERMISSION_GRANTED) {
+            // 승인된 상태
+            return true
+        }
+
+        return false
+    }
+
+    private fun requestPermissions() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 10
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        @NonNull permissions: Array<String>,
+        @NonNull grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            10 -> {
+                if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d("permission", "granted")
+                    startPorcess()
+                } else {
+                    finish()
+                }
+            }
+        }
+    }
+
+    private fun isReceiverRegistered(context: Context): Boolean {
+        val pm = context.packageManager
+        val intent = Intent(ConnectivityManager.CONNECTIVITY_ACTION)
+        val receivers = pm.queryBroadcastReceivers(intent, 0)
+
+        for (receiver in receivers) {
+            if (receiver.activityInfo.packageName == context.packageName) {
+                return true // 리시버가 현재 등록되어 있음
+            }
+        }
+
+        return false // 리시버가 현재 등록되어 있지 않음
     }
 
     private val networkReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == ConnectivityManager.CONNECTIVITY_ACTION) {
-                val connectivityManager =
-                    context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val connectivityManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val networkInfo = connectivityManager.activeNetworkInfo
 
-                val wifiInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-                val mobileInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE)
-
-                if (wifiInfo != null && wifiInfo.isConnected) {
+                if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_WIFI) {
                     // 와이파이 연결됐을 때 처리
-                    setConnectedColor()
-//                    Toast.makeText(context, "와이파이가 연결되었습니다.", Toast.LENGTH_SHORT).show()
-                } else if (mobileInfo != null && mobileInfo.isConnected) {
+                    setConnectedColor() // 색 변경
+
+                    val currentNetwork = connectivityManager.activeNetwork
+                    val linkProperties = connectivityManager.getLinkProperties(currentNetwork)
+                    val linkAddresses = linkProperties?.linkAddresses // IP 주소
+                    val routeInfoList = linkProperties?.routes // 루트 정보
+                    val dnsServers    = linkProperties?.dnsServers // DNS 서버 목록
+
+                    Log.d("와이파이 정보", "================================================")
+                    Log.d("와이파이 정보", "Domains: " + linkProperties?.domains)
+                    Log.d("와이파이 정보", "InterfaceName: " + linkProperties?.interfaceName)
+                    for (linkAddress in linkAddresses!!)
+                        Log.d("와이파이 정보", "IP Address: " + linkAddress.address.hostAddress)
+                    for (routeInfo in routeInfoList!!) {
+                        if (routeInfo.isDefaultRoute) {
+                            Log.d("와이파이 정보", "Gateway: " + routeInfo.gateway?.hostAddress)
+                            break
+                        }
+                    }
+                    for (dnsServer in dnsServers!!)
+                        Log.d("와이파이 정보", "IP DNS Server: " + dnsServer.hostAddress)
+                    Log.d("와이파이 정보", "================================================")
+
+
+                    val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                    val wifiInfo = wifiManager.connectionInfo
+                    val getSsid = wifiInfo.ssid
+
+                    val dhcpInfo = wifiManager.dhcpInfo
+                    val wIp = dhcpInfo.ipAddress
+
+                    val getIpAddress = String.format(
+                        "%d.%d.%d.%d",
+                        wIp and 0xff,
+                        wIp shr 8 and 0xff,
+                        wIp shr 16 and 0xff,
+                        wIp shr 24 and 0xff
+                    )
+
+                    Log.v("NetworkInfo", "================================================")
+                    Log.v("NetworkInfo", "SSID: $getSsid")
+                    Log.v("NetworkInfo", "hiddenSSID: ${wifiInfo.hiddenSSID}")
+                    Log.v("NetworkInfo", "networkId: " + wifiInfo.networkId.toString())
+                    Log.v("NetworkInfo", "bssid: " + wifiInfo.bssid)
+                    Log.v("NetworkInfo", "ipAddress: " + wifiInfo.ipAddress)
+                    Log.v("NetworkInfo", "ipAddress2: " + getIpAddress)
+                    Log.v("NetworkInfo", "macAddress: " + wifiInfo.macAddress)
+                    Log.v("NetworkInfo", "linkSpeed: " + wifiInfo.linkSpeed)
+                    Log.v("NetworkInfo", "================================================")
+                } else if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_MOBILE) {
                     // 와이파이 연결됐을 때 처리
                     setUnconnectedColor()
 //                    Toast.makeText(context, "데이터가 연결되었습니다.", Toast.LENGTH_SHORT).show()

@@ -1,29 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/transparent"
     tools:context=".beta.WifiListFragment">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginHorizontal="30dp"
         android:background="@drawable/rounded_top">
 
-        <TextView
-            android:id="@+id/tvName2"
+        <LinearLayout
+            android:id="@+id/linearLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:layout_centerInParent="true"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:text="주변 와이파이 목록"/>
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="@drawable/rounded_top_14"
+            android:elevation="8dp"
+            android:orientation="vertical"
+            android:outlineSpotShadowColor="@color/background_1">
 
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/tvName2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingVertical="8dp"
+                android:gravity="center"
+                android:text="주변 와이파이 목록"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="60dp"
+                android:clipToPadding="false"
+                tools:listitem="@layout/adapter_wifi_list"/>
+
+            <!--            android:paddingTop="6dp"-->
+
+            <!--            android:overScrollMode="never"-->
+            <!--            android:nestedScrollingEnabled="false"-->
+
+        </LinearLayout>
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@drawable/gradient_bottom_bg"
+            android:elevation="10dp"
+            android:outlineSpotShadowColor="@color/transparent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_percent="0.2"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
