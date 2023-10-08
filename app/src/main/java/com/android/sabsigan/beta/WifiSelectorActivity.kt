@@ -1,19 +1,27 @@
 package com.android.sabsigan.beta
 
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.ConnectivityManager
+import android.net.NetworkInfo
+import android.net.wifi.WifiInfo
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import com.android.sabsigan.R
 import com.android.sabsigan.beta.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.databinding.ActivityWifiSelectorBinding
@@ -36,7 +44,10 @@ class WifiSelectorActivity : AppCompatActivity() {
         mBinding = ActivityWifiSelectorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
+        val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
+//        filter.addAction(WifiManager.EXTRA_NETWORK_INFO)
+        registerReceiver(networkReceiver,filter ) // 리시버 등록
 
         startAnimation() // 와이파이 아이콘 애니메이션
 
@@ -46,6 +57,8 @@ class WifiSelectorActivity : AppCompatActivity() {
         adapter.setFragmentList(fragmentlist)
         binding.viewPager.adapter = adapter
         binding.viewPager.setCurrentItem(1, false)
+
+        requestPermission(this)
     }
 
     override fun onPause() {
@@ -131,6 +144,32 @@ class WifiSelectorActivity : AppCompatActivity() {
                     Toast.makeText(context, "인터넷이 끊겼습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
+
+            if(intent?.action == WifiManager.NETWORK_STATE_CHANGED_ACTION){
+                //와이파이 상태가 변경된 경우
+                val wifiStateChangedIntent = Intent("wifi.ACTION_WIFI_STATE_CHANGED")
+                context?.sendBroadcast(wifiStateChangedIntent)
+            }
+            val networkInfo = intent?.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)
+            if(networkInfo?.state == NetworkInfo.State.DISCONNECTED){
+                //와이파이가 꺼진 경우
+                val wifiOffIntent = Intent("wifi.ACTION_WIFI_OFF")
+                context?.sendBroadcast(wifiOffIntent)
+            }
+        }
+    }
+
+    private fun requestPermission(activity: Activity) { //권한 설정
+        if(ActivityCompat.checkSelfPermission(activity,
+                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            || ActivityCompat.checkSelfPermission(activity,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            val permissions = arrayOf(
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+            ActivityCompat.requestPermissions(activity, permissions, 1)
         }
     }
 }
+

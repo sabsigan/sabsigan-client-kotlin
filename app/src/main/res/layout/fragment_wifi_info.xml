@@ -5,16 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/transparent"
+    android:id="@+id/wifiInfoFrameLayout"
     tools:context=".beta.WifiInfoFragment">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginHorizontal="16dp"
+        android:layout_marginHorizontal="30dp"
         android:background="@drawable/rounded_top">
 
         <TextView
-            android:id="@+id/tvName2"
+            android:id="@+id/tvName1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
