@@ -10,14 +10,24 @@
     <color name="transparent">#00000000</color>
 
     <!-- 테스트 색 -->
+    <color name="black_white">#FFFFFF</color>
+    <color name="black2">#010101</color>
     <color name="gradient">#FFFFFFFF</color>
     <color name="background_0">#FFFFFFFF</color>
     <color name="background_1">#ECEFF1</color>
     <color name="background_2">#CFD8DC</color>
+    <color name="test_text">#1B202D</color>
 
     <color name="Blue_50">#E3F2FD</color>
     <color name="Blue_100">#BBDEFB</color>
+    <color name="Blue_700">#1976D2</color>
+
     <color name="Red_50">#FFEBEE</color>
     <color name="Red_100">#FFCDD2</color>
+    <color name="Red_700">#D32F2F</color>
+
+    <color name="Gray_50">#FAFAFA</color>
+    <color name="Gray_100">#F5F5F5</color>
+    <color name="Gray_700">#616161</color>
 
 </resources>

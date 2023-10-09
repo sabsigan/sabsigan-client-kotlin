@@ -10,10 +10,13 @@
     <color name="transparent">#00000000</color>
 
     <!-- 테스트 색 -->
+    <color name="black_white">#010101</color>
+    <color name="black2">#010101</color>
     <color name="gradient">#FF000000</color>
     <color name="background_0">#1e1e1e</color>
     <color name="background_1">#263238</color>
     <color name="background_2">#37474F</color>
+    <color name="test_text">#BCBCBC</color>
 
     <color name="Blue_50">#E3F2FD</color>
     <color name="Blue_100">#BBDEFB</color>

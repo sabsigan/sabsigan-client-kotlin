@@ -2,23 +2,17 @@ package com.android.sabsigan.beta
 
 import android.Manifest
 import android.content.Context
-import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.net.ConnectivityManager
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.android.sabsigan.AccessPoint
-import com.android.sabsigan.R
 import com.android.sabsigan.databinding.FragmentWifiListBinding
 
 // TODO: Rename parameter arguments, choose names that match
@@ -35,8 +29,10 @@ class WifiListFragment : Fragment() {
     private var mBinding: FragmentWifiListBinding? = null
     private val binding get() = mBinding!!
 
-    private var mWifiList: List<ScanResult>? = null
+    private var mWifiList: MutableList<ScanResult>? = null
     private val wifiList get() = mWifiList
+    private var adapter: WifiListAdapter? = null
+
 
     // TODO: Rename and change types of parameters
     private var param1: String? = null
@@ -84,17 +80,44 @@ class WifiListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         context?.let { getWifiList(it) }
+        setRecyclerView()
+    }
 
-        val adapter = wifiList?.let { WifiListAdapter(it, "") }
-        adapter?.notifyDataSetChanged()
-
+    private fun setRecyclerView() {
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
     }
 
-    fun getWifiList(context: Context) {
+    private fun getWifiList(context: Context) {
         val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val wifiInfo = wifiManager.connectionInfo
+        val dhcpInfo = wifiManager.dhcpInfo
 
+        // 연결된 와이파이 정보
+        val SSID = wifiInfo.ssid
+        var BSSID = wifiInfo.bssid
+        val NetworkID = wifiInfo.networkId
+        val MacAdress = wifiInfo.macAddress
+        val LinkSpeed = wifiInfo.linkSpeed
+        val wIp = dhcpInfo.ipAddress
+        val IpAdress = String.format(
+            "%d.%d.%d.%d",
+            wIp and 0xff,
+            wIp shr 8 and 0xff,
+            wIp shr 16 and 0xff,
+            wIp shr 24 and 0xff
+        )
+        
+        Log.v("NetworkInfo", "======================================")
+        Log.v("NetworkInfo", "SSID: $SSID")
+        Log.v("NetworkInfo", "BSSID: $BSSID")
+        Log.v("NetworkInfo", "networkId: $NetworkID")
+        Log.v("NetworkInfo", "ipAddress: $IpAdress")
+        Log.v("NetworkInfo", "macAddress: $MacAdress")
+        Log.v("NetworkInfo", "linkSpeed: $LinkSpeed Mbps")
+        Log.v("NetworkInfo", "======================================")
+
+        // 주변 와이파이 정보
         if (getContext()?.let {
                 ActivityCompat.checkSelfPermission(
                     it,
@@ -107,15 +130,32 @@ class WifiListFragment : Fragment() {
 
         val scanResults = wifiManager.scanResults
         val comparator : Comparator<ScanResult> = compareByDescending { it.level }
-        mWifiList = scanResults.sortedWith(comparator)
+        mWifiList = scanResults.sortedWith(comparator).toMutableList()
+        var temp: ScanResult? = null
 
-        Log.w("WifiListFragment", "========================================")
+        Log.w("WifiListFragment", "--------------------------------------")
         for (scanResult in wifiList!!) {
             Log.w("WifiListFragment", "ssid: ${scanResult.SSID}")
             Log.w("WifiListFragment", "bssid: ${scanResult.BSSID}")
             Log.w("WifiListFragment", "level: ${scanResult.level}")
-            Log.w("WifiListFragment", "----------------------------------------")
+
+            if (scanResult.BSSID == BSSID) {
+                Log.w("WifiListFragment", "!!!!!!!!!!")
+                temp = scanResult
+            }
+            Log.w("WifiListFragment", "--------------------------------------")
         }
-        Log.w("WifiListFragment", "========================================")
+
+        if (temp != null) {
+            wifiList!!.remove(temp)
+            wifiList!!.add(0, temp)
+        }
+
+        if (adapter == null) {
+            adapter = WifiListAdapter(context, wifiList!!, BSSID ?: "")
+        } else {
+            adapter!!.cBSSID = BSSID
+            adapter!!.notifyDataSetChanged()
+        }
     }
 }

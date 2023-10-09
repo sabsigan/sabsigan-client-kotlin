@@ -16,9 +16,10 @@
 
         <ImageView
             android:id="@+id/wifiIcon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/wifi"
+            android:layout_width="35dp"
+            android:layout_height="46dp"
+            android:src="@drawable/wifi_on"
+            app:tint="@color/test_text"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -27,20 +28,19 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical"
-            android:layout_weight="1"
             android:orientation="vertical"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.1"
             app:layout_constraintStart_toEndOf="@+id/wifiIcon"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.1">
 
             <TextView
                 android:id="@+id/wifiName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="wifi_name"
-                android:textSize="20sp" />
+                android:textSize="18sp" />
 
             <TextView
                 android:id="@+id/connect"

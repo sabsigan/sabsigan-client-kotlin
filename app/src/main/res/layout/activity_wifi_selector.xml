@@ -15,7 +15,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.18">
+        app:layout_constraintVertical_bias="0.15">
 
         <ImageView
             android:id="@+id/wave1"
@@ -37,6 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:background="@drawable/wifi_gradient_gray"
+            android:rotation="-90"
             android:outlineSpotShadowColor="#757575"
             android:elevation="20dp">
 
@@ -45,7 +46,8 @@
                 android:layout_width="120dp"
                 android:layout_height="120dp"
                 android:padding="22dp"
-                android:src="@drawable/wifi"
+                android:rotation="90"
+                android:src="@drawable/wifi_on"
                 app:tint="@color/white" />
 
         </LinearLayout>
@@ -90,6 +92,7 @@
                 android:id="@+id/startView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:text="START"
                 android:textSize="40sp"
                 android:textStyle="bold" />

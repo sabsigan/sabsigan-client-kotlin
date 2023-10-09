@@ -1,7 +1,6 @@
 package com.android.sabsigan.beta
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -9,8 +8,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.ConnectivityManager
-import android.net.wifi.ScanResult
-import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
@@ -41,11 +38,22 @@ class WifiSelectorActivity : AppCompatActivity() {
     private val RED_SHADOW = "#E53935"
     private val BLUE_SHADOW = "#1E88E5"
 
+    val MULTIPLE_PERMISSIONS = 10 // code you want.
+
+    val listPermissionsNeeded: MutableList<String> = ArrayList()
+    // 원하는 권한을 배열로 넣어줍니다.
+    var permissions = arrayOf<String>(
+        android.Manifest.permission.ACCESS_FINE_LOCATION
+    )
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityWifiSelectorBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        window.statusBarColor = ContextCompat.getColor(this, R.color.background_1) // 스테이터스 색 변경
+        defaultAnimaion() // 와이파이 아이콘 회전
 
         adapter = ViewPagerAdapter(this)
 
@@ -64,18 +72,17 @@ class WifiSelectorActivity : AppCompatActivity() {
 
         if (isReceiverRegistered(this))
             unregisterReceiver(networkReceiver)
-
-        stopAnimation() // 애니메이션 제거
     }
 
     override fun onResume() {
         super.onResume()
 
-        if (checkPermissions()) {
+        if (checkPermissions()) { // 위치 권한 얻었을 때만
             if (!isReceiverRegistered(this))
                 registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
 
-            startAnimation() // 애니메이션 시작
+            startAnimation() // 웨이브 애니메이션 시작
+            // 웨이브 애니메이션에는 딜레이가 있어서 onResume 때마다 다시 처리해야 함
         }
     }
 
@@ -92,14 +99,18 @@ class WifiSelectorActivity : AppCompatActivity() {
         setFragment() // 프래그먼트 호출
     }
 
-    private fun startAnimation() {
+    private fun defaultAnimaion() { // 와이파이 회전 애니메이션
         var rightAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_right)
         var leftAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_left)
-        var radiate = AnimationUtils.loadAnimation(this, R.anim.radiate)
-        var radiate2 = AnimationUtils.loadAnimation(this, R.anim.radiate)
 
         binding.WiFiIconLayout.startAnimation(rightAnimation)
         binding.WiFiIcon.startAnimation(leftAnimation)
+    }
+
+    private fun startAnimation() { // 웨이브 애니메이션
+        var radiate = AnimationUtils.loadAnimation(this, R.anim.radiate)
+        var radiate2 = AnimationUtils.loadAnimation(this, R.anim.radiate)
+
         binding.wave1.startAnimation(radiate)
 
         Handler(Looper.getMainLooper()).postDelayed({ // wave2는 0.6초 후 실행
@@ -120,7 +131,7 @@ class WifiSelectorActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
             Color.parseColor(BLUE_SHADOW).also { binding.WiFiIconLayout.outlineSpotShadowColor = it }
 
-        binding.WiFiIcon.setImageResource(R.drawable.wifi)
+        binding.WiFiIcon.setImageResource(R.drawable.wifi_on)
         binding.wave1.setColorFilter(Color.parseColor(BLUE))
         binding.wave2.setColorFilter(Color.parseColor(BLUE))
     }
@@ -141,17 +152,14 @@ class WifiSelectorActivity : AppCompatActivity() {
         adapter.setFragmentList(fragmentlist)
 
         binding.viewPager.adapter = adapter
-        binding.viewPager.offscreenPageLimit = 2
+        binding.viewPager.offscreenPageLimit = 1
         binding.indicator.setViewPager2(binding.viewPager) // 인디케이터 뷰페이저 연결
 
         val nextItemVisibleWidth = resources.getDimension(R.dimen.next_item_visible_width)
         val currentItemMargin = resources.getDimension(R.dimen.viewpager_horizontal_margin)
         val pageTranslation = nextItemVisibleWidth + currentItemMargin
 
-        val itemDecoration = PagerMarginItemDecoration(
-            this,
-            R.dimen.viewpager_horizontal_margin
-        )
+        val itemDecoration = PagerMarginItemDecoration(this, R.dimen.viewpager_horizontal_margin)
 
         binding.viewPager.setPageTransformer { page: View, position: Float ->
             page.translationX = -pageTranslation * position
@@ -164,20 +172,24 @@ class WifiSelectorActivity : AppCompatActivity() {
     }
 
     private fun checkPermissions(): Boolean {
-        val locationPermission = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+        for (p in permissions) {
+            var result = ContextCompat.checkSelfPermission(this, p)
 
-        if (locationPermission == PackageManager.PERMISSION_GRANTED) {
-            // 승인된 상태
-            return true
+            if (result != PackageManager.PERMISSION_GRANTED)
+                listPermissionsNeeded.add(p)
         }
 
-        return false
+        if (!listPermissionsNeeded.isEmpty())
+            return false
+
+        return true
     }
 
     private fun requestPermissions() {
         ActivityCompat.requestPermissions(
             this,
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 10
+            listPermissionsNeeded.toTypedArray(),
+            MULTIPLE_PERMISSIONS
         )
     }
 
@@ -229,47 +241,19 @@ class WifiSelectorActivity : AppCompatActivity() {
                     val routeInfoList = linkProperties?.routes // 루트 정보
                     val dnsServers    = linkProperties?.dnsServers // DNS 서버 목록
 
-                    Log.d("와이파이 정보", "================================================")
-                    Log.d("와이파이 정보", "Domains: " + linkProperties?.domains)
-                    Log.d("와이파이 정보", "InterfaceName: " + linkProperties?.interfaceName)
+                    Log.d("current WIFI", "======================================")
                     for (linkAddress in linkAddresses!!)
-                        Log.d("와이파이 정보", "IP Address: " + linkAddress.address.hostAddress)
+                        Log.d("current WIFI", "IP Address: " + linkAddress.address.hostAddress)
                     for (routeInfo in routeInfoList!!) {
                         if (routeInfo.isDefaultRoute) {
-                            Log.d("와이파이 정보", "Gateway: " + routeInfo.gateway?.hostAddress)
+                            Log.d("current WIFI", "Gateway: " + routeInfo.gateway?.hostAddress)
                             break
                         }
                     }
                     for (dnsServer in dnsServers!!)
-                        Log.d("와이파이 정보", "IP DNS Server: " + dnsServer.hostAddress)
-                    Log.d("와이파이 정보", "================================================")
+                        Log.d("current WIFI", "IP DNS Server: " + dnsServer.hostAddress)
+                    Log.d("current WIFI", "======================================")
 
-
-                    val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-                    val wifiInfo = wifiManager.connectionInfo
-                    val getSsid = wifiInfo.ssid
-
-                    val dhcpInfo = wifiManager.dhcpInfo
-                    val wIp = dhcpInfo.ipAddress
-
-                    val getIpAddress = String.format(
-                        "%d.%d.%d.%d",
-                        wIp and 0xff,
-                        wIp shr 8 and 0xff,
-                        wIp shr 16 and 0xff,
-                        wIp shr 24 and 0xff
-                    )
-
-                    Log.v("NetworkInfo", "================================================")
-                    Log.v("NetworkInfo", "SSID: $getSsid")
-                    Log.v("NetworkInfo", "hiddenSSID: ${wifiInfo.hiddenSSID}")
-                    Log.v("NetworkInfo", "networkId: " + wifiInfo.networkId.toString())
-                    Log.v("NetworkInfo", "bssid: " + wifiInfo.bssid)
-                    Log.v("NetworkInfo", "ipAddress: " + wifiInfo.ipAddress)
-                    Log.v("NetworkInfo", "ipAddress2: " + getIpAddress)
-                    Log.v("NetworkInfo", "macAddress: " + wifiInfo.macAddress)
-                    Log.v("NetworkInfo", "linkSpeed: " + wifiInfo.linkSpeed)
-                    Log.v("NetworkInfo", "================================================")
                 } else if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_MOBILE) {
                     // 와이파이 연결됐을 때 처리
                     setUnconnectedColor()
