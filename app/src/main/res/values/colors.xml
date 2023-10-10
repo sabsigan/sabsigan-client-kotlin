@@ -20,6 +20,8 @@
 
     <color name="Blue_50">#E3F2FD</color>
     <color name="Blue_100">#BBDEFB</color>
+    <color name="Blue_500">#2196F3</color>
+    <color name="Blue_600">#1E88E5</color>
     <color name="Blue_700">#1976D2</color>
 
     <color name="Red_50">#FFEBEE</color>

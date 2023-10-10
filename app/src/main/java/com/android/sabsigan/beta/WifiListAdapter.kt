@@ -1,7 +1,11 @@
 package com.android.sabsigan.beta
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.net.wifi.ScanResult
+import android.net.wifi.WifiConfiguration
+import android.net.wifi.WifiManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +15,8 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.android.sabsigan.R
+import com.android.sabsigan.databinding.InputWifiPasswordBinding
+
 
 class WifiListAdapter(val context: Context, val wifiList: MutableList<ScanResult>, var cBSSID: String): RecyclerView.Adapter<WifiListAdapter.MainViewHolder>() {
     inner class MainViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -21,7 +27,31 @@ class WifiListAdapter(val context: Context, val wifiList: MutableList<ScanResult
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.adapter_wifi_list, parent,false)
-        return MainViewHolder(view)
+        val mainViewHolder = MainViewHolder(view)
+
+        mainViewHolder.itemView.setOnClickListener {
+            val position = mainViewHolder.absoluteAdapterPosition
+            val SSID = wifiList[position].SSID
+
+
+
+//            val builder = AlertDialog.Builder(context)
+//            val builderItem = LayoutInflater.from(parent.context).inflate(R.layout.input_wifi_password, parent, false)
+//            val editText = builderItem.findViewById<TextView>(R.id.editText)
+//
+//            with(builder){
+//                setTitle("와이파이 연결")
+//                setMessage("비밀번호를 입력해주세요")
+//                setView(builderItem.rootView)
+//                setPositiveButton("OK"){ dialogInterface: DialogInterface, i: Int ->
+//                    if(editText.text != null)
+//                        changeWifiConfiguration(context, SSID, editText.text.toString())
+//                }
+//                show()
+//            }
+        }
+
+        return mainViewHolder
     }
 
     override fun onBindViewHolder(holder: MainViewHolder, position: Int) {
@@ -40,5 +70,23 @@ class WifiListAdapter(val context: Context, val wifiList: MutableList<ScanResult
 
     override fun getItemCount(): Int {
         return wifiList.size
+    }
+
+    fun changeWifiConfiguration(context: Context, SSID: String, PASSWORD: String) {
+        val wifiConfig = WifiConfiguration()
+
+        // 새로운 와이파이 구성 설정
+        wifiConfig.SSID = "\"" + SSID + "\""
+        wifiConfig.preSharedKey = "\"" + PASSWORD + "\""
+
+        val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        wifiManager.disconnect()
+
+        val netId: Int = wifiManager!!.addNetwork(wifiConfig)
+        wifiManager!!.enableNetwork(netId, true)
+        wifiManager.reconnect()
+
+        Log.d("dddd", "ddddde3")
+
     }
 }

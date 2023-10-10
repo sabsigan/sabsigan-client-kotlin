@@ -17,10 +17,4 @@
     <color name="background_1">#263238</color>
     <color name="background_2">#37474F</color>
     <color name="test_text">#BCBCBC</color>
-
-    <color name="Blue_50">#E3F2FD</color>
-    <color name="Blue_100">#BBDEFB</color>
-    <color name="Red_50">#FFEBEE</color>
-    <color name="Red_100">#FFCDD2</color>
-
 </resources>

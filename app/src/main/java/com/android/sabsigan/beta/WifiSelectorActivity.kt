@@ -17,9 +17,11 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.animation.AnimationUtils
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import com.android.sabsigan.R
 import com.android.sabsigan.databinding.ActivityWifiSelectorBinding
 import io.reactivex.annotations.NonNull
@@ -29,6 +31,7 @@ class WifiSelectorActivity : AppCompatActivity() {
     private var mBinding: ActivityWifiSelectorBinding? = null    // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
     private val binding get() = mBinding!!
 
+    private val viewModel by viewModels<WifiViewModel>()
     private lateinit var adapter: ViewPagerAdapter
 
     private val RED_50 = "#FFEBEE" // 임시 색상
@@ -63,12 +66,13 @@ class WifiSelectorActivity : AppCompatActivity() {
             requestPermissions()
 
         binding.startView.setOnClickListener {
-            startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
+//            startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
         }
     }
 
     override fun onPause() {
         super.onPause()
+        stopAnimation()
 
         if (isReceiverRegistered(this))
             unregisterReceiver(networkReceiver)
@@ -76,6 +80,7 @@ class WifiSelectorActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        defaultAnimaion()
 
         if (checkPermissions()) { // 위치 권한 얻었을 때만
             if (!isReceiverRegistered(this))
@@ -153,6 +158,7 @@ class WifiSelectorActivity : AppCompatActivity() {
 
         binding.viewPager.adapter = adapter
         binding.viewPager.offscreenPageLimit = 1
+
         binding.indicator.setViewPager2(binding.viewPager) // 인디케이터 뷰페이저 연결
 
         val nextItemVisibleWidth = resources.getDimension(R.dimen.next_item_visible_width)
@@ -231,17 +237,24 @@ class WifiSelectorActivity : AppCompatActivity() {
                 val connectivityManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
                 val networkInfo = connectivityManager.activeNetworkInfo
 
+                viewModel.increaseValue()
+
+
                 if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_WIFI) {
                     // 와이파이 연결됐을 때 처리
                     setConnectedColor() // 색 변경
 
                     val currentNetwork = connectivityManager.activeNetwork
                     val linkProperties = connectivityManager.getLinkProperties(currentNetwork)
+                    val ttt = connectivityManager.getNetworkCapabilities(currentNetwork)
+
                     val linkAddresses = linkProperties?.linkAddresses // IP 주소
                     val routeInfoList = linkProperties?.routes // 루트 정보
                     val dnsServers    = linkProperties?.dnsServers // DNS 서버 목록
 
                     Log.d("current WIFI", "======================================")
+                    Log.d("current WIFI", "sss: " + ttt.toString())
+
                     for (linkAddress in linkAddresses!!)
                         Log.d("current WIFI", "IP Address: " + linkAddress.address.hostAddress)
                     for (routeInfo in routeInfoList!!) {

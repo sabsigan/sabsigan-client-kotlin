@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -12,6 +13,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.sabsigan.databinding.FragmentWifiListBinding
 
@@ -28,6 +32,7 @@ private const val ARG_PARAM2 = "param2"
 class WifiListFragment : Fragment() {
     private var mBinding: FragmentWifiListBinding? = null
     private val binding get() = mBinding!!
+    private val viewModel by activityViewModels<WifiViewModel>()
 
     private var mWifiList: MutableList<ScanResult>? = null
     private val wifiList get() = mWifiList
@@ -72,12 +77,17 @@ class WifiListFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         mBinding = FragmentWifiListBinding.inflate(inflater, container, false)
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        viewModel.currentValue.observe(requireActivity(), Observer {
+            Log.d("ㅁㅁㅁ", "값 증가")
+
+            context?.let { it1 -> getWifiList(it1) }
+        })
 
         context?.let { getWifiList(it) }
         setRecyclerView()
@@ -138,6 +148,7 @@ class WifiListFragment : Fragment() {
             Log.w("WifiListFragment", "ssid: ${scanResult.SSID}")
             Log.w("WifiListFragment", "bssid: ${scanResult.BSSID}")
             Log.w("WifiListFragment", "level: ${scanResult.level}")
+            Log.w("WifiListFragment", "password: ${scanResult.capabilities}")
 
             if (scanResult.BSSID == BSSID) {
                 Log.w("WifiListFragment", "!!!!!!!!!!")
@@ -154,7 +165,7 @@ class WifiListFragment : Fragment() {
         if (adapter == null) {
             adapter = WifiListAdapter(context, wifiList!!, BSSID ?: "")
         } else {
-            adapter!!.cBSSID = BSSID
+            adapter!!.cBSSID = BSSID ?: ""
             adapter!!.notifyDataSetChanged()
         }
     }
