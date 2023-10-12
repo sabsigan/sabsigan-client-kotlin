@@ -93,6 +93,12 @@ class WifiListFragment : Fragment() {
         setRecyclerView()
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        context?.let { getWifiList(it) }
+    }
+
     private fun setRecyclerView() {
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
@@ -143,18 +149,27 @@ class WifiListFragment : Fragment() {
         mWifiList = scanResults.sortedWith(comparator).toMutableList()
         var temp: ScanResult? = null
 
-        Log.w("WifiListFragment", "--------------------------------------")
+        Log.w("WifiListFragment", "------------------------")
         for (scanResult in wifiList!!) {
-            Log.w("WifiListFragment", "ssid: ${scanResult.SSID}")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                Log.w("WifiListFragment", "ssid: ${scanResult.wifiSsid}")
+            else
+                Log.w("WifiListFragment", "ssid: ${scanResult.SSID}")
             Log.w("WifiListFragment", "bssid: ${scanResult.BSSID}")
             Log.w("WifiListFragment", "level: ${scanResult.level}")
-            Log.w("WifiListFragment", "password: ${scanResult.capabilities}")
+            Log.w("WifiListFragment", "capabilities: ${scanResult.capabilities}")
+
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//                for (ttt in scanResult.securityTypes) {
+//                    Log.w("WifiListFragment", "securityTypes: $ttt ") // sdk 버전 33이상만 가능
+//                }
+//            }
 
             if (scanResult.BSSID == BSSID) {
-                Log.w("WifiListFragment", "!!!!!!!!!!")
+                Log.w("WifiListFragment", "현재 연결된 Wi-Fi")
                 temp = scanResult
             }
-            Log.w("WifiListFragment", "--------------------------------------")
+            Log.w("WifiListFragment", "------------------------")
         }
 
         if (temp != null) {
@@ -165,6 +180,7 @@ class WifiListFragment : Fragment() {
         if (adapter == null) {
             adapter = WifiListAdapter(context, wifiList!!, BSSID ?: "")
         } else {
+            adapter!!.wifiList = wifiList as MutableList<ScanResult>
             adapter!!.cBSSID = BSSID ?: ""
             adapter!!.notifyDataSetChanged()
         }

@@ -18,7 +18,7 @@ import com.android.sabsigan.R
 import com.android.sabsigan.databinding.InputWifiPasswordBinding
 
 
-class WifiListAdapter(val context: Context, val wifiList: MutableList<ScanResult>, var cBSSID: String): RecyclerView.Adapter<WifiListAdapter.MainViewHolder>() {
+class WifiListAdapter(val context: Context, var wifiList: MutableList<ScanResult>, var cBSSID: String): RecyclerView.Adapter<WifiListAdapter.MainViewHolder>() {
     inner class MainViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val WifiIcon = view.findViewById<ImageView>(R.id.wifiIcon)
         val WifiName = view.findViewById<TextView>(R.id.wifiName)
@@ -32,8 +32,6 @@ class WifiListAdapter(val context: Context, val wifiList: MutableList<ScanResult
         mainViewHolder.itemView.setOnClickListener {
             val position = mainViewHolder.absoluteAdapterPosition
             val SSID = wifiList[position].SSID
-
-
 
 //            val builder = AlertDialog.Builder(context)
 //            val builderItem = LayoutInflater.from(parent.context).inflate(R.layout.input_wifi_password, parent, false)
@@ -55,7 +53,21 @@ class WifiListAdapter(val context: Context, val wifiList: MutableList<ScanResult
     }
 
     override fun onBindViewHolder(holder: MainViewHolder, position: Int) {
-        holder.WifiName.text = wifiList[position].SSID
+        val wifiName = wifiList[position].SSID
+        val wifiLevel = wifiList[position].level
+
+        holder.WifiName.text = wifiName
+
+        if (getSecurityType(wifiList[position]) != "Open")
+            holder.WifiIcon.background = ContextCompat.getDrawable(context, R.drawable.baseline_wifi_password_24)
+        else
+            holder.WifiIcon.background = ContextCompat.getDrawable(context, R.drawable.baseline_wifi_24)
+
+        when (wifiLevel) {
+            in -100 until -66 -> holder.WifiIcon.setImageResource(R.drawable.baseline_wifi_1_bar_24)
+            in -66 until -33 -> holder.WifiIcon.setImageResource(R.drawable.baseline_wifi_2_bar_24)
+            else -> holder.WifiIcon.setImageResource(R.drawable.baseline_wifi_24)
+        }
 
         if (wifiList[position].BSSID == cBSSID) {
             holder.WifiIcon.setColorFilter(ContextCompat.getColor(context, R.color.Blue_700))
@@ -70,6 +82,20 @@ class WifiListAdapter(val context: Context, val wifiList: MutableList<ScanResult
 
     override fun getItemCount(): Int {
         return wifiList.size
+    }
+
+    fun getSecurityType(scanResult: ScanResult): String {
+        val security = "Open" // 기본값은 개방된 네트워크로 설정
+
+        if (scanResult.capabilities.contains("WEP")) {
+            return "WEP"
+        } else if (scanResult.capabilities.contains("PSK") || scanResult.capabilities.contains("WPA")) {
+            return "WPA"
+        } else if (scanResult.capabilities.contains("EAP")) {
+            return "WPA/WPA2 Enterprise"
+        }
+
+        return security
     }
 
     fun changeWifiConfiguration(context: Context, SSID: String, PASSWORD: String) {

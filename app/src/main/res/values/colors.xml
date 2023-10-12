@@ -30,6 +30,11 @@
 
     <color name="Gray_50">#FAFAFA</color>
     <color name="Gray_100">#F5F5F5</color>
+    <color name="Gray_200">#EEEEEE</color>
+    <color name="Gray_300">#E0E0E0</color>
+    <color name="Gray_400">#BDBDBD</color>
+    <color name="Gray_500">#9E9E9E</color>
+    <color name="Gray_600">#757575</color>
     <color name="Gray_700">#616161</color>
 
 </resources>
