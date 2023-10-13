@@ -8,6 +8,8 @@ import android.content.pm.PackageManager
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
+import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,8 +36,11 @@ class WifiListAdapter(val context: Context, var wifiList: MutableList<ScanResult
 
         mainViewHolder.itemView.setOnClickListener {
             val position = mainViewHolder.absoluteAdapterPosition
-            val SSID = wifiList[position].SSID
 
+            val SSID = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                wifiList[position].wifiSsid.toString()
+            else
+                wifiList[position].SSID
 //            context.startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
 
             val builder = AlertDialog.Builder(context)
