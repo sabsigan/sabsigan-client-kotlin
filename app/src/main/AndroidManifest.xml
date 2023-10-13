@@ -24,26 +24,19 @@
         <receiver
             android:name=".beta.broadcastReceiver.WifiConnectReceiver"
             android:enabled="true"
-            android:exported="true"></receiver>
-
+            android:exported="true"/>
         <activity
-            android:name=".AccessPointerAdapter"
-            android:exported="false" />
+            android:name=".beta.WifiSelectorActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".MainActivity2"
             android:exported="true"
-            android:label="@string/title_activity_main2" />
-        <activity
-            android:name=".SetProfileActivity"
-            android:exported="false"
+            android:label="@string/title_activity_main2"
             android:screenOrientation="portrait"/>
         <activity
             android:name=".MainActivity"
             android:exported="false"
-            android:screenOrientation="portrait"/>
-        <activity
-            android:name=".SetWiFiActivity"
-            android:exported="true"
             android:screenOrientation="portrait"/>
         <activity
             android:name=".beta.WifiSelectorActivity"

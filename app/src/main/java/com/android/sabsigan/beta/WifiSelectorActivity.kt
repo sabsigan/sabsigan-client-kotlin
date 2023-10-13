@@ -1,5 +1,6 @@
 package com.android.sabsigan.beta
 
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -7,6 +8,9 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.ConnectivityManager
+import android.net.NetworkInfo
+import android.net.wifi.WifiInfo
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -27,6 +31,20 @@ import androidx.lifecycle.ViewModelProvider
 import com.android.sabsigan.MainActivity
 import com.android.sabsigan.MainActivity2
 import com.android.sabsigan.R
+import android.util.Log
+import android.view.View
+import android.view.animation.AnimationUtils
+import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.sabsigan.R
+import com.android.sabsigan.ViewModel.WiFiViewModel
+import com.android.sabsigan.beta.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.databinding.ActivityWifiSelectorBinding
 import io.reactivex.annotations.NonNull
 import java.lang.Math.abs
@@ -34,6 +52,10 @@ import java.lang.Math.abs
 class WifiSelectorActivity : AppCompatActivity() {
     private var mBinding: ActivityWifiSelectorBinding? = null    // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
     private val binding get() = mBinding!!
+
+//    val viewModel by viewModels<WiFiViewModel>() //뷰모델 생성
+//    private var wifiConnectReceiver = WifiConnectReceiver(viewModel)
+    private lateinit var viewModel: WiFiViewModel
 
     private val viewModel by viewModels<WifiViewModel>()
     private lateinit var adapter: ViewPagerAdapter
@@ -61,6 +83,20 @@ class WifiSelectorActivity : AppCompatActivity() {
 
         window.statusBarColor = ContextCompat.getColor(this, R.color.background_1) // 스테이터스 색 변경
         defaultAnimaion() // 와이파이 아이콘 회전
+        
+        // 형원
+        viewModel = ViewModelProvider(this).get(WiFiViewModel::class.java)
+        viewModel.getwifiInfo().observe(this, Observer { wifidata ->
+            Log.d("엑티비티에서 데이터 변경 감지:",wifidata)
+        })
+
+        var wifiConnectReceiver = WifiConnectReceiver(viewModel)
+
+        val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
+//        filter.addAction(WifiManager.EXTRA_NETWORK_INFO)
+        registerReceiver(wifiConnectReceiver,filter ) // 리시버 등록
+        // 형원
 
         if (checkPermissions())
             startPorcess()
@@ -281,33 +317,32 @@ class WifiSelectorActivity : AppCompatActivity() {
 
                 if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_WIFI) {
                     // 와이파이 연결됐을 때 처리
-                    setConnectedColor() // 색 변경
+//                     setConnectedColor() // 색 변경
 
-                    val currentNetwork = connectivityManager.activeNetwork
-                    val linkProperties = connectivityManager.getLinkProperties(currentNetwork)
-                    val ttt = connectivityManager.getNetworkCapabilities(currentNetwork)
+//                     val currentNetwork = connectivityManager.activeNetwork
+//                     val linkProperties = connectivityManager.getLinkProperties(currentNetwork)
+//                     val ttt = connectivityManager.getNetworkCapabilities(currentNetwork)
 
-                    val linkAddresses = linkProperties?.linkAddresses // IP 주소
-                    val routeInfoList = linkProperties?.routes // 루트 정보
-                    val dnsServers    = linkProperties?.dnsServers // DNS 서버 목록
+//                     val linkAddresses = linkProperties?.linkAddresses // IP 주소
+//                     val routeInfoList = linkProperties?.routes // 루트 정보
+//                     val dnsServers    = linkProperties?.dnsServers // DNS 서버 목록
 
-                    Log.d("current WIFI", "======================================")
-                    Log.d("current WIFI", "sss: " + ttt.toString())
+//                     Log.d("current WIFI", "======================================")
+//                     Log.d("current WIFI", "sss: " + ttt.toString())
 
-                    for (linkAddress in linkAddresses!!)
-                        Log.d("current WIFI", "IP Address: " + linkAddress.address.hostAddress)
-                    for (routeInfo in routeInfoList!!) {
-                        if (routeInfo.isDefaultRoute) {
-                            Log.d("current WIFI", "Gateway: " + routeInfo.gateway?.hostAddress)
-                            break
-                        }
-                    }
-                    for (dnsServer in dnsServers!!)
-                        Log.d("current WIFI", "IP DNS Server: " + dnsServer.hostAddress)
-                    Log.d("current WIFI", "======================================")
+//                     for (linkAddress in linkAddresses!!)
+//                         Log.d("current WIFI", "IP Address: " + linkAddress.address.hostAddress)
+//                     for (routeInfo in routeInfoList!!) {
+//                         if (routeInfo.isDefaultRoute) {
+//                             Log.d("current WIFI", "Gateway: " + routeInfo.gateway?.hostAddress)
+//                             break
+//                         }
+//                     }
+//                     for (dnsServer in dnsServers!!)
+//                         Log.d("current WIFI", "IP DNS Server: " + dnsServer.hostAddress)
+//                     Log.d("current WIFI", "======================================")
 
                 } else if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_MOBILE) {
-                    // 와이파이 연결됐을 때 처리
                     setUnconnectedColor()
 //                    Toast.makeText(context, "데이터가 연결되었습니다.", Toast.LENGTH_SHORT).show()
                 } else {
@@ -316,6 +351,32 @@ class WifiSelectorActivity : AppCompatActivity() {
 //                    Toast.makeText(context, "인터넷이 끊겼습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
+
+            if(intent?.action == WifiManager.NETWORK_STATE_CHANGED_ACTION){
+                //와이파이 상태가 변경된 경우
+                val wifiStateChangedIntent = Intent("wifi.ACTION_WIFI_STATE_CHANGED")
+                context?.sendBroadcast(wifiStateChangedIntent)
+            }
+            val networkInfo = intent?.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)
+            if(networkInfo?.state == NetworkInfo.State.DISCONNECTED){
+                //와이파이가 꺼진 경우
+                val wifiOffIntent = Intent("wifi.ACTION_WIFI_OFF")
+                context?.sendBroadcast(wifiOffIntent)
+            }
+        }
+    }
+
+    private fun requestPermission(activity: Activity) { //권한 설정
+        if(ActivityCompat.checkSelfPermission(activity,
+                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            || ActivityCompat.checkSelfPermission(activity,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            val permissions = arrayOf(
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+            ActivityCompat.requestPermissions(activity, permissions, 1)
         }
     }
 }
+

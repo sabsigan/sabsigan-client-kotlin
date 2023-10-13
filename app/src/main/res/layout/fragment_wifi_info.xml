@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/transparent"
+    android:id="@+id/wifiInfoFrameLayout"
     tools:context=".beta.WifiInfoFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -15,8 +16,8 @@
         android:layout_marginHorizontal="30dp"
         android:background="@drawable/rounded_top">
 
-        <LinearLayout
-            android:id="@+id/linearLayout"
+        <TextView
+            android:id="@+id/tvName1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="10dp"
@@ -29,17 +30,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="@+id/layout"
             tools:layout_editor_absoluteX="10dp">
-
-            <TextView
-                android:id="@+id/tvName2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="연결된 와이파이 정보"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-        </LinearLayout>
 
         <View
             android:id="@+id/view"
