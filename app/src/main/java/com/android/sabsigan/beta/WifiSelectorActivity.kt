@@ -19,10 +19,15 @@ import android.util.Log
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.sabsigan.R
+import com.android.sabsigan.ViewModel.WiFiViewModel
 import com.android.sabsigan.beta.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.databinding.ActivityWifiSelectorBinding
 
@@ -30,7 +35,11 @@ class WifiSelectorActivity : AppCompatActivity() {
     private var mBinding: ActivityWifiSelectorBinding? = null
     // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
     private val binding get() = mBinding!!
-//    private var wifiConnectReceiver = WifiConnectReceiver()
+
+//    val viewModel by viewModels<WiFiViewModel>() //뷰모델 생성
+//    private var wifiConnectReceiver = WifiConnectReceiver(viewModel)
+    private lateinit var viewModel: WiFiViewModel
+
 
     private val RED = "#E57373" // 임시 색상
     private val BLUE = "#64B5F6"
@@ -44,10 +53,17 @@ class WifiSelectorActivity : AppCompatActivity() {
         mBinding = ActivityWifiSelectorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        viewModel = ViewModelProvider(this).get(WiFiViewModel::class.java)
+        viewModel.getwifiInfo().observe(this, Observer { wifidata ->
+            Log.d("엑티비티에서 데이터 변경 감지:",wifidata)
+        })
+
+        var wifiConnectReceiver = WifiConnectReceiver(viewModel)
+
         val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
 //        filter.addAction(WifiManager.EXTRA_NETWORK_INFO)
-        registerReceiver(networkReceiver,filter ) // 리시버 등록
+        registerReceiver(wifiConnectReceiver,filter ) // 리시버 등록
 
         startAnimation() // 와이파이 아이콘 애니메이션
 
@@ -133,15 +149,15 @@ class WifiSelectorActivity : AppCompatActivity() {
                 if (wifiInfo != null && wifiInfo.isConnected) {
                     // 와이파이 연결됐을 때 처리
                     setConnectedColor()
-                    Toast.makeText(context, "와이파이가 연결되었습니다.", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(context, "와이파이가 연결되었습니다.", Toast.LENGTH_SHORT).show()
                 } else if (mobileInfo != null && mobileInfo.isConnected) {
                     // 와이파이 연결됐을 때 처리
                     setUnconnectedColor()
-                    Toast.makeText(context, "데이터가 연결되었습니다.", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(context, "데이터가 연결되었습니다.", Toast.LENGTH_SHORT).show()
                 } else {
                     // 와이파이 연결이 끊겼을 때 처리
                     setUnconnectedColor()
-                    Toast.makeText(context, "인터넷이 끊겼습니다.", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(context, "인터넷이 끊겼습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
 

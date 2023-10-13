@@ -16,7 +16,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
 import com.android.sabsigan.R
+import com.android.sabsigan.ViewModel.WiFiViewModel
 import com.android.sabsigan.databinding.FragmentWifiInfoBinding
 import com.android.sabsigan.databinding.FragmentWifiListBinding
 
@@ -33,6 +36,7 @@ private const val ARG_PARAM2 = "param2"
 class WifiInfoFragment : Fragment() {
     private var mBinding: FragmentWifiInfoBinding? = null
     private val binding get() = mBinding!!
+    private val viewModel by activityViewModels<WiFiViewModel>() //뷰모델 생성
 
     // TODO: Rename and change types of parameters
     private var param1: String? = null
@@ -73,6 +77,8 @@ class WifiInfoFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+
+
     }
 
     override fun onCreateView(
