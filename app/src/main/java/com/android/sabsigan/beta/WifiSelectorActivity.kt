@@ -1,6 +1,5 @@
 package com.android.sabsigan.beta
 
-import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -8,16 +7,19 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.ConnectivityManager
-import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.AnimationUtils
+import android.widget.EditText
+import android.widget.TextView
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -58,14 +60,13 @@ class WifiSelectorActivity : AppCompatActivity() {
         window.statusBarColor = ContextCompat.getColor(this, R.color.background_1) // 스테이터스 색 변경
         defaultAnimaion() // 와이파이 아이콘 회전
 
-        adapter = ViewPagerAdapter(this)
-
         if (checkPermissions())
             startPorcess()
         else
             requestPermissions()
 
         binding.startView.setOnClickListener {
+            signIn()
 //            startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
         }
     }
@@ -96,12 +97,6 @@ class WifiSelectorActivity : AppCompatActivity() {
 
         if (isReceiverRegistered(this))
             unregisterReceiver(networkReceiver)
-    }
-
-    private fun startPorcess() {
-        registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
-        startAnimation() // 와이파이 아이콘 애니메이션 시작
-        setFragment() // 프래그먼트 호출
     }
 
     private fun defaultAnimaion() { // 와이파이 회전 애니메이션
@@ -152,13 +147,19 @@ class WifiSelectorActivity : AppCompatActivity() {
         binding.wave2.setColorFilter(Color.parseColor(RED))
     }
 
+    private fun startPorcess() {
+        registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
+        startAnimation() // 와이파이 아이콘 애니메이션 시작
+        setFragment() // 프래그먼트 호출
+    }
+
     private fun setFragment() {
         val fragmentlist = listOf(WifiListFragment(), WifiInfoFragment(), WifiRateFragment())
+        adapter = ViewPagerAdapter(this)
         adapter.setFragmentList(fragmentlist)
 
         binding.viewPager.adapter = adapter
         binding.viewPager.offscreenPageLimit = 1
-
         binding.indicator.setViewPager2(binding.viewPager) // 인디케이터 뷰페이저 연결
 
         val nextItemVisibleWidth = resources.getDimension(R.dimen.next_item_visible_width)
@@ -175,6 +176,39 @@ class WifiSelectorActivity : AppCompatActivity() {
 
         binding.viewPager.addItemDecoration(itemDecoration)
         binding.viewPager.setCurrentItem(1, false)
+    }
+
+    private fun signIn() {
+        val userID = 0 // sharedpreferences 같은 값으로 user 키 가져오기
+
+        if (userID > 0) {
+            // 자동 로그인
+        } else {
+            val layoutInflater = LayoutInflater.from(this)
+            val view = layoutInflater.inflate(R.layout.signin_popup2, null)
+
+            val alertDialog = AlertDialog.Builder(this, R.style.CustomAlertDialog)
+                .setView(view)
+                .create()
+
+            val textTitle = view.findViewById<TextView>(R.id.Title)
+            val inputNickname =  view.findViewById<EditText>(R.id.inputNickname)
+            val inputTemp =  view.findViewById<EditText>(R.id.inputTemp)
+            val buttonConfirm =  view.findViewById<TextView>(R.id.Button)
+
+            textTitle.text = "환영합니다"
+            inputNickname.hint = "닉네임을 입력하세요"
+            inputTemp.hint = "소개글...?"
+            buttonConfirm.text = "LOGIN"
+            buttonConfirm.setOnClickListener {
+                val nickName = inputNickname.text
+                val temp = inputTemp.text
+                Log.d("로그인 테스트", "id: $nickName, temp: $temp")
+                alertDialog.dismiss()
+            }
+
+            alertDialog.show()
+        }
     }
 
     private fun checkPermissions(): Boolean {

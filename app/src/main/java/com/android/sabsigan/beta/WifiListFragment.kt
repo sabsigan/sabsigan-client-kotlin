@@ -3,19 +3,20 @@ package com.android.sabsigan.beta
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.DhcpInfo
 import android.net.wifi.ScanResult
+import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.sabsigan.databinding.FragmentWifiListBinding
 
@@ -106,7 +107,7 @@ class WifiListFragment : Fragment() {
 
     private fun getWifiList(context: Context) {
         val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        val wifiInfo = wifiManager.connectionInfo
+        val wifiInfo: WifiInfo = wifiManager.connectionInfo
         val dhcpInfo = wifiManager.dhcpInfo
 
         // 연결된 와이파이 정보
@@ -124,14 +125,14 @@ class WifiListFragment : Fragment() {
             wIp shr 24 and 0xff
         )
         
-        Log.v("NetworkInfo", "======================================")
-        Log.v("NetworkInfo", "SSID: $SSID")
-        Log.v("NetworkInfo", "BSSID: $BSSID")
-        Log.v("NetworkInfo", "networkId: $NetworkID")
-        Log.v("NetworkInfo", "ipAddress: $IpAdress")
-        Log.v("NetworkInfo", "macAddress: $MacAdress")
-        Log.v("NetworkInfo", "linkSpeed: $LinkSpeed Mbps")
-        Log.v("NetworkInfo", "======================================")
+//        Log.v("NetworkInfo", "======================================")
+//        Log.v("NetworkInfo", "SSID: $SSID")
+//        Log.v("NetworkInfo", "BSSID: $BSSID")
+//        Log.v("NetworkInfo", "networkId: $NetworkID")
+//        Log.v("NetworkInfo", "ipAddress: $IpAdress")
+//        Log.v("NetworkInfo", "macAddress: $MacAdress")
+//        Log.v("NetworkInfo", "linkSpeed: $LinkSpeed Mbps")
+//        Log.v("NetworkInfo", "======================================")
 
         // 주변 와이파이 정보
         if (getContext()?.let {
@@ -151,23 +152,22 @@ class WifiListFragment : Fragment() {
 
         Log.w("WifiListFragment", "------------------------")
         for (scanResult in wifiList!!) {
+//            scanResult.
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                 Log.w("WifiListFragment", "ssid: ${scanResult.wifiSsid}")
             else
                 Log.w("WifiListFragment", "ssid: ${scanResult.SSID}")
             Log.w("WifiListFragment", "bssid: ${scanResult.BSSID}")
             Log.w("WifiListFragment", "level: ${scanResult.level}")
-            Log.w("WifiListFragment", "capabilities: ${scanResult.capabilities}")
 
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                for (ttt in scanResult.securityTypes) {
-//                    Log.w("WifiListFragment", "securityTypes: $ttt ") // sdk 버전 33이상만 가능
-//                }
-//            }
+            Log.w("WifiListFragment", "capabilities: ${scanResult.capabilities}")
+            Log.w("WifiListFragment", "hashCode: ${scanResult.hashCode()}")
 
             if (scanResult.BSSID == BSSID) {
                 Log.w("WifiListFragment", "현재 연결된 Wi-Fi")
                 temp = scanResult
+//                break
             }
             Log.w("WifiListFragment", "------------------------")
         }
