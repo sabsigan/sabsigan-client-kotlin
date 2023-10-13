@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="transparent">#00000000</color>
+
+    <!-- 테스트 색 -->
+    <color name="black_white">#010101</color>
+    <color name="black2">#010101</color>
+    <color name="gradient">#FF000000</color>
+    <color name="background_0">#1e1e1e</color>
+    <color name="background_1">#263238</color>
+    <color name="background_2">#37474F</color>
+    <color name="test_text">#BCBCBC</color>
+</resources>
