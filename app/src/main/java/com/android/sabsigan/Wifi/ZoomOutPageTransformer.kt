@@ -1,4 +1,4 @@
-package com.android.sabsigan.beta
+package com.android.sabsigan.Wifi
 
 import android.view.View
 import androidx.viewpager2.widget.ViewPager2

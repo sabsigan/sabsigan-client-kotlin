@@ -22,11 +22,11 @@
         android:theme="@style/Theme.Sabsigan"
         tools:targetApi="33">
         <receiver
-            android:name=".beta.broadcastReceiver.WifiConnectReceiver"
+            android:name=".broadcastReceiver.WifiConnectReceiver"
             android:enabled="true"
             android:exported="true"/>
         <activity
-            android:name=".MainActivity2"
+            android:name=".Main.MainActivity2"
             android:exported="true"
             android:label="@string/title_activity_main2"
             android:screenOrientation="portrait"/>
@@ -35,7 +35,7 @@
             android:exported="false"
             android:screenOrientation="portrait"/>
         <activity
-            android:name=".beta.WifiSelectorActivity"
+            android:name=".Wifi.WifiSelectorActivity"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>

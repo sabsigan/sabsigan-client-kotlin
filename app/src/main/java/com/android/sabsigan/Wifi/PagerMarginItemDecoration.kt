@@ -1,4 +1,4 @@
-package com.android.sabsigan.beta
+package com.android.sabsigan.Wifi
 
 import android.content.Context
 import android.graphics.Rect

@@ -1,4 +1,4 @@
-package com.android.sabsigan.beta
+package com.android.sabsigan.Wifi
 
 import android.app.Activity
 import android.content.BroadcastReceiver
@@ -8,8 +8,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
-import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -20,16 +18,16 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.EditText
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
-import com.android.sabsigan.MainActivity2
+import com.android.sabsigan.Main.MainActivity2
 import com.android.sabsigan.R
 import androidx.lifecycle.Observer
 import com.android.sabsigan.ViewModel.WiFiViewModel
-import com.android.sabsigan.beta.broadcastReceiver.WifiConnectReceiver
+import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.databinding.ActivityWifiSelectorBinding
 import io.reactivex.annotations.NonNull
 import java.lang.Math.abs
@@ -40,10 +38,13 @@ class WifiSelectorActivity : AppCompatActivity() {
 
 //    val viewModel by viewModels<WiFiViewModel>() //뷰모델 생성
 //    private var wifiConnectReceiver = WifiConnectReceiver(viewModel)
-    private lateinit var viewModel: WiFiViewModel
+//    private lateinit var viewModel: WiFiViewModel
 
-//    private val viewModel by viewModels<WifiViewModel>()
+
+    private val viewModel by viewModels<WiFiViewModel>()
     private lateinit var adapter: ViewPagerAdapter
+
+    private lateinit var wifiConnectReceiver: WifiConnectReceiver
 
     private val RED_50 = "#FFEBEE" // 임시 색상
     private val BLUE_50 = "#E3F2FD"
@@ -66,27 +67,24 @@ class WifiSelectorActivity : AppCompatActivity() {
         mBinding = ActivityWifiSelectorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        wifiConnectReceiver = WifiConnectReceiver(viewModel)
+
         window.statusBarColor = ContextCompat.getColor(this, R.color.background_1) // 스테이터스 색 변경
         defaultAnimaion() // 와이파이 아이콘 회전
-        
-        // 형원
-        viewModel = ViewModelProvider(this).get(WiFiViewModel::class.java)
-        viewModel.getwifiInfo().observe(this, Observer { wifidata ->
-            Log.d("엑티비티에서 데이터 변경 감지:",wifidata)
-        })
-
-        var wifiConnectReceiver = WifiConnectReceiver(viewModel)
-
-        val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
-//        filter.addAction(WifiManager.EXTRA_NETWORK_INFO)
-        registerReceiver(wifiConnectReceiver, filter) // 리시버 등록
-        // 형원
 
         if (checkPermissions())
             startPorcess()
         else
             requestPermissions()
+
+        viewModel.getwifiInfo().observe(this, Observer { wifidata ->
+            Log.d("엑티비티에서 데이터 변경 감지:",wifidata)
+
+            if (wifidata == "wifiInfo.isConnected" ) // 와이파이 연결
+                setConnectedColor() // 색 변경
+            else
+                setUnconnectedColor()
+        })
 
         binding.startView.setOnClickListener {
             signIn()
@@ -99,7 +97,7 @@ class WifiSelectorActivity : AppCompatActivity() {
         stopAnimation()
 
         if (isReceiverRegistered(this))
-            unregisterReceiver(networkReceiver)
+            unregisterReceiver(wifiConnectReceiver)
     }
 
     override fun onResume() {
@@ -108,7 +106,7 @@ class WifiSelectorActivity : AppCompatActivity() {
 
         if (checkPermissions()) { // 위치 권한 얻었을 때만
             if (!isReceiverRegistered(this))
-                registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
+                registerReceiver(wifiConnectReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
 
             startAnimation() // 웨이브 애니메이션 시작
             // 웨이브 애니메이션에는 딜레이가 있어서 onResume 때마다 다시 처리해야 함
@@ -119,7 +117,7 @@ class WifiSelectorActivity : AppCompatActivity() {
         super.onDestroy()
 
         if (isReceiverRegistered(this))
-            unregisterReceiver(networkReceiver)
+            unregisterReceiver(wifiConnectReceiver)
     }
 
     private fun defaultAnimaion() { // 와이파이 회전 애니메이션
@@ -171,7 +169,7 @@ class WifiSelectorActivity : AppCompatActivity() {
     }
 
     private fun startPorcess() {
-        registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
+        registerReceiver(wifiConnectReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
         startAnimation() // 와이파이 아이콘 애니메이션 시작
         setFragment() // 프래그먼트 호출
     }
@@ -293,48 +291,7 @@ class WifiSelectorActivity : AppCompatActivity() {
 
     private val networkReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == ConnectivityManager.CONNECTIVITY_ACTION) {
-                val connectivityManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                val networkInfo = connectivityManager.activeNetworkInfo
 
-//                viewModel.increaseValue()
-
-                if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_WIFI) {
-                    // 와이파이 연결됐을 때 처리
-//                     setConnectedColor() // 색 변경
-
-//                     val currentNetwork = connectivityManager.activeNetwork
-//                     val linkProperties = connectivityManager.getLinkProperties(currentNetwork)
-//                     val ttt = connectivityManager.getNetworkCapabilities(currentNetwork)
-
-//                     val linkAddresses = linkProperties?.linkAddresses // IP 주소
-//                     val routeInfoList = linkProperties?.routes // 루트 정보
-//                     val dnsServers    = linkProperties?.dnsServers // DNS 서버 목록
-
-//                     Log.d("current WIFI", "======================================")
-//                     Log.d("current WIFI", "sss: " + ttt.toString())
-
-//                     for (linkAddress in linkAddresses!!)
-//                         Log.d("current WIFI", "IP Address: " + linkAddress.address.hostAddress)
-//                     for (routeInfo in routeInfoList!!) {
-//                         if (routeInfo.isDefaultRoute) {
-//                             Log.d("current WIFI", "Gateway: " + routeInfo.gateway?.hostAddress)
-//                             break
-//                         }
-//                     }
-//                     for (dnsServer in dnsServers!!)
-//                         Log.d("current WIFI", "IP DNS Server: " + dnsServer.hostAddress)
-//                     Log.d("current WIFI", "======================================")
-
-                } else if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_MOBILE) {
-                    setUnconnectedColor()
-//                    Toast.makeText(context, "데이터가 연결되었습니다.", Toast.LENGTH_SHORT).show()
-                } else {
-                    // 와이파이 연결이 끊겼을 때 처리
-                    setUnconnectedColor()
-//                    Toast.makeText(context, "인터넷이 끊겼습니다.", Toast.LENGTH_SHORT).show()
-                }
-            }
 
 //            if(intent?.action == WifiManager.NETWORK_STATE_CHANGED_ACTION){
 //                //와이파이 상태가 변경된 경우

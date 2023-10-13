@@ -1,16 +1,13 @@
-package com.android.sabsigan
+package com.android.sabsigan.Main
 
 import android.os.Bundle
-import android.view.Gravity
 import android.view.MenuItem
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.NavigationUI
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.android.sabsigan.R
 import com.android.sabsigan.databinding.ActivityMain2Binding
 
 class MainActivity2 : AppCompatActivity() {

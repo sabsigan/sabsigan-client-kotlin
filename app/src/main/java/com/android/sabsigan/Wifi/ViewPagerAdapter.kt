@@ -1,4 +1,4 @@
-package com.android.sabsigan.beta
+package com.android.sabsigan.Wifi
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity

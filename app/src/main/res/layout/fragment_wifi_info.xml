@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/transparent"
     android:id="@+id/wifiInfoFrameLayout"
-    tools:context=".beta.WifiInfoFragment">
+    tools:context=".Wifi.WifiInfoFragment">
 
     <RelativeLayout
         android:layout_width="match_parent"

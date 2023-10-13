@@ -5,14 +5,14 @@
     android:id="@+id/mainActivityLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity2">
+    tools:context=".Main.MainActivity2">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/container"
         app:layout_constraintTop_toTopOf="parent"
-        tools:context=".MainActivity2">
+        tools:context=".Main.MainActivity2">
 
 <!--        <include-->
 <!--            android:id="@+id/toolbar"-->

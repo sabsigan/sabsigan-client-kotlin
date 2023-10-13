@@ -1,9 +1,8 @@
-package com.android.sabsigan.beta
+package com.android.sabsigan.Wifi
 
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.net.DhcpInfo
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
@@ -18,6 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.android.sabsigan.ViewModel.WiFiViewModel
 import com.android.sabsigan.databinding.FragmentWifiListBinding
 
 // TODO: Rename parameter arguments, choose names that match
@@ -33,7 +33,7 @@ private const val ARG_PARAM2 = "param2"
 class WifiListFragment : Fragment() {
     private var mBinding: FragmentWifiListBinding? = null
     private val binding get() = mBinding!!
-    private val viewModel by activityViewModels<WifiViewModel>()
+    private val viewModel by activityViewModels<WiFiViewModel>()
 
     private var mWifiList: MutableList<ScanResult>? = null
     private val wifiList get() = mWifiList
@@ -84,7 +84,7 @@ class WifiListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.currentValue.observe(requireActivity(), Observer {
+        viewModel.getwifiInfo().observe(requireActivity(), Observer {
             Log.d("ㅁㅁㅁ", "값 증가")
 
             context?.let { it1 -> getWifiList(it1) }
