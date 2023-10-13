@@ -9,40 +9,25 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
-import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.EditText
 import android.widget.TextView
-import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import com.android.sabsigan.MainActivity
 import com.android.sabsigan.MainActivity2
 import com.android.sabsigan.R
-import android.util.Log
-import android.view.View
-import android.view.animation.AnimationUtils
-import android.widget.Toast
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.sabsigan.R
 import com.android.sabsigan.ViewModel.WiFiViewModel
 import com.android.sabsigan.beta.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.databinding.ActivityWifiSelectorBinding
@@ -57,7 +42,7 @@ class WifiSelectorActivity : AppCompatActivity() {
 //    private var wifiConnectReceiver = WifiConnectReceiver(viewModel)
     private lateinit var viewModel: WiFiViewModel
 
-    private val viewModel by viewModels<WifiViewModel>()
+//    private val viewModel by viewModels<WifiViewModel>()
     private lateinit var adapter: ViewPagerAdapter
 
     private val RED_50 = "#FFEBEE" // 임시 색상
@@ -95,7 +80,7 @@ class WifiSelectorActivity : AppCompatActivity() {
         val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
 //        filter.addAction(WifiManager.EXTRA_NETWORK_INFO)
-        registerReceiver(wifiConnectReceiver,filter ) // 리시버 등록
+        registerReceiver(wifiConnectReceiver, filter) // 리시버 등록
         // 형원
 
         if (checkPermissions())
@@ -312,8 +297,7 @@ class WifiSelectorActivity : AppCompatActivity() {
                 val connectivityManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
                 val networkInfo = connectivityManager.activeNetworkInfo
 
-                viewModel.increaseValue()
-
+//                viewModel.increaseValue()
 
                 if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_WIFI) {
                     // 와이파이 연결됐을 때 처리
@@ -352,17 +336,17 @@ class WifiSelectorActivity : AppCompatActivity() {
                 }
             }
 
-            if(intent?.action == WifiManager.NETWORK_STATE_CHANGED_ACTION){
-                //와이파이 상태가 변경된 경우
-                val wifiStateChangedIntent = Intent("wifi.ACTION_WIFI_STATE_CHANGED")
-                context?.sendBroadcast(wifiStateChangedIntent)
-            }
-            val networkInfo = intent?.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)
-            if(networkInfo?.state == NetworkInfo.State.DISCONNECTED){
-                //와이파이가 꺼진 경우
-                val wifiOffIntent = Intent("wifi.ACTION_WIFI_OFF")
-                context?.sendBroadcast(wifiOffIntent)
-            }
+//            if(intent?.action == WifiManager.NETWORK_STATE_CHANGED_ACTION){
+//                //와이파이 상태가 변경된 경우
+//                val wifiStateChangedIntent = Intent("wifi.ACTION_WIFI_STATE_CHANGED")
+//                context?.sendBroadcast(wifiStateChangedIntent)
+//            }
+//            val networkInfo = intent?.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)
+//            if(networkInfo?.state == NetworkInfo.State.DISCONNECTED){
+//                //와이파이가 꺼진 경우
+//                val wifiOffIntent = Intent("wifi.ACTION_WIFI_OFF")
+//                context?.sendBroadcast(wifiOffIntent)
+//            }
         }
     }
 
