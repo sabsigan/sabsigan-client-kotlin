@@ -24,6 +24,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import com.android.sabsigan.MainActivity
+import com.android.sabsigan.MainActivity2
 import com.android.sabsigan.R
 import com.android.sabsigan.databinding.ActivityWifiSelectorBinding
 import io.reactivex.annotations.NonNull
@@ -204,7 +206,10 @@ class WifiSelectorActivity : AppCompatActivity() {
                 val nickName = inputNickname.text
                 val temp = inputTemp.text
                 Log.d("로그인 테스트", "id: $nickName, temp: $temp")
+                val intent = Intent(this, MainActivity2::class.java)
+                startActivity(intent)
                 alertDialog.dismiss()
+                finish()
             }
 
             alertDialog.show()
