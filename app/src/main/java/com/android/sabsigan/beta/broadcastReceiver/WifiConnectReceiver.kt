@@ -37,29 +37,5 @@ class WifiConnectReceiver(private val viewModel: WiFiViewModel) : BroadcastRecei
             }
         }
 
-
-
-//        if(intent.action == WifiManager.NETWORK_STATE_CHANGED_ACTION){
-//            //와이파이 상태가 변경된 경우
-//            val wifiStateChangedIntent = Intent("wifi.ACTION_WIFI_STATE_CHANGED")
-////            context.sendBroadcast(wifiStateChangedIntent)
-//            wifiStateChangedIntent?.let {viewModel.updateWiFiData(it.toString())
-//                Log.d("wifiData(와이파이 변경):  ",wifiStateChangedIntent.toString())
-//            }
-//
-//
-//        }
-//
-//        val networkInfo = intent.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)
-//        if(networkInfo?.state == NetworkInfo.State.DISCONNECTED){
-//            //와이파이가 꺼진 경우
-//            val wifiOffIntent = Intent("wifi.ACTION_WIFI_OFF")
-////            context.sendBroadcast(wifiOffIntent)
-//            wifiOffIntent?.let {viewModel.updateWiFiData(it.toString())
-//                Log.d("wifiData(와이파이 꺼짐):  ",wifiOffIntent.toString())
-//            }
-//
-//
-//        }
     }
 }
