@@ -11,25 +11,24 @@
         android:id="@+id/WiFiLayout"
         android:layout_width="240dp"
         android:layout_height="240dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.15">
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/wave1"
             android:layout_width="110dp"
             android:layout_height="110dp"
             android:layout_gravity="center"
-            android:src="@drawable/ring"/>
+            android:src="@drawable/ring" />
 
         <ImageView
             android:id="@+id/wave2"
             android:layout_width="110dp"
             android:layout_height="110dp"
             android:layout_gravity="center"
-            android:src="@drawable/ring"/>
+            android:src="@drawable/ring" />
 
         <LinearLayout
             android:id="@+id/WiFiIconLayout"
@@ -37,9 +36,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:background="@drawable/wifi_gradient_gray"
-            android:rotation="-90"
+            android:elevation="20dp"
             android:outlineSpotShadowColor="#757575"
-            android:elevation="20dp">
+            android:rotation="-90">
 
             <ImageView
                 android:id="@+id/WiFiIcon"
@@ -55,11 +54,12 @@
     </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout2"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@drawable/gradient_bottom_bg"
-        app:layout_constraintHeight_percent="0.5"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHeight_percent="0.55">
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/viewPager"
@@ -68,7 +68,7 @@
             android:clipChildren="false"
             android:clipToPadding="false"
             app:layout_constraintHeight_percent="0.7"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
             android:id="@+id/indicator"
@@ -77,9 +77,9 @@
             android:layout_marginBottom="14dp"
             app:dotsColor="@color/background_1"
             app:dotsSize="10dp"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/viewPager"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="@+id/viewPager" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <LinearLayout
             android:layout_width="match_parent"

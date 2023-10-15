@@ -16,8 +16,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.AnimationUtils
+import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -36,15 +38,9 @@ class WifiSelectorActivity : AppCompatActivity() {
     private var mBinding: ActivityWifiSelectorBinding? = null    // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
     private val binding get() = mBinding!!
 
-//    val viewModel by viewModels<WiFiViewModel>() //뷰모델 생성
-//    private var wifiConnectReceiver = WifiConnectReceiver(viewModel)
-//    private lateinit var viewModel: WiFiViewModel
-
-
     private val viewModel by viewModels<WiFiViewModel>()
-    private lateinit var adapter: ViewPagerAdapter
-
     private lateinit var wifiConnectReceiver: WifiConnectReceiver
+    private lateinit var adapter: ViewPagerAdapter
 
     private val RED_50 = "#FFEBEE" // 임시 색상
     private val BLUE_50 = "#E3F2FD"
@@ -60,7 +56,6 @@ class WifiSelectorActivity : AppCompatActivity() {
     var permissions = arrayOf<String>(
         android.Manifest.permission.ACCESS_FINE_LOCATION
     )
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,7 +89,7 @@ class WifiSelectorActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        stopAnimation()
+//        stopAnimation()
 
         if (isReceiverRegistered(this))
             unregisterReceiver(wifiConnectReceiver)
@@ -201,10 +196,11 @@ class WifiSelectorActivity : AppCompatActivity() {
 
     private fun signIn() {
         val userID = 0 // sharedpreferences 같은 값으로 user 키 가져오기
+        val state = viewModel.getwifiInfo().value
 
-        if (userID > 0) {
+        if (userID > 0 && state == "wifiInfo.isConnected") {
             // 자동 로그인
-        } else {
+        } else if (state == "wifiInfo.isConnected") {
             val layoutInflater = LayoutInflater.from(this)
             val view = layoutInflater.inflate(R.layout.signin_popup2, null)
 
@@ -215,7 +211,7 @@ class WifiSelectorActivity : AppCompatActivity() {
             val textTitle = view.findViewById<TextView>(R.id.Title)
             val inputNickname =  view.findViewById<EditText>(R.id.inputNickname)
             val inputTemp =  view.findViewById<EditText>(R.id.inputTemp)
-            val buttonConfirm =  view.findViewById<TextView>(R.id.Button)
+            val buttonConfirm =  view.findViewById<Button>(R.id.Button)
 
             textTitle.text = "환영합니다"
             inputNickname.hint = "닉네임을 입력하세요"
@@ -232,6 +228,8 @@ class WifiSelectorActivity : AppCompatActivity() {
             }
 
             alertDialog.show()
+        } else {
+            Toast.makeText(this, "와이파이를 연결해주세요", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -287,24 +285,6 @@ class WifiSelectorActivity : AppCompatActivity() {
         }
 
         return false // 리시버가 현재 등록되어 있지 않음
-    }
-
-    private val networkReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-
-
-//            if(intent?.action == WifiManager.NETWORK_STATE_CHANGED_ACTION){
-//                //와이파이 상태가 변경된 경우
-//                val wifiStateChangedIntent = Intent("wifi.ACTION_WIFI_STATE_CHANGED")
-//                context?.sendBroadcast(wifiStateChangedIntent)
-//            }
-//            val networkInfo = intent?.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)
-//            if(networkInfo?.state == NetworkInfo.State.DISCONNECTED){
-//                //와이파이가 꺼진 경우
-//                val wifiOffIntent = Intent("wifi.ACTION_WIFI_OFF")
-//                context?.sendBroadcast(wifiOffIntent)
-//            }
-        }
     }
 
     private fun requestPermission(activity: Activity) { //권한 설정

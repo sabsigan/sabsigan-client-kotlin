@@ -85,7 +85,7 @@ class WifiListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.getwifiInfo().observe(requireActivity(), Observer {
-            Log.d("ㅁㅁㅁ", "값 증가")
+            Log.d("WifiListFragment!!", viewModel.getwifiInfo().value!!)
 
             context?.let { it1 -> getWifiList(it1) }
         })
