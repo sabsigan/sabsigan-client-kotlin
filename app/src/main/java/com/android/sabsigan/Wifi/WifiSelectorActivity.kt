@@ -70,7 +70,7 @@ class WifiSelectorActivity : AppCompatActivity() {
         wifiConnectReceiver = WifiConnectReceiver(viewModel)
 
         window.statusBarColor = ContextCompat.getColor(this, R.color.background_1) // 스테이터스 색 변경
-        defaultAnimaion() // 와이파이 아이콘 회전
+//        defaultAnimaion() // 와이파이 아이콘 회전
 
         if (checkPermissions())
             startPorcess()
@@ -87,7 +87,10 @@ class WifiSelectorActivity : AppCompatActivity() {
         })
 
         binding.startView.setOnClickListener {
-            signIn()
+            val intent = Intent(this, MainActivity2::class.java)
+            startActivity(intent)
+            finish()
+//            signIn()
 //            startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
         }
     }
@@ -102,13 +105,13 @@ class WifiSelectorActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        defaultAnimaion()
+//        defaultAnimaion()
 
         if (checkPermissions()) { // 위치 권한 얻었을 때만
             if (!isReceiverRegistered(this))
                 registerReceiver(wifiConnectReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
 
-            startAnimation() // 웨이브 애니메이션 시작
+//            startAnimation() // 웨이브 애니메이션 시작
             // 웨이브 애니메이션에는 딜레이가 있어서 onResume 때마다 다시 처리해야 함
         }
     }
@@ -170,18 +173,20 @@ class WifiSelectorActivity : AppCompatActivity() {
 
     private fun startPorcess() {
         registerReceiver(wifiConnectReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
-        startAnimation() // 와이파이 아이콘 애니메이션 시작
+//        startAnimation() // 와이파이 아이콘 애니메이션 시작
         setFragment() // 프래그먼트 호출
     }
 
     private fun setFragment() {
-        val fragmentlist = listOf(WifiListFragment(), WifiInfoFragment(), WifiRateFragment())
+//        val fragmentlist = listOf(WifiListFragment(), WifiInfoFragment(), WifiRateFragment())
+        val fragmentlist = listOf(WifiInfoFragment())
+
         adapter = ViewPagerAdapter(this)
         adapter.setFragmentList(fragmentlist)
 
         binding.viewPager.adapter = adapter
         binding.viewPager.offscreenPageLimit = 1
-        binding.indicator.setViewPager2(binding.viewPager) // 인디케이터 뷰페이저 연결
+//        binding.indicator.setViewPager2(binding.viewPager) // 인디케이터 뷰페이저 연결
 
         val nextItemVisibleWidth = resources.getDimension(R.dimen.next_item_visible_width)
         val currentItemMargin = resources.getDimension(R.dimen.viewpager_horizontal_margin)
