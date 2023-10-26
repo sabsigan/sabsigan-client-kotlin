@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rotate xmlns:android="http://schemas.android.com/apk/res/android"
-    android:fromDegrees="0"
-    android:toDegrees="90">
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:startColor="@color/Blue_100"
+        android:centerColor="@color/Blue_400"
+        android:endColor="@color/Blue_600"
+        android:type="sweep"/>
 
-    <shape
-        android:shape="oval">
-
-        <gradient
-            android:startColor="@color/Blue_100"
-            android:endColor="@color/Blue_700"
-            android:type="sweep"/>
-
-    </shape>
-
-</rotate>
+</shape>

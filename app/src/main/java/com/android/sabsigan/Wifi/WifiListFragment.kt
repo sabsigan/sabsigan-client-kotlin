@@ -18,6 +18,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.sabsigan.ViewModel.WiFiViewModel
+import com.android.sabsigan.ViewModel.WifiSelectorViewModel
 import com.android.sabsigan.databinding.FragmentWifiListBinding
 
 // TODO: Rename parameter arguments, choose names that match
@@ -33,7 +34,7 @@ private const val ARG_PARAM2 = "param2"
 class WifiListFragment : Fragment() {
     private var mBinding: FragmentWifiListBinding? = null
     private val binding get() = mBinding!!
-    private val viewModel by activityViewModels<WiFiViewModel>()
+    private val viewModel by activityViewModels<WifiSelectorViewModel>()
 
     private var mWifiList: MutableList<ScanResult>? = null
     private val wifiList get() = mWifiList

@@ -11,7 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import com.android.sabsigan.ViewModel.WiFiViewModel
+import com.android.sabsigan.ViewModel.WifiSelectorViewModel
 import com.android.sabsigan.databinding.FragmentWifiInfoBinding
 
 // TODO: Rename parameter arguments, choose names that match
@@ -27,7 +27,7 @@ private const val ARG_PARAM2 = "param2"
 class WifiInfoFragment : Fragment() {
     private var mBinding: FragmentWifiInfoBinding? = null
     private val binding get() = mBinding!!
-    private val viewModel by activityViewModels<WiFiViewModel>() //뷰모델 생성
+    private val viewModel by activityViewModels<WifiSelectorViewModel>() //뷰모델 생성
 
     // TODO: Rename and change types of parameters
     private var param1: String? = null

@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-open class WiFiViewModel(): ViewModel() {
+open class WiFiViewModel: ViewModel() {
     private var _wifiInfo = MutableLiveData<String>()
     // 와이파이 세부정보
 

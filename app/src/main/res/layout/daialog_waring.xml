@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".WarningDialog">
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:background="@drawable/circle_gradient_red"
+        android:gravity="center"
+        android:rotation="180"
+        app:layout_constraintBottom_toTopOf="@+id/frameLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/UserImg"
+            android:layout_width="105dp"
+            android:layout_height="105dp"
+            android:background="@drawable/circle_gradient_red"
+            android:padding="15dp"
+            android:rotation="180"
+            android:src="@drawable/baseline_priority_high_24"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/white" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/warningTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_layout"
+        android:backgroundTint="#B3000000"
+        android:paddingTop="20dp"
+        android:paddingHorizontal="20dp"
+        android:paddingBottom="21dp"
+        android:text="tdddddddddext"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHeight_percent="0.55"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,12 +1,14 @@
 package com.android.sabsigan.Wifi
 
+import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.drawable.AnimatedVectorDrawable
+import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
@@ -14,6 +16,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Button
@@ -29,6 +32,8 @@ import com.android.sabsigan.Main.MainActivity2
 import com.android.sabsigan.R
 import androidx.lifecycle.Observer
 import com.android.sabsigan.ViewModel.WiFiViewModel
+import com.android.sabsigan.ViewModel.WifiSelectorViewModel
+import com.android.sabsigan.WarningDialog
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.databinding.ActivityWifiSelectorBinding
 import io.reactivex.annotations.NonNull
@@ -38,7 +43,7 @@ class WifiSelectorActivity : AppCompatActivity() {
     private var mBinding: ActivityWifiSelectorBinding? = null    // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
     private val binding get() = mBinding!!
 
-    private val viewModel by viewModels<WiFiViewModel>()
+    private val viewModel by viewModels<WifiSelectorViewModel>()
     private lateinit var wifiConnectReceiver: WifiConnectReceiver
     private lateinit var adapter: ViewPagerAdapter
 
@@ -57,10 +62,15 @@ class WifiSelectorActivity : AppCompatActivity() {
         android.Manifest.permission.ACCESS_FINE_LOCATION
     )
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityWifiSelectorBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+//        binding.wave1.setImageResource(R.drawable.wifi_animation)
+//        (binding.wave1.drawable as AnimatedVectorDrawable).start()
+
 
         wifiConnectReceiver = WifiConnectReceiver(viewModel)
 
@@ -81,15 +91,25 @@ class WifiSelectorActivity : AppCompatActivity() {
                 setUnconnectedColor()
         })
 
-        binding.startView.setOnClickListener {
-            signIn()
-//            startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
+        //            startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
+
+        binding.startView.setOnTouchListener { view: View, event: MotionEvent ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    binding.startView.elevation = 8.0f
+                }
+                MotionEvent.ACTION_UP -> {
+                    binding.startView.elevation = 0.0f
+                    signIn()
+                }
+            }
+            true // true를 반환하면 이벤트가 소비되고, false를 반환하면 계속 전달됩니다.
         }
     }
 
     override fun onPause() {
         super.onPause()
-//        stopAnimation()
+        stopAnimation()
 
         if (isReceiverRegistered(this))
             unregisterReceiver(wifiConnectReceiver)
@@ -150,6 +170,8 @@ class WifiSelectorActivity : AppCompatActivity() {
         binding.WiFiIcon.setImageResource(R.drawable.wifi_on)
         binding.wave1.setColorFilter(Color.parseColor(BLUE))
         binding.wave2.setColorFilter(Color.parseColor(BLUE))
+
+        binding.startView.setTextColor(resources.getColor(R.color.test_text))
     }
 
     private fun setUnconnectedColor() {// 와이파이 연결 안 됐을 때 색
@@ -161,6 +183,9 @@ class WifiSelectorActivity : AppCompatActivity() {
         binding.WiFiIcon.setImageResource(R.drawable.wifi_off)
         binding.wave1.setColorFilter(Color.parseColor(RED))
         binding.wave2.setColorFilter(Color.parseColor(RED))
+
+        binding.startView.setTextColor(resources.getColor(R.color.Gray_400))
+
     }
 
     private fun startPorcess() {
@@ -229,7 +254,8 @@ class WifiSelectorActivity : AppCompatActivity() {
 
             alertDialog.show()
         } else {
-            Toast.makeText(this, "와이파이를 연결해주세요", Toast.LENGTH_SHORT).show()
+            val warningDialog = WarningDialog("와이파이를 연결해주세요")
+            warningDialog.show(supportFragmentManager, "warningDialog")
         }
     }
 
