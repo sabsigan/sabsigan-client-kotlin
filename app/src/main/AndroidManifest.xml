@@ -21,30 +21,39 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Sabsigan"
         tools:targetApi="33">
+        <activity
+            android:name=".TestMessageListActivity"
+            android:exported="false" />
+
         <receiver
             android:name=".broadcastReceiver.WifiConnectReceiver"
             android:enabled="true"
-            android:exported="true"/>
+            android:exported="true" />
+
+        <activity
+            android:name=".TestChatListActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".Main.MainActivity2"
             android:exported="true"
             android:label="@string/title_activity_main2"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".MainActivity"
             android:exported="false"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".Wifi.WifiSelectorActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustNothing"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustNothing">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>

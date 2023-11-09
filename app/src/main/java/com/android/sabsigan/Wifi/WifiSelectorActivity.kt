@@ -31,6 +31,7 @@ import androidx.core.content.ContextCompat
 import com.android.sabsigan.Main.MainActivity2
 import com.android.sabsigan.R
 import androidx.lifecycle.Observer
+import com.android.sabsigan.TestChatListActivity
 import com.android.sabsigan.ViewModel.WiFiViewModel
 import com.android.sabsigan.ViewModel.WifiSelectorViewModel
 import com.android.sabsigan.WarningDialog
@@ -246,7 +247,9 @@ class WifiSelectorActivity : AppCompatActivity() {
                 val nickName = inputNickname.text
                 val temp = inputTemp.text
                 Log.d("로그인 테스트", "id: $nickName, temp: $temp")
-                val intent = Intent(this, MainActivity2::class.java)
+//                val intent = Intent(this, MainActivity2::class.java)
+                val intent = Intent(this, TestChatListActivity::class.java)
+
                 startActivity(intent)
                 alertDialog.dismiss()
                 finish()
