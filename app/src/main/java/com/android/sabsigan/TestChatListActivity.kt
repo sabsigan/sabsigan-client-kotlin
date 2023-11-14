@@ -44,8 +44,8 @@ class TestChatListActivity : AppCompatActivity() {
 
         // Step 3 - 유저 정보 초기화
         val user = User(
-            id = "marvel",
-            name = "Iron Man",
+            id = "testttt",
+            name = "333333",
             image = "https://bit.ly/2TIt8NR"
         )
         val token = client.devToken(user.id) // developer 토큰 생성

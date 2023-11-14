@@ -7,8 +7,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.graphics.drawable.AnimatedVectorDrawable
-import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
@@ -23,22 +21,30 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
 import com.android.sabsigan.Main.MainActivity2
 import com.android.sabsigan.R
-import androidx.lifecycle.Observer
-import com.android.sabsigan.TestChatListActivity
-import com.android.sabsigan.ViewModel.WiFiViewModel
+
 import com.android.sabsigan.ViewModel.WifiSelectorViewModel
 import com.android.sabsigan.WarningDialog
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
+import com.android.sabsigan.data.User
 import com.android.sabsigan.databinding.ActivityWifiSelectorBinding
+
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+
 import io.reactivex.annotations.NonNull
 import java.lang.Math.abs
+import java.text.SimpleDateFormat
 
 class WifiSelectorActivity : AppCompatActivity() {
     private var mBinding: ActivityWifiSelectorBinding? = null    // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
@@ -48,6 +54,9 @@ class WifiSelectorActivity : AppCompatActivity() {
     private lateinit var wifiConnectReceiver: WifiConnectReceiver
     private lateinit var adapter: ViewPagerAdapter
 
+    private lateinit var auth: FirebaseAuth
+
+    private val TAG = "WifiSelectorActivity"
     private val RED_50 = "#FFEBEE" // 임시 색상
     private val BLUE_50 = "#E3F2FD"
     private val RED = "#E57373" // 임시 색상
@@ -69,9 +78,11 @@ class WifiSelectorActivity : AppCompatActivity() {
         mBinding = ActivityWifiSelectorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Initialize Firebase Auth
+        auth = Firebase.auth
+
 //        binding.wave1.setImageResource(R.drawable.wifi_animation)
 //        (binding.wave1.drawable as AnimatedVectorDrawable).start()
-
 
         wifiConnectReceiver = WifiConnectReceiver(viewModel)
 
@@ -84,9 +95,9 @@ class WifiSelectorActivity : AppCompatActivity() {
             requestPermissions()
 
         viewModel.getwifiInfo().observe(this, Observer { wifidata ->
-            Log.d("엑티비티에서 데이터 변경 감지:",wifidata)
+            Log.d("엑티비티에서 데이터 변경 감지:", wifidata)
 
-            if (wifidata == "wifiInfo.isConnected" ) // 와이파이 연결
+            if (wifidata != "mobileInfo.isConnected" && wifidata != "wifiInfo.null") // 와이파이 연결
                 setConnectedColor() // 색 변경
             else
                 setUnconnectedColor()
@@ -221,45 +232,104 @@ class WifiSelectorActivity : AppCompatActivity() {
     }
 
     private fun signIn() {
+        val currentUser = auth.currentUser
         val userID = 0 // sharedpreferences 같은 값으로 user 키 가져오기
         val state = viewModel.getwifiInfo().value
 
-        if (userID > 0 && state == "wifiInfo.isConnected") {
-            // 자동 로그인
-        } else if (state == "wifiInfo.isConnected") {
-            val layoutInflater = LayoutInflater.from(this)
-            val view = layoutInflater.inflate(R.layout.signin_popup2, null)
-
-            val alertDialog = AlertDialog.Builder(this, R.style.CustomAlertDialog)
-                .setView(view)
-                .create()
-
-            val textTitle = view.findViewById<TextView>(R.id.Title)
-            val inputNickname =  view.findViewById<EditText>(R.id.inputNickname)
-            val inputTemp =  view.findViewById<EditText>(R.id.inputTemp)
-            val buttonConfirm =  view.findViewById<Button>(R.id.Button)
-
-            textTitle.text = "환영합니다"
-            inputNickname.hint = "닉네임을 입력하세요"
-            inputTemp.hint = "소개글...?"
-            buttonConfirm.text = "LOGIN"
-            buttonConfirm.setOnClickListener {
-                val nickName = inputNickname.text
-                val temp = inputTemp.text
-                Log.d("로그인 테스트", "id: $nickName, temp: $temp")
-//                val intent = Intent(this, MainActivity2::class.java)
-                val intent = Intent(this, TestChatListActivity::class.java)
-
-                startActivity(intent)
-                alertDialog.dismiss()
-                finish()
-            }
-
-            alertDialog.show()
+        if (currentUser != null && state != "mobileInfo.isConnected" && state != "wifiInfo.null") {
+            // 자동로그인
+            goToMain()
+        } else if (state != "mobileInfo.isConnected" && state != "wifiInfo.null") { // 로그인 정보 없고 와이파이에 연결되어 있으면
+            showSignUpDialog()
         } else {
             val warningDialog = WarningDialog("와이파이를 연결해주세요")
             warningDialog.show(supportFragmentManager, "warningDialog")
         }
+    }
+
+    private fun showSignUpDialog() {
+        Log.d(TAG, "호출")
+        val layoutInflater = LayoutInflater.from(this)
+        val view = layoutInflater.inflate(R.layout.signin_popup2, null)
+
+        val alertDialog = AlertDialog.Builder(this, R.style.CustomAlertDialog)
+            .setView(view)
+            .create()
+
+        val textTitle = view.findViewById<TextView>(R.id.Title)
+        val inputNickname =  view.findViewById<EditText>(R.id.inputNickname)
+        val inputTemp =  view.findViewById<EditText>(R.id.inputTemp)
+        val buttonConfirm =  view.findViewById<Button>(R.id.Button)
+
+        textTitle.text = "환영합니다"
+        inputNickname.hint = "닉네임을 입력하세요"
+        inputTemp.hint = "상태 메시지를 입력해주세요"
+        buttonConfirm.text = "시작하기"
+        buttonConfirm.setOnClickListener {
+            val nickName = inputNickname.text.toString()
+            val state = inputTemp.text.toString()
+            Log.d("회원가입 정보", "id: $nickName, temp: $state")
+//                val intent = Intent(this, MainActivity2::class.java)
+
+            if (nickName == null || nickName.equals("")) {
+                Toast.makeText(this, "닉네임을 다시 입력해주세요", Toast.LENGTH_SHORT).show()
+            } else {
+                signUp(nickName, state) // 회원가입
+                alertDialog.dismiss()
+            }
+        }
+        alertDialog.show()
+    }
+
+    private fun signUp(name:String, state:String) {
+        var value = false
+
+        auth.signInAnonymously()
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Log.d(TAG, "signInAnonymously:success")
+                    val userID = auth.currentUser?.uid
+                    val current_wifi = viewModel.getwifiInfo().value
+                    val currentTime : Long = System.currentTimeMillis() // ms로 반환
+                    val dataFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
+                    val time = dataFormat.format(currentTime)
+
+                    val user = User(
+                        id = userID!!,
+                        name = name,
+                        state = state,
+                        current_wifi = current_wifi!!,
+                        created_at = time,
+                        updated_at = time,
+                        last_active = time,
+                        online = true
+                    )
+
+                    val db = Firebase.firestore
+
+                    db.collection("users")
+                        .document(userID)
+                        .set(user)
+                        .addOnSuccessListener {
+                            goToMain()
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w(TAG, "Error adding document", e)
+                            Toast.makeText(this, "실패!! 와이파이를 다시 확인해주세요", Toast.LENGTH_SHORT).show()
+                        }
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Log.w(TAG, "signInAnonymously:failure", task.exception)
+                    Toast.makeText(this, "실패!! 와이파이를 다시 확인해주세요", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
+    private fun goToMain() {
+        val intent = Intent(this, MainActivity2::class.java)
+        startActivity(intent)
+        finish()
     }
 
     private fun checkPermissions(): Boolean {

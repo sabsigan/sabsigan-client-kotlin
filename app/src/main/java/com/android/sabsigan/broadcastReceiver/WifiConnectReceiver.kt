@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.util.Log
 import android.widget.Toast
@@ -12,7 +13,6 @@ import androidx.activity.viewModels
 import com.android.sabsigan.ViewModel.WiFiViewModel
 
 class WifiConnectReceiver(private val viewModel: WiFiViewModel) : BroadcastReceiver() {
-
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
         if (intent.action == ConnectivityManager.CONNECTIVITY_ACTION) {
@@ -21,7 +21,11 @@ class WifiConnectReceiver(private val viewModel: WiFiViewModel) : BroadcastRecei
 
             if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_WIFI) {
                 // 와이파이 연결됐을 때 처리
-                viewModel.updateWiFiData("wifiInfo.isConnected")
+                val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                val wifiInfo: WifiInfo = wifiManager.connectionInfo
+                val dhcpInfo = wifiManager.dhcpInfo
+
+                viewModel.updateWiFiData(wifiInfo, dhcpInfo)
             } else if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_MOBILE) {
                 // 데이터 연결됐을 때 처리
                 viewModel.updateWiFiData("mobileInfo.isConnected")
