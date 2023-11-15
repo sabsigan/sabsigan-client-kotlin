@@ -1,4 +1,4 @@
-package com.android.sabsigan.Wifi
+package com.android.sabsigan.wifi
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -11,7 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import com.android.sabsigan.ViewModel.WifiSelectorViewModel
+import com.android.sabsigan.viewModel.WifiSelectorViewModel
 import com.android.sabsigan.databinding.FragmentWifiInfoBinding
 
 // TODO: Rename parameter arguments, choose names that match

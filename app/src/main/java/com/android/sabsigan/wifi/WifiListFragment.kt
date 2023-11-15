@@ -1,4 +1,4 @@
-package com.android.sabsigan.Wifi
+package com.android.sabsigan.wifi
 
 import android.Manifest
 import android.content.Context
@@ -17,8 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.android.sabsigan.ViewModel.WiFiViewModel
-import com.android.sabsigan.ViewModel.WifiSelectorViewModel
+import com.android.sabsigan.viewModel.WifiSelectorViewModel
 import com.android.sabsigan.databinding.FragmentWifiListBinding
 
 // TODO: Rename parameter arguments, choose names that match

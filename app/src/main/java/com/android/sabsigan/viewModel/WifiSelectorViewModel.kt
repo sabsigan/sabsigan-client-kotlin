@@ -1,6 +1,4 @@
-package com.android.sabsigan.ViewModel
-
-import androidx.databinding.ObservableField
+package com.android.sabsigan.viewModel
 
 class WifiSelectorViewModel: WiFiViewModel() {
 //    var iconColor = ObservableField<String>()

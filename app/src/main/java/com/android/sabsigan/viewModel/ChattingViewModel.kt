@@ -1,4 +1,4 @@
-package com.android.sabsigan.Main.chatting
+package com.android.sabsigan.viewModel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

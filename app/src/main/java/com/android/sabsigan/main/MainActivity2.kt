@@ -1,17 +1,20 @@
-package com.android.sabsigan.Main
+package com.android.sabsigan.main
 
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.viewModels
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.android.sabsigan.R
 import com.android.sabsigan.databinding.ActivityMain2Binding
+import com.android.sabsigan.viewModel.MainViewModel
 
 class MainActivity2 : AppCompatActivity() {
-
+    private val viewModel by viewModels<MainViewModel>()
     private lateinit var binding: ActivityMain2Binding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +35,6 @@ class MainActivity2 : AppCompatActivity() {
         //네비와 연결 셋업
         navView.setupWithNavController(navController)
         drawer.setupWithNavController(navController) //drawerNavigation 설정하여 동기화
-
     }
 
 

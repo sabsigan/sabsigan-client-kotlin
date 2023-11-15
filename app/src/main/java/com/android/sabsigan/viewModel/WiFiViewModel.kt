@@ -1,8 +1,7 @@
-package com.android.sabsigan.ViewModel
+package com.android.sabsigan.viewModel
 
 import android.net.DhcpInfo
 import android.net.wifi.WifiInfo
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

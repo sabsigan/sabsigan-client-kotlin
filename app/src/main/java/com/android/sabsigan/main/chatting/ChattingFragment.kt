@@ -1,4 +1,4 @@
-package com.android.sabsigan.Main.chatting
+package com.android.sabsigan.main.chatting
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.android.sabsigan.viewModel.ChattingViewModel
 import com.android.sabsigan.databinding.FragmentChattingBinding
 
 class ChattingFragment : Fragment() {

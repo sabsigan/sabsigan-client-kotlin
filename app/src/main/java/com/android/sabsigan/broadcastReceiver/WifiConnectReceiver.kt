@@ -4,13 +4,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.viewModels
-import com.android.sabsigan.ViewModel.WiFiViewModel
+import com.android.sabsigan.viewModel.WiFiViewModel
 
 class WifiConnectReceiver(private val viewModel: WiFiViewModel) : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {

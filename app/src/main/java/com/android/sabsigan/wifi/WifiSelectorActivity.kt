@@ -1,4 +1,4 @@
-package com.android.sabsigan.Wifi
+package com.android.sabsigan.wifi
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -28,10 +28,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import com.android.sabsigan.Main.MainActivity2
+import com.android.sabsigan.main.MainActivity2
 import com.android.sabsigan.R
 
-import com.android.sabsigan.ViewModel.WifiSelectorViewModel
+import com.android.sabsigan.viewModel.WifiSelectorViewModel
 import com.android.sabsigan.WarningDialog
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.data.User

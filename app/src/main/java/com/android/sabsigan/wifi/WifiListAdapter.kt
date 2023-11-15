@@ -1,4 +1,4 @@
-package com.android.sabsigan.Wifi
+package com.android.sabsigan.wifi
 
 import android.Manifest
 import android.app.AlertDialog
@@ -9,7 +9,6 @@ import android.net.wifi.ScanResult
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +18,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.android.sabsigan.R
-
 
 class WifiListAdapter(val context: Context, var wifiList: MutableList<ScanResult>, var cBSSID: String): RecyclerView.Adapter<WifiListAdapter.MainViewHolder>() {
     private val NETWORK_PASSWORD = "SSID_PASSWORD"

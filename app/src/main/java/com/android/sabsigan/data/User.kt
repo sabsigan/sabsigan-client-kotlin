@@ -1,6 +1,6 @@
 package com.android.sabsigan.data
 
-class User(
+data class User(
     val id: String = "",
     val name: String = "",
     val state: String = "",
@@ -10,6 +10,4 @@ class User(
     val updated_at: String = "",
     val last_active: String = "",
     val online: Boolean = false,
-    ) {
-
-}
+    )

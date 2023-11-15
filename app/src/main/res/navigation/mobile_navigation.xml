@@ -7,13 +7,13 @@
 
     <fragment
         android:id="@+id/navigation_user"
-        android:name="com.android.sabsigan.Main.user.UserFragment"
+        android:name="com.android.sabsigan.main.user.UserFragment"
         android:label="@string/title_user"
         tools:layout="@layout/fragment_user" />
 
     <fragment
         android:id="@+id/navigation_chatting"
-        android:name="com.android.sabsigan.Main.chatting.ChattingFragment"
+        android:name="com.android.sabsigan.main.chatting.ChattingFragment"
         android:label="@string/title_chatting"
         tools:layout="@layout/fragment_chatting" />
 

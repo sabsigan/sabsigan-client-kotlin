@@ -1,4 +1,4 @@
-package com.android.sabsigan.ViewModel
+package com.android.sabsigan.viewModel
 
 class MainViewModel: WiFiViewModel() {
 }

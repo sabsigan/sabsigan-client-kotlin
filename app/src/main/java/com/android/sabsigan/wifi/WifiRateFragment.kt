@@ -1,4 +1,4 @@
-package com.android.sabsigan.Wifi
+package com.android.sabsigan.wifi
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
