@@ -24,7 +24,7 @@
         android:theme="@style/Theme.Sabsigan"
         tools:targetApi="33">
         <receiver
-            android:name=".broadcastReceiver.WifiDirectReceiver"
+            android:name=".wifidirectsample.WifiDirectReceiver"
             android:enabled="true"
             android:exported="true"></receiver>
 

@@ -16,9 +16,8 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.android.sabsigan.R
-import com.android.sabsigan.broadcastReceiver.WifiDirectReceiver
+import com.android.sabsigan.wifidirectsample.WifiDirectReceiver
 
 class WifiDirectActivity : AppCompatActivity() {
 
