@@ -1,7 +1,6 @@
 package com.android.sabsigan.wifidirectsample
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.ContentValues.TAG
 import android.content.Context
@@ -12,8 +11,6 @@ import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
 import android.util.Log
-import com.android.sabsigan.R
-import com.android.sabsigan.Wifi.WifiDirectActivity
 import com.android.sabsigan.wifidirectsample.event.ConnectionInfoEvent
 import com.android.sabsigan.wifidirectsample.event.MyDeviceInfoEvent
 import com.android.sabsigan.wifidirectsample.event.PeerListEvent

@@ -1,37 +1,40 @@
 package com.android.sabsigan.wifidirectsample.view
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
+import android.os.Build
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import android.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import com.android.sabsigan.R
 import com.android.sabsigan.databinding.ActivityMain3Binding
+import com.android.sabsigan.wifidirectsample.WifiDirectReceiver
 import com.android.sabsigan.wifidirectsample.event.ConnectionInfoEvent
 import com.android.sabsigan.wifidirectsample.event.MyDeviceInfoEvent
 import com.android.sabsigan.wifidirectsample.event.ResetDataEvent
 import com.android.sabsigan.wifidirectsample.event.StatusChangedEvent
 import com.gun0912.tedpermission.PermissionListener
-import com.gun0912.tedpermission.TedPermission
+import com.gun0912.tedpermission.normal.TedPermission
 import io.reactivex.android.schedulers.AndroidSchedulers
-import karrel.kr.co.wifidirectsample.R
-import karrel.kr.co.wifidirectsample.WiFiDirectBroadcastReceiver
 import karrel.kr.co.wifidirectsample.event.*
 import karrel.kr.co.wifidirectsample.view.DefaultFragment
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.content_main.*
+import karrel.kr.co.wifidirectsample.view.DiscoverFragment
+import karrel.kr.co.wifidirectsample.view.PictureFragment
+import karrel.kr.co.wifidirectsample.view.ServerFragment
 
 class MainActivity3 : AppCompatActivity() {
 
@@ -55,8 +58,10 @@ class MainActivity3 : AppCompatActivity() {
         setupWifiP2pManager()
         checkPermission()
 
+
     }
 
+    @SuppressLint("CheckResult")
     private fun setupBroadcatEvents() {
         // 상태 : 와이파이 연결 가능 상태, Status: Wi-Fi enabled
         StatusChangedEvent.receive().subscribe {
@@ -65,8 +70,14 @@ class MainActivity3 : AppCompatActivity() {
         }
         // 내 디바이스 정보, About My Devices
         MyDeviceInfoEvent.receive().observeOn(AndroidSchedulers.mainThread()).subscribe {
-            deviceName.text = it.deviceName
-            status.text = getDeviceStatus(it.status)
+            //TODO 화면 출력
+//            deviceName.text = it.deviceName
+//            status.text = getDeviceStatus(it.status)
+            binding.contentMain.deviceName.text = it.deviceName
+            binding.contentMain.status.text = getDeviceStatus(it.status)
+            Log.d(TAG,"내 디바이스 이름: "+it.deviceName)
+            Log.d(TAG,"내 디바이스 상태: "+it.status)
+
         }
 
         // 데이터 초기화, Data initialization
@@ -102,6 +113,24 @@ class MainActivity3 : AppCompatActivity() {
         config.deviceAddress = device.deviceAddress
         config.groupOwnerIntent = 0
 
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.NEARBY_WIFI_DEVICES
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            Toast.makeText(this@MainActivity3,"권한 실패로 인한 연결 실패",Toast.LENGTH_LONG)
+            return
+        }
         manager!!.connect(channel, config, object : WifiP2pManager.ActionListener {
 
             override fun onSuccess() {
@@ -136,6 +165,25 @@ class MainActivity3 : AppCompatActivity() {
     }
 
     private fun discoveryPeer() {
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.NEARBY_WIFI_DEVICES
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            Toast.makeText(this@MainActivity3,"권한 실패로 인한 주변 기기찾기 실패 ",Toast.LENGTH_LONG)
+            return
+        }
         manager!!.discoverPeers(channel, object : WifiP2pManager.ActionListener {
 
             override fun onSuccess() {
@@ -165,30 +213,50 @@ class MainActivity3 : AppCompatActivity() {
 
 
     private fun checkPermission() {
-        TedPermission.with(this)
-                .setPermissionListener(permissionlistener)
-                .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
-                .setPermissions(
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            TedPermission.create()
+                    .setPermissionListener(permissionlistener)
+                .setRationaleMessage("앱을 이용하기 위해서는 접근 권한이 필요합니다")
+                .setDeniedMessage("앱에서 요구하는 권한설정이 필요합니다...\n [설정] > [권한] 에서 사용으로 활성화해주세요.")
+    //                .setDeniedCloseButtonText("닫기")
+    //                .setGotoSettingButtonText("설정")
+    //                .setRationaleTitle("HELLO")
+                    .setPermissions(
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE, // 외부 저장소에 데이터를 쓰거나 읽을 수 있는 권한을 제공
+                            Manifest.permission.ACCESS_COARSE_LOCATION, //대략적인 위치 정보에 액세스할 수 있는 권한을 제공
+                            Manifest.permission.ACCESS_FINE_LOCATION, //정확한 위치 정보에 액세스할 수 있는 권한을 제공
+                            Manifest.permission.NEARBY_WIFI_DEVICES //근처의 Wi-Fi 디바이스에 대한 정보에 액세스할 수 있는 권한을 제공
 
-                )
-                .check()
+                    )
+                    .check()
+        }
     }
 
     private val permissionlistener = object : PermissionListener {
         override fun onPermissionGranted() {
+            Toast.makeText(this@MainActivity3,"위치,저장소 권한 완료",Toast.LENGTH_SHORT)
             registerReceiver()
         }
 
         override fun onPermissionDenied(deniedPermissions: List<String>) {
+            Toast.makeText(this@MainActivity3,"위치,저장소 권한 실패",Toast.LENGTH_SHORT)
             finish()
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        registerReceiver()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterRecevier()
+    }
+
     private fun registerReceiver() {
         if (receiver != null) return
-        receiver = WiFiDirectBroadcastReceiver(manager, channel!!)
+        receiver = WifiDirectReceiver(manager, channel!!)
         registerReceiver(receiver, intentFilter)
     }
 

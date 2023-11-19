@@ -4,4 +4,17 @@
     <string name="title_activity_main2">MainActivity2</string>
     <string name="title_user">유저</string>
     <string name="title_chatting">채팅</string>
+
+
+    <string name="init_state_message">Initial state.Click the \n menu navigation button.</string>
+    <string name="my_device">My device</string>
+    <string name="device_name">Device name</string>
+    <string name="status">State</string>
+    <string name="connectable">Connectable</string>
+    <string name="searched_device">Discovered Devices</string>
+    <string name="connect_info">Connection Information</string>
+    <string name="group_owner">Group Owner</string>
+    <string name="host_name">Host Name</string>
+    <string name="select_picture">Choose a picture</string>
+    <string name="send_picture">Send pictures</string>
 </resources>
