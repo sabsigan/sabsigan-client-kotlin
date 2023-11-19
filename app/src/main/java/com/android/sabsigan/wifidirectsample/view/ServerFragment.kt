@@ -23,6 +23,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.ServerSocket
+import java.net.Socket
 import java.util.*
 
 @SuppressLint("ValidFragment")
@@ -67,7 +68,53 @@ class ServerFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
         disposable?.dispose()
     }
 
-    private fun runServer() {
+    private fun runServer()  {
+
+        // 기존에 존재하는 disposable을 폐기합니다.
+        disposable?.dispose()
+
+        // 빈 문자열을 가진 초기 값을 갖는 Observable을 생성합니다.
+        disposable = Observable.just("")
+            // Observable이 작업을 수행할 쓰레드를 지정합니다 (이 경우 IO 쓰레드).
+            .subscribeOn(Schedulers.io())
+            // 제공된 람다를 사용하여 방출된 항목(빈 문자열)을 새 항목으로 매핑합니다.
+            .map {
+                // 매핑 블록 내부
+
+                // 8988 포트에서 ServerSocket을 생성합니다.
+                val serverSocket = ServerSocket(8988)
+
+                // 클라이언트 연결을 수락합니다.
+                val client = serverSocket.accept()
+
+                // 클라이언트에서 데이터를 읽을 BufferedReader를 생성합니다.
+                val reader = BufferedReader(InputStreamReader(client.getInputStream()))
+
+                // BufferedReader를 사용하여 클라이언트에서 전송된 텍스트를 읽습니다.
+                val receivedText = reader.readLine()
+
+                // ServerSocket을 닫습니다.
+                serverSocket.close()
+
+                // 수신된 텍스트를 반환합니다.
+                receivedText
+            }
+            // Observable 체인에서 발생하는 모든 오류를 처리합니다.
+            .doOnError {
+                it.printStackTrace()
+            }
+            // Observer(구독자)가 작업을 수행할 쓰레드를 지정합니다 (이 경우 메인 쓰레드).
+            .observeOn(AndroidSchedulers.mainThread())
+            // Observable에 구독하고, 발행된 항목을 처리할 람다를 제공합니다.
+            .subscribe { receivedText ->
+                // 구독 블록 내부
+
+                // TextView에 수신된 텍스트를 설정합니다.
+                binding.sendedText.text = receivedText.toString()
+
+                // runServer()를 재귀적으로 호출하여 서버를 계속 실행합니다.
+                runServer()
+            }
 
     }
 

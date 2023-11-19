@@ -22,6 +22,7 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.InetSocketAddress
+import java.net.ServerSocket
 import java.net.Socket
 
 @SuppressLint("ValidFragment")
@@ -31,11 +32,10 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
     private var disposable: Disposable? = null
     private lateinit var binding: FragmentMusicListBinding
 
-    private var message : String? = null
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?
-    ): View? {
+    private var message : String = ""
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?)
+    : View? {
         // Inflate the layout for this fragment
         binding = FragmentMusicListBinding.inflate(inflater, container, false)
         return binding.root
@@ -46,9 +46,6 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
         setupData()
 
         setupButtons()
-
-//        setupButtons()
-//        setupGalleryLoader()
     }
 
     override fun onDestroy() {
@@ -57,11 +54,6 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
         disposable?.dispose()
     }
 
-    private fun setupGalleryLoader() {
-//        galleryLoader = GalleryLoader.Builder(activity!!.applicationContext)
-//                .setOnImageSelectedListener(onImageSelectedListener)
-//                .create()
-    }
 
     private fun setupData() {
         binding.groupOwner.text = "no"
@@ -77,90 +69,79 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
     }
 
 
+
+
     private fun setupButtons() {
-//        selectPicture.setOnClickListener {
-//
-//            galleryLoader?.show(activity!!.supportFragmentManager)
-//        }
-//        binding.send.setOnClickListener{
-//            message = if (message?.toString().isNullOrBlank()) " " else binding.sendingText.text.toString()
-//            sendTextToServer(message!!)
-//        }
-        disposable = Observable.create<String> { emitter ->
-            sendTextToServer(binding.sendingText.text.toString(), emitter)
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { receivedText ->
-                    Log.d(TAG, "Received Text from Server: $receivedText")
-                    binding.sendedText.text = receivedText
-                },
-                { error ->
-                    error.printStackTrace()
-                }
-            )
-
-
-    }
-
-
-//    private fun startProgressActivity() {
-//        activity?.startActivity(Intent(activity, ProgressActivity::class.java))
-//    }
-
-
-    private fun sendTextToServer(text: String, emitter: ObservableEmitter<String>) {
-        val host = info.groupOwnerAddress
-        val socket = Socket()
-        val port = 8988
-
-        try {
-            socket.bind(null)
-            socket.connect(InetSocketAddress(host, port), 5000)
-
-            val outputStream = socket.getOutputStream()
-            val writer = BufferedWriter(OutputStreamWriter(outputStream))
-
-            // 서버로 전송할 텍스트를 전달합니다.
-            writer.write(text)
-            writer.newLine()
-            writer.flush()
-
-            // 서버로부터 메시지를 받는 코드
-            val inputStream = socket.getInputStream()
-            val reader = BufferedReader(InputStreamReader(inputStream))
-            val receivedText = reader.readLine()
-
-            // 받은 메시지를 Observable을 통해 전달
-            emitter.onNext(receivedText)
-
-            // 소켓 및 스트림 닫기
-            outputStream.close()
-            writer.close()
-            inputStream.close()
-            reader.close()
-        } catch (e: IOException) {
-            emitter.onError(e)
-        } finally {
-            if (socket.isConnected) {
-                try {
-                    socket.close()
-                } catch (e: IOException) {
-                    emitter.onError(e)
-                }
+        binding.send.setOnClickListener{
+            message = binding.sendingText.text.toString()
+            if(message.isNotBlank()){
+                sendTextToServer(message)
             }
         }
     }
 
 
 
-//    private fun sendPictureFile(uri: Uri) {
+    private fun sendTextToServer(message: String) {
+        val host = info.groupOwnerAddress
+        val socket = Socket()
+        val port = 8988
+
+        println("host : $host, port : $port")
+
+        disposable?.dispose()
+
+        disposable = Observable.just(message)
+            .subscribeOn(Schedulers.io())
+            .observeOn(Schedulers.io())
+            .doOnNext {
+                    try {
+                    socket.bind(null)
+                    socket.connect(InetSocketAddress(host, port), 5000)
+
+                    val outputStream = socket.getOutputStream()
+                    val writer = BufferedWriter(OutputStreamWriter(outputStream))
+
+                    // 서버로 전송할 텍스트를 전달합니다.
+                    writer.write(message)
+                    writer.newLine()
+                    writer.flush()
+
+                    // 여기서는 서버로부터의 응답을 받는 코드를 추가하지 않았습니다.
+
+                    outputStream.close()
+                    writer.close()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                } finally {
+                    if (socket.isConnected) {
+                        try {
+                            socket.close()
+                        } catch (e: IOException) {
+                            // Give up
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            }
+            .subscribe()
+    }
+
+
+
+//    private fun sendPictureFile(message: String) {
 //        val host = info.groupOwnerAddress
 //        val socket = Socket()
 //        val port = 8988
 //
 //        println("fileUri : $uri, host : $host, port : $port")
+//
+//        disposable?.dispose()
+//        disposable = Observable.just(message)
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(Schedulers.io())
+//            .doOnNext { sendTextToServer(it) }
+//            .subscribe()
 //
 //        try {
 //            socket.bind(null)
@@ -188,7 +169,7 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
 //                    outputStream.write(buf, 0, len)
 //                    len = inputStream.read(buf)
 //                    sum += len
-////                    SendFilePercentEvent.send(total, sum)
+//                    SendFilePercentEvent.send(total, sum)
 //                    println("copyFile len : $len")
 //                }
 //                outputStream.close()
@@ -216,12 +197,11 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
 //    private val onImageSelectedListener = object : GalleryLoader.OnImageSelectedListener {
 //        override fun onImageSelected(uri: Uri) {
 //
-//            startProgressActivity()
 //
 //            disposable = Observable.just(uri)
-//                    .subscribeOn(Schedulers.io())
-//                    .doOnNext { sendPictureFile(it) }
-//                    .subscribe()
+//                .subscribeOn(Schedulers.io())
+//                .doOnNext { sendPictureFile(it) }
+//                .subscribe()
 //
 //            println("onImageSelected : $uri")
 //        }
