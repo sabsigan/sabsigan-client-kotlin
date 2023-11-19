@@ -58,7 +58,6 @@ class MainActivity3 : AppCompatActivity() {
         setupWifiP2pManager()
         checkPermission()
 
-
     }
 
     @SuppressLint("CheckResult")

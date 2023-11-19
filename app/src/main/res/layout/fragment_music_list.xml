@@ -97,8 +97,19 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/line2" />
 
+
+    <TextView
+        android:id="@+id/sended_text"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:textSize="25dp"
+        android:background="@color/Gray_500"
+        android:text="client"
+        app:layout_constraintBottom_toTopOf="@+id/sending_text"
+        tools:layout_editor_absoluteX="-42dp" />
+
     <EditText
-        android:id="@+id/send_text"
+        android:id="@+id/sending_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="전송할 메시지 입력"

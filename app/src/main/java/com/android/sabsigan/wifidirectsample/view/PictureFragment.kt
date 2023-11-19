@@ -1,26 +1,22 @@
 package karrel.kr.co.wifidirectsample.view
 
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.net.Uri
+import android.content.ContentValues.TAG
 import android.net.wifi.p2p.WifiP2pInfo
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.android.sabsigan.R
 import com.android.sabsigan.databinding.FragmentMusicListBinding
-import com.android.sabsigan.databinding.FragmentServerBinding
-//import com.karrel.galleryloaderlib.GalleryLoader
 import io.reactivex.Observable
+import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.io.BufferedReader
 import java.io.BufferedWriter
-import java.io.File
-import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -49,7 +45,7 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
         super.onViewCreated(view, savedInstanceState)
         setupData()
 
-        sendTextToServer()
+        setupButtons()
 
 //        setupButtons()
 //        setupGalleryLoader()
@@ -86,10 +82,24 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
 //
 //            galleryLoader?.show(activity!!.supportFragmentManager)
 //        }
-        binding.send.setOnClickListener{
-            message = binding.sendText.text.toString()
-            sendTextToServer(message!!)
+//        binding.send.setOnClickListener{
+//            message = if (message?.toString().isNullOrBlank()) " " else binding.sendingText.text.toString()
+//            sendTextToServer(message!!)
+//        }
+        disposable = Observable.create<String> { emitter ->
+            sendTextToServer(binding.sendingText.text.toString(), emitter)
         }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { receivedText ->
+                    Log.d(TAG, "Received Text from Server: $receivedText")
+                    binding.sendedText.text = receivedText
+                },
+                { error ->
+                    error.printStackTrace()
+                }
+            )
 
 
     }
@@ -100,7 +110,7 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
 //    }
 
 
-    private fun sendTextToServer(text: String) {
+    private fun sendTextToServer(text: String, emitter: ObservableEmitter<String>) {
         val host = info.groupOwnerAddress
         val socket = Socket()
         val port = 8988
@@ -122,8 +132,8 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
             val reader = BufferedReader(InputStreamReader(inputStream))
             val receivedText = reader.readLine()
 
-            // 받은 메시지를 활용하여 UI 업데이트 또는 다른 작업 수행
-            println("Received Text from Server: $receivedText")
+            // 받은 메시지를 Observable을 통해 전달
+            emitter.onNext(receivedText)
 
             // 소켓 및 스트림 닫기
             outputStream.close()
@@ -131,17 +141,18 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
             inputStream.close()
             reader.close()
         } catch (e: IOException) {
-            e.printStackTrace()
+            emitter.onError(e)
         } finally {
             if (socket.isConnected) {
                 try {
                     socket.close()
                 } catch (e: IOException) {
-                    e.printStackTrace()
+                    emitter.onError(e)
                 }
             }
         }
     }
+
 
 
 //    private fun sendPictureFile(uri: Uri) {

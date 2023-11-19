@@ -9,6 +9,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.android.sabsigan.databinding.FragmentServerBinding
+import com.android.sabsigan.wifidirectsample.event.ConnectionInfoEvent
+import com.android.sabsigan.wifidirectsample.event.SendMessageEvent
+import com.android.sabsigan.wifidirectsample.view.MainActivity3
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -28,6 +31,8 @@ class ServerFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
     private var disposable: Disposable? = null
     private lateinit var binding : FragmentServerBinding
 
+    var messageToSend: String? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -41,6 +46,7 @@ class ServerFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
         super.onViewCreated(view, savedInstanceState)
         setupData()
         runServer()
+
     }
 
     private fun setupData() {
@@ -62,46 +68,7 @@ class ServerFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
     }
 
     private fun runServer() {
-        disposable?.dispose()
-        disposable = Observable.create<String> { emitter ->
-            try {
-                val serverSocket = ServerSocket(8988)
-                val client = serverSocket.accept()
 
-                val inputstream = client.getInputStream()
-                val reader = BufferedReader(InputStreamReader(inputstream))
-                val receivedText = reader.readLine()
-
-                // 여기서 receivedText를 활용하여 필요한 작업을 수행할 수 있습니다.
-                // 예를 들어, UI 업데이트 또는 다른 비즈니스 로직을 수행할 수 있습니다.
-                // 이 예제에서는 받은 텍스트를 onNext로 emit 합니다.
-                emitter.onNext(receivedText)
-
-                // 클라이언트에게 메시지를 보내기 위해 OutputStream을 사용합니다.
-                val outputStream = client.getOutputStream()
-                val writer = BufferedWriter(OutputStreamWriter(outputStream))
-                val messageToSend = "Hello from server!"
-                writer.write(messageToSend)
-                writer.newLine()
-                writer.flush()
-
-                serverSocket.close()
-            } catch (e: IOException) {
-                emitter.onError(e)
-            }
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { receivedText ->
-                    // TODO: 받은 텍스트를 활용하여 UI 업데이트 또는 다른 작업 수행
-                    binding.textView.text = "Received Text: $receivedText"
-                    runServer() // 서버를 계속 실행할지 여부를 결정하고, 필요에 따라 제거할 수 있습니다.
-                },
-                { error ->
-                    error.printStackTrace()
-                }
-            )
     }
 
 
