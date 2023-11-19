@@ -116,9 +116,6 @@ class MainActivity3 : AppCompatActivity() {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.NEARBY_WIFI_DEVICES
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             // TODO: Consider calling
@@ -128,7 +125,7 @@ class MainActivity3 : AppCompatActivity() {
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            Toast.makeText(this@MainActivity3,"권한 실패로 인한 연결 실패",Toast.LENGTH_LONG)
+            Toast.makeText(this@MainActivity3,"권한 실패로 인한 연결 실패",Toast.LENGTH_LONG).show()
             return
         }
         manager!!.connect(channel, config, object : WifiP2pManager.ActionListener {
@@ -169,9 +166,6 @@ class MainActivity3 : AppCompatActivity() {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.NEARBY_WIFI_DEVICES
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             // TODO: Consider calling
@@ -181,7 +175,7 @@ class MainActivity3 : AppCompatActivity() {
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            Toast.makeText(this@MainActivity3,"권한 실패로 인한 주변 기기찾기 실패 ",Toast.LENGTH_LONG)
+            Toast.makeText(this@MainActivity3,"권한 실패로 인한 주변 기기찾기 실패 ",Toast.LENGTH_LONG).show()
             return
         }
         manager!!.discoverPeers(channel, object : WifiP2pManager.ActionListener {
@@ -222,10 +216,10 @@ class MainActivity3 : AppCompatActivity() {
     //                .setGotoSettingButtonText("설정")
     //                .setRationaleTitle("HELLO")
                     .setPermissions(
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE, // 외부 저장소에 데이터를 쓰거나 읽을 수 있는 권한을 제공
-                            Manifest.permission.ACCESS_COARSE_LOCATION, //대략적인 위치 정보에 액세스할 수 있는 권한을 제공
+//                            Manifest.permission.WRITE_EXTERNAL_STORAGE, // 외부 저장소에 데이터를 쓰거나 읽을 수 있는 권한을 제공
+//                            Manifest.permission.ACCESS_COARSE_LOCATION, //대략적인 위치 정보에 액세스할 수 있는 권한을 제공
                             Manifest.permission.ACCESS_FINE_LOCATION, //정확한 위치 정보에 액세스할 수 있는 권한을 제공
-                            Manifest.permission.NEARBY_WIFI_DEVICES //근처의 Wi-Fi 디바이스에 대한 정보에 액세스할 수 있는 권한을 제공
+//                            Manifest.permission.NEARBY_WIFI_DEVICES //근처의 Wi-Fi 디바이스에 대한 정보에 액세스할 수 있는 권한을 제공
 
                     )
                     .check()

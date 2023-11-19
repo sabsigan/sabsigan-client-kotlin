@@ -43,9 +43,6 @@ class WifiDirectReceiver(private val manager : WifiP2pManager?, private val chan
                     if (ActivityCompat.checkSelfPermission(
                             context,
                             Manifest.permission.ACCESS_FINE_LOCATION
-                        ) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.NEARBY_WIFI_DEVICES
                         ) != PackageManager.PERMISSION_GRANTED
                     ) {
                         // TODO: Consider calling
