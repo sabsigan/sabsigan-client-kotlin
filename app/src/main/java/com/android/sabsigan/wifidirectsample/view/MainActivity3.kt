@@ -151,11 +151,14 @@ class MainActivity3 : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item?.itemId) {
-            R.id.action_discorvery
-            -> {
+            R.id.action_discorvery -> {
                 discoveryPeer()
                 return true
             }
+//            R.id.action_reset -> {
+//                ResetDataEvent.send(true)
+//                return true
+//            }
 
         }
         return super.onOptionsItemSelected(item)
@@ -247,6 +250,12 @@ class MainActivity3 : AppCompatActivity() {
         super.onPause()
         unregisterRecevier()
     }
+
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        ResetDataEvent.send(true)
+//        unregisterRecevier()
+//    }
 
     private fun registerReceiver() {
         if (receiver != null) return

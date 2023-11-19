@@ -97,15 +97,34 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/line2" />
 
-    <Button
-        android:id="@+id/selectPicture"
-        android:layout_width="wrap_content"
-        android:text="@string/select_picture"
+    <EditText
+        android:id="@+id/send_text"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_middle"
+        android:hint="전송할 메시지 입력"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pictureTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/pictureTitle"
+        tools:layout_editor_absoluteX="-16dp" />
+
+    <Button
+        android:id="@+id/send"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="전송"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+
+    <!--    <Button-->
+<!--        android:id="@+id/selectPicture"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:text="@string/select_picture"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginTop="@dimen/spacing_middle"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintLeft_toLeftOf="parent"-->
+<!--        app:layout_constraintRight_toRightOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/pictureTitle" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -17,10 +17,14 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import java.io.BufferedReader
+import java.io.BufferedWriter
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
 import java.net.InetSocketAddress
 import java.net.Socket
 
@@ -30,6 +34,8 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
 //    private var galleryLoader: GalleryLoader? = null
     private var disposable: Disposable? = null
     private lateinit var binding: FragmentMusicListBinding
+
+    private var message : String? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?
@@ -42,9 +48,11 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupData()
-        setupButtons()
 
-        setupGalleryLoader()
+        sendTextToServer()
+
+//        setupButtons()
+//        setupGalleryLoader()
     }
 
     override fun onDestroy() {
@@ -78,6 +86,12 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
 //
 //            galleryLoader?.show(activity!!.supportFragmentManager)
 //        }
+        binding.send.setOnClickListener{
+            message = binding.sendText.text.toString()
+            sendTextToServer(message!!)
+        }
+
+
     }
 
 
@@ -85,64 +99,109 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
 //        activity?.startActivity(Intent(activity, ProgressActivity::class.java))
 //    }
 
-    private fun sendPictureFile(uri: Uri) {
+
+    private fun sendTextToServer(text: String) {
         val host = info.groupOwnerAddress
         val socket = Socket()
         val port = 8988
-
-        println("fileUri : $uri, host : $host, port : $port")
 
         try {
             socket.bind(null)
             socket.connect(InetSocketAddress(host, port), 5000)
 
             val outputStream = socket.getOutputStream()
-            val cr = activity?.contentResolver
-            var inputStream: InputStream? = null
-            try {
-                inputStream = cr?.openInputStream(uri)
-            } catch (e: FileNotFoundException) {
-                e.printStackTrace()
-            }
+            val writer = BufferedWriter(OutputStreamWriter(outputStream))
 
+            // 서버로 전송할 텍스트를 전달합니다.
+            writer.write(text)
+            writer.newLine()
+            writer.flush()
 
-            val buf = ByteArray(1024)
+            // 서버로부터 메시지를 받는 코드
+            val inputStream = socket.getInputStream()
+            val reader = BufferedReader(InputStreamReader(inputStream))
+            val receivedText = reader.readLine()
 
-            val total = File(uri.path).length()
-            var sum: Long = 0
+            // 받은 메시지를 활용하여 UI 업데이트 또는 다른 작업 수행
+            println("Received Text from Server: $receivedText")
 
-            try {
-                var len = inputStream!!.read(buf)
-                sum += len
-                while (len != -1) {
-                    outputStream.write(buf, 0, len)
-                    len = inputStream.read(buf)
-                    sum += len
-//                    SendFilePercentEvent.send(total, sum)
-                    println("copyFile len : $len")
-                }
-                outputStream.close()
-                inputStream.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
+            // 소켓 및 스트림 닫기
+            outputStream.close()
+            writer.close()
+            inputStream.close()
+            reader.close()
         } catch (e: IOException) {
             e.printStackTrace()
         } finally {
-            if (socket != null) {
-                if (socket.isConnected) {
-                    try {
-                        socket.close()
-                    } catch (e: IOException) {
-                        // Give up
-                        e.printStackTrace()
-                    }
-
+            if (socket.isConnected) {
+                try {
+                    socket.close()
+                } catch (e: IOException) {
+                    e.printStackTrace()
                 }
             }
         }
     }
 
+
+//    private fun sendPictureFile(uri: Uri) {
+//        val host = info.groupOwnerAddress
+//        val socket = Socket()
+//        val port = 8988
+//
+//        println("fileUri : $uri, host : $host, port : $port")
+//
+//        try {
+//            socket.bind(null)
+//            socket.connect(InetSocketAddress(host, port), 5000)
+//
+//            val outputStream = socket.getOutputStream()
+//            val cr = activity?.contentResolver
+//            var inputStream: InputStream? = null
+//            try {
+//                inputStream = cr?.openInputStream(uri)
+//            } catch (e: FileNotFoundException) {
+//                e.printStackTrace()
+//            }
+//
+//
+//            val buf = ByteArray(1024)
+//
+//            val total = File(uri.path).length()
+//            var sum: Long = 0
+//
+//            try {
+//                var len = inputStream!!.read(buf)
+//                sum += len
+//                while (len != -1) {
+//                    outputStream.write(buf, 0, len)
+//                    len = inputStream.read(buf)
+//                    sum += len
+////                    SendFilePercentEvent.send(total, sum)
+//                    println("copyFile len : $len")
+//                }
+//                outputStream.close()
+//                inputStream.close()
+//            } catch (e: IOException) {
+//                e.printStackTrace()
+//            }
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//        } finally {
+//            if (socket != null) {
+//                if (socket.isConnected) {
+//                    try {
+//                        socket.close()
+//                    } catch (e: IOException) {
+//                        // Give up
+//                        e.printStackTrace()
+//                    }
+//
+//                }
+//            }
+//        }
+//    }
+//
 //    private val onImageSelectedListener = object : GalleryLoader.OnImageSelectedListener {
 //        override fun onImageSelected(uri: Uri) {
 //
