@@ -5,8 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools">
     <data>
         <variable
-            name="user"
-            type="com.android.sabsigan.data.User" />
+            name="chatRoom"
+            type="com.android.sabsigan.data.ChatRoom" />
 
         <variable
             name="viewModel"
@@ -20,7 +20,7 @@
         android:paddingHorizontal="16dp"
         android:orientation="horizontal"
         android:background="?android:attr/selectableItemBackground"
-        android:onClick="@{()->viewModel.clickUser(user)}">
+        android:onClick="@{()->viewModel.clickChatRoom(chatRoom)}">
 
         <ImageView
             android:layout_width="48dp"
@@ -38,14 +38,14 @@
                 android:id="@+id/name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{user.name}"
+                android:text="name"
                 tools:text="이름" />
 
             <TextView
-                android:id="@+id/state"
+                android:id="@+id/lastMessage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{user.state}"
+                android:text="@{chatRoom.last_message_at}"
                 tools:text="상메"/>
 
         </LinearLayout>

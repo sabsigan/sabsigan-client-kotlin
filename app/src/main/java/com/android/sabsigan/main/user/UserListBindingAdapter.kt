@@ -5,7 +5,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.sabsigan.data.User
 
 object UserListBindingAdapter {
-    @BindingAdapter("app:items")
+    @BindingAdapter("app:userItems")
     @JvmStatic
     fun setItems(recyclerView: RecyclerView, items: ArrayList<User>?) {
 //        if(recyclerView.adapter == null) {

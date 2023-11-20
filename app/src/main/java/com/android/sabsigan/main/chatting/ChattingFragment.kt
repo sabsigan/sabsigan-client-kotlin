@@ -1,41 +1,61 @@
 package com.android.sabsigan.main.chatting
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.LiveData
+import com.android.sabsigan.R
 import com.android.sabsigan.databinding.FragmentChattingBinding
+import com.android.sabsigan.main.user.UserListAdapter
 import com.android.sabsigan.viewModel.MainViewModel
 
 class ChattingFragment : Fragment() {
-
     private var _binding: FragmentChattingBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
     private val viewModel by activityViewModels<MainViewModel>()
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_chatting, container, false)
 
-        _binding = FragmentChattingBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        return binding.root
+    }
 
-        val textView: TextView = binding.textChatting
-        return root
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = viewLifecycleOwner
+
+        setupAdapter()
+
+        viewModel.chatRoomID.observe(viewLifecycleOwner) {
+            Log.d("chatRoomFragment", "변경")
+            openChatRoom(viewModel.chatRoomID.value!!)
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun setupAdapter() {
+        binding.recyclerView.adapter = ChatListAdapter(viewModel)
+    }
+
+    private fun openChatRoom(chatRoomID: String) {
+        Log.d("chatRoomFragment", "시작")
+        val intent = Intent(context, ChatActivity::class.java)
+        startActivity(intent)
     }
 }

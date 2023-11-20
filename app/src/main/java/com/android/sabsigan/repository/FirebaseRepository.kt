@@ -7,6 +7,9 @@ import com.android.sabsigan.data.User
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 
 class FirebaseRepository() {
@@ -26,39 +29,45 @@ class FirebaseRepository() {
         return time
     }
 
-    fun getUserList(): ArrayList<User> {
+
+    suspend fun getUserList(): ArrayList<User> = withContext(Dispatchers.IO) { // 코틀린코루틴
         var items = ArrayList<User>()
 
-        val usersRef = db.collection("users")
-        val query = usersRef
-            .whereNotEqualTo("id", uid)
+        try {
+            val usersRef = db.collection("users")
+            val query = usersRef
+                .whereNotEqualTo("id", uid)
 //            .whereEqualTo("online", true)
 //            .whereEqualTo("current_wifi", getwifiInfo().toString()) // 같은 와이파이만
 
-        query.get()
-            .addOnSuccessListener { documents ->
-                for (document in documents) {
-                    Log.d("firebase", "${document.id} => ${document.data}")
+            query.get()
+                .addOnSuccessListener { documents ->
+                    for (document in documents) {
+                        Log.d("getUsers", "${document.id} => ${document.data}")
 
-                    val user = User(
-                        id = document["id"] as String,
-                        name = document["name"] as String,
-                        state = document["state"] as String,
-                        current_wifi = document["current_wifi"] as String,
-                        created_at = document["created_at"] as String,
-                        updated_at = document["updated_at"] as String,
-                        last_active = document["last_active"] as String,
-                        online = true
-                    )
+                        val user = User(
+                            id = document["id"] as String,
+                            name = document["name"] as String,
+                            state = document["state"] as String,
+                            current_wifi = document["current_wifi"] as String,
+                            created_at = document["created_at"] as String,
+                            updated_at = document["updated_at"] as String,
+                            last_active = document["last_active"] as String,
+                            online = true
+                        )
 
-                    items.add(user)
+                        items.add(user)
+                    }
                 }
-            }
-            .addOnFailureListener { exception ->
-                Log.w("firebase", "Error getting documents: ", exception)
-            }
+                .addOnFailureListener { exception ->
+                    Log.w("getUsers", "Error getting documents: ", exception)
+                }
 
-        return items
+        } catch (exception: Exception) {
+            Log.w("getUsers", "Error getting documents: ", exception)
+        }
+
+        return@withContext items
 
         // 데이터 변경 처리
 //        query
@@ -106,22 +115,60 @@ class FirebaseRepository() {
 //            }
     }
 
-    fun getChatList(): ArrayList<ChatRoom> {
-        var items = ArrayList<ChatRoom>()
+    suspend fun getChatList(): ArrayList<ChatRoom> = withContext(Dispatchers.IO) {
+        val items = ArrayList<ChatRoom>()
 
-        return items
+        try {
+            val chatRoomsRef = db.collection("chatRooms")
+
+            chatRoomsRef.get()
+                .addOnSuccessListener { documents ->
+                    for (document in documents) {
+                        Log.d("getChatRooms", "${document.id} => ${document.data}")
+
+                        val chatRoom = ChatRoom(
+                            id = document["id"] as String,
+                            created_by = document["created_by"] as String,
+                            created_at = document["created_at"] as String,
+                            updated_at = document["updated_at"] as String,
+                            last_message_at = document["last_message_at"] as String,
+                            member_cnt = (document["member_cnt"] as Long).toInt(),
+                            disabled = document["disabled"] as Boolean
+                        )
+
+                        items.add(chatRoom)
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.w("getChatRooms", "Error getting documents: ", exception)
+                }
+        } catch (exception: Exception) {
+            Log.w("getChatRooms", "Error getting documents: ", exception)
+        }
+
+        return@withContext items
     }
 
-    fun createChatRoom(otherUser: User, cnt: Int) {
+    fun createChatRoom(otherUser: User, cnt: Int): Boolean {
+        var value = false
         val time = getTime()
-        val chatRoomID = uid + "_" + otherUser.id
         val chatRef = db.collection("chatRooms")
-        val query = chatRef.document(chatRoomID)
+        val chatList = listOf<User>(
+            otherUser,
+            User(   // 여기는 datastore로 자기 로컬값 가져오기
+                id = uid!!,
+                name = "name",
+                state = "state",
+                current_wifi = "current_wifi",
+                created_at = time,
+                updated_at = time,
+                last_active = time,
+                online = true
+            )
+        )
 
         val chatRoom = ChatRoom(
-            id = chatRoomID,
-            created_by = "",
-            current_wifi = "",
+            created_by = uid!!,
             created_at = time,
             updated_at = time,
             last_message_at = "",
@@ -129,17 +176,36 @@ class FirebaseRepository() {
             disabled = false
         )
 
-    //     val messageRef = db
-    // .collection("rooms").document("roomA")
-    // .collection("messages").document("message1")
-
-        query.set(chatRoom)
+        chatRef.add(chatRoom)
             .addOnSuccessListener {
-                query.
+                Log.d("createChat", "DocumentSnapshot written with ID: ${it.id}")
+                val query = chatRef.document(it.id).collection("member")
 
+                val updates = hashMapOf<String, Any>(
+                    "id" to it.id,
+                )
+
+                chatRef.document(it.id).update(updates)
+                    .addOnSuccessListener {
+                        Log.d("createChat", "DocumentSnapshot written with ID: ${it}")
+                    }
+                    .addOnFailureListener {e ->
+                        Log.w("createChat", "Error adding document", e)
+                    }
+
+                for (user in chatList) {
+                    query.add(user)
+                        .addOnSuccessListener {
+                            Log.d("createChat", "DocumentSnapshot written with ID: ${it.id}")
+                            value = true
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("createChat", "Error adding document", e)
+                        }
+                }
             }
-            .addOnFailureListener { e ->
-                Log.w("TAG", "Error adding document", e)
-            }
+            .addOnFailureListener { e -> Log.w("TAG", "Error adding document", e) }
+
+        return value
     }
 }

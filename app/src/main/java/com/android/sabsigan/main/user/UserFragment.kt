@@ -22,8 +22,6 @@ class UserFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_user, container, false)
-        binding.viewModel = viewModel
-        binding.lifecycleOwner = this
 
 //        val textView: TextView = binding.textUser
 //        viewModel.text.observe(viewLifecycleOwner) {
@@ -35,6 +33,9 @@ class UserFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = viewLifecycleOwner
 
         setupAdapter()
     }

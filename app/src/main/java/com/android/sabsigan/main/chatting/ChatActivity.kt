@@ -24,8 +24,11 @@ class ChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_chat)
         binding.viewModel = viewModel
+        binding.lifecycleOwner = this
 
         wifiConnectReceiver = WifiConnectReceiver(viewModel)
+
+        setupAdapter()
     }
 
     override fun onPause() {
@@ -62,5 +65,9 @@ class ChatActivity : AppCompatActivity() {
         }
 
         return false // 리시버가 현재 등록되어 있지 않음
+    }
+
+    private fun setupAdapter() {
+        binding.recyclerView.adapter = MessageAdapter(viewModel)
     }
 }

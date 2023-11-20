@@ -1,5 +1,6 @@
 package com.android.sabsigan.viewModel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.android.sabsigan.data.ChatRoom
@@ -8,28 +9,38 @@ import com.android.sabsigan.repository.FirebaseRepository
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.runBlocking
 
 class MainViewModel: WiFiViewModel() {
-    private val t = FirebaseRepository()
-
-    private var auth = Firebase.auth
-    private val db = Firebase.firestore
-    private val uid = auth.currentUser?.uid
+    private val firebaseRepository = FirebaseRepository()
 
     private val _userList = MutableLiveData<ArrayList<User>>()
-    val userList : LiveData<ArrayList<User>> get() = _userList
-
     private val _chatList = MutableLiveData<ArrayList<ChatRoom>>()
-    val chatList : LiveData<ArrayList<ChatRoom>> get() = _chatList
+    private val _chatRoomID = MutableLiveData<String>()
+
+
+    val userList: LiveData<ArrayList<User>> get() = _userList
+    val chatList: LiveData<ArrayList<ChatRoom>> get() = _chatList
+    val chatRoomID: LiveData<String> get() = _chatRoomID
+
 
     init {
-        _userList.value = t.getUserList()
-        _chatList.value = t.getChatList()
+        runBlocking {
+            _userList.value = firebaseRepository.getUserList()
+            _chatList.value = firebaseRepository.getChatList()
+        }
     }
 
     fun clickUser(otherUser: User) {
-        t.createChatRoom(otherUser, 2)
+        firebaseRepository.createChatRoom(otherUser, 2)
     }
+
+    fun clickChatRoom(chatRoom: ChatRoom) {
+        Log.d("chatRoomFragment", "클릭")
+        _chatRoomID.value = chatRoom.id
+    }
+
+
 
 
 //    private val _text = MutableLiveData<String>().apply {
