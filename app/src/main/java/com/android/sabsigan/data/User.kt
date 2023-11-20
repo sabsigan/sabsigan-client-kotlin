@@ -2,12 +2,12 @@ package com.android.sabsigan.data
 
 data class User(
     val id: String = "",
-    val name: String = "",
-    val state: String = "",
-    val image: String = "",
-    val current_wifi: String = "",
+    var name: String = "",
+    var state: String = "",
+    var image: String = "",
+    var current_wifi: String = "",
     val created_at: String = "",
-    val updated_at: String = "",
-    val last_active: String = "",
-    val online: Boolean = false,
+    var updated_at: String = "",
+    var last_active: String = "",
+    var online: Boolean = false,
     )

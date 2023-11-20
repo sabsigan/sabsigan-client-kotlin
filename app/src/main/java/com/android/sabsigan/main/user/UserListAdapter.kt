@@ -3,15 +3,15 @@ package com.android.sabsigan.main.user
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.android.sabsigan.viewModel.UserViewModel
 import com.android.sabsigan.data.User
 import com.android.sabsigan.databinding.AdapterUserListBinding
+import com.android.sabsigan.viewModel.MainViewModel
 
-class UserListAdapter(private val viewModel: UserViewModel): RecyclerView.Adapter<UserListAdapter.UserViewHolder>() {
-    lateinit var userList: List<User>
+class UserListAdapter(private val viewModel: MainViewModel): RecyclerView.Adapter<UserListAdapter.UserViewHolder>() {
+    var userList = arrayListOf<User>()
 
     class UserViewHolder private constructor(val binding: AdapterUserListBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(viewModel: UserViewModel, user: User) {
+        fun bind(viewModel: MainViewModel, user: User) {
             binding.user = user
             binding.viewModel = viewModel
             binding.executePendingBindings()

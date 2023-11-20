@@ -44,4 +44,5 @@ open class WiFiViewModel: ViewModel() {
         return _ssid
     }
 
+    fun getBSSID() = _bssid;
 }

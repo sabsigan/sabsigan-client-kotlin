@@ -21,15 +21,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Sabsigan"
         tools:targetApi="33">
-        <activity
-            android:name=".TestMessageListActivity"
-            android:exported="false" />
 
         <receiver
             android:name=".broadcastReceiver.WifiConnectReceiver"
             android:enabled="true"
             android:exported="true" />
 
+        <activity
+            android:name=".main.chatting.ChatActivity"
+            android:exported="true" />
+        <activity
+            android:name=".TestMessageListActivity"
+            android:exported="false" />
         <activity
             android:name=".TestChatListActivity"
             android:exported="true"

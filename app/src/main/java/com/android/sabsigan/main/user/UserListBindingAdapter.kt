@@ -7,7 +7,7 @@ import com.android.sabsigan.data.User
 object UserListBindingAdapter {
     @BindingAdapter("app:items")
     @JvmStatic
-    fun setItems(recyclerView: RecyclerView, items: List<User>?) {
+    fun setItems(recyclerView: RecyclerView, items: ArrayList<User>?) {
 //        if(recyclerView.adapter == null) {
 //            val adapter = UserListAdapter()
 //            adapter.setHasStableIds(true)
@@ -17,7 +17,7 @@ object UserListBindingAdapter {
         items?.let {
             val adapter = recyclerView.adapter as UserListAdapter
             adapter.userList = items
-//            adapter.notifyDataSetChanged()
+            adapter.notifyDataSetChanged()
         }
     }
 }
