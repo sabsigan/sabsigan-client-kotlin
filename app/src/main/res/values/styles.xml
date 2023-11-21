@@ -23,4 +23,35 @@
         <item name="android:windowIsFloating">true</item>
     </style>
 
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+
+
+
+
+
+
+    <style name="TextView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="TextView.subTitle">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Subhead</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#212121</item>
+    </style>
+
+    <style name="TextView.name">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Small</item>
+        <item name="android:textColor">#212121</item>
+    </style>
+
+    <style name="TextView.value">
+        <item name="android:layout_marginRight">@dimen/spacing_middle</item>
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Small</item>
+        <item name="android:textColor">#999999</item>
+    </style>
+
 </resources>

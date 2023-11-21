@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?selectableItemBackground"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/spacing_big"
+    android:paddingTop="@dimen/spacing_small"
+    android:paddingBottom="@dimen/spacing_small">
+
+    <TextView
+        android:id="@+id/name"
+        style="@style/TextView.name"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="레이나" />
+
+    <TextView
+        android:id="@+id/address"
+        style="@style/TextView.value"
+        android:layout_marginTop="@dimen/spacing_small"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/name"
+        tools:text="123456789" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/connectedLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF">
+
+    <TextView
+        android:id="@+id/connectedTitle"
+        style="@style/TextView.subTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/spacing_large"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:gravity="center_vertical"
+        android:text="@string/connect_info"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/groupOwnerLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/spacing_big"
+        android:layout_marginTop="@dimen/spacing_middle"
+        android:layout_marginRight="@dimen/spacing_big"
+        android:orientation="horizontal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/connectedTitle">
+
+        <TextView
+            style="@style/TextView.name"
+            android:text="@string/group_owner" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/groupOwner"
+            style="@style/TextView.value"
+            tools:text="오너" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/hostAddrLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/spacing_big"
+        android:layout_marginTop="@dimen/spacing_middle"
+        android:layout_marginRight="@dimen/spacing_big"
+        android:orientation="horizontal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/groupOwnerLayout">
+
+        <TextView
+            style="@style/TextView.name"
+            android:text="@string/host_name" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/hostName"
+            style="@style/TextView.value"
+            tools:text="123456789" />
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/line2"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_marginTop="@dimen/spacing_large"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hostAddrLayout" />
+
+
+    <TextView
+        android:id="@+id/pictureTitle"
+        style="@style/TextView.subTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/spacing_large"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:gravity="center_vertical"
+        android:text="@string/send_picture"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/line2" />
+
+
+    <TextView
+        android:id="@+id/sended_text"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="72dp"
+        android:background="@color/Gray_500"
+        android:text="client"
+        android:textSize="25dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/pictureTitle"
+        app:layout_constraintVertical_bias="0.377"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <EditText
+        android:id="@+id/sending_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:hint="전송할 메시지 입력"
+        app:layout_constraintTop_toBottomOf="@+id/sended_text"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <Button
+        android:id="@+id/send"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="전송"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sending_text" />
+
+    <!--    <Button-->
+<!--        android:id="@+id/selectPicture"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:text="@string/select_picture"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginTop="@dimen/spacing_middle"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintLeft_toLeftOf="parent"-->
+<!--        app:layout_constraintRight_toRightOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/pictureTitle" />-->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

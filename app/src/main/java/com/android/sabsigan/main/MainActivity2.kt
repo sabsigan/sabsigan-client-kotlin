@@ -13,8 +13,10 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.android.sabsigan.R
 import com.android.sabsigan.databinding.ActivityMain2Binding
+import com.android.sabsigan.main.MainActivity2
 import com.android.sabsigan.main.chatting.ChatActivity
 import com.android.sabsigan.viewModel.MainViewModel
+import com.android.sabsigan.wifidirectsample.view.MainActivity3
 
 class MainActivity2 : AppCompatActivity() {
     private val viewModel by viewModels<MainViewModel>()
@@ -42,6 +44,19 @@ class MainActivity2 : AppCompatActivity() {
         viewModel.chatRoomID.observe(this) {
             Log.d("chatRoomFragment", "변경")
             openChatRoom(it)
+        }
+
+        //drawer wifi선택시 와이파이 다이렉트 이동
+        drawer.setNavigationItemSelectedListener {
+            when(it.itemId) {
+                R.id.navigation_wifi -> {
+                    val intent = Intent(this, MainActivity3::class.java)
+                    startActivity(intent)
+                    true
+                }
+
+                else -> false
+            }
         }
     }
 
