@@ -32,7 +32,7 @@ class ChatActivity : AppCompatActivity() {
 
         wifiConnectReceiver = WifiConnectReceiver(viewModel)
 
-//        setupAdapter()
+        setupAdapter()
     }
 
     override fun onPause() {

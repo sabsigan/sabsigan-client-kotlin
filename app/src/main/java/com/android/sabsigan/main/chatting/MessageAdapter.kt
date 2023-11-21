@@ -1,5 +1,6 @@
 package com.android.sabsigan.main.chatting
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.ViewDataBinding
@@ -19,8 +20,8 @@ class MessageAdapter(private val viewModel: ChatViewModel): RecyclerView.Adapter
     class MessageViewHolder private constructor(var binding: ViewDataBinding, val viewType: Int) : RecyclerView.ViewHolder(binding.root) {
         fun bind(viewModel: ChatViewModel, chatMessage: ChatMessage) {
             if (viewType == 0) {
-                (binding as AdapterOtherMessageBinding).chatMessage = chatMessage
-                (binding as AdapterOtherMessageBinding).viewModel = viewModel
+                (binding as AdapterMyMessageBinding).chatMessage = chatMessage
+                (binding as AdapterMyMessageBinding).viewModel = viewModel
                 binding.executePendingBindings()
             } else {
                 (binding as AdapterOtherMessageBinding).chatMessage = chatMessage
@@ -41,9 +42,11 @@ class MessageAdapter(private val viewModel: ChatViewModel): RecyclerView.Adapter
     }
 
     override fun getItemViewType(position: Int): Int {
-        if(messageList[position].id.equals(viewModel.getUID())) {
+        if(messageList[position].uid.equals(viewModel.getUID())) {
+            Log.d("ViewType", "0")
             return TYPE_MY;
         } else {
+            Log.d("ViewType", "1")
             return TYPE_OTHER;
         }
     }

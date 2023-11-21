@@ -38,6 +38,21 @@ class MainViewModel: WiFiViewModel() {
         _chatRoomID.value = chatRoom.id
     }
 
+    fun clickKKK() {
+        _userList.value?.add(
+            User(   // 여기는 datastore로 자기 로컬값 가져오기
+                id = "uid",
+                name = "name",
+                state = "state",
+                current_wifi = "current_wifi",
+                created_at = "time",
+                updated_at = "time",
+                last_active = "time",
+                online = true
+            )
+        )
+    }
+
 //    private val _text = MutableLiveData<String>().apply {
 //        value = "This is home Fragment"
 //    }

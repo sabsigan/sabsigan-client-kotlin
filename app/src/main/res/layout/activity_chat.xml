@@ -60,22 +60,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="10dp"
-                android:background="@null"
+                android:background="@color/Gray_100"
                 android:maxLines="3"
                 android:inputType="textMultiLine"
                 android:layout_weight="1"
+                android:text="@={viewModel.inputTxt}"
                 android:hint="메세지 보내기" />
 
-            <androidx.cardview.widget.CardView
+            <Button
                 android:id="@+id/sendButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginLeft="8dp"
+                android:layout_margin="8dp"
                 android:layout_gravity="start"
+                android:background="@drawable/rounded_layout"
                 android:elevation="8dp"
-                app:cardCornerRadius="25dp">
-
-            </androidx.cardview.widget.CardView>
+                android:onClick="@{()->viewModel.getMessageTxt()}"
+                app:cardCornerRadius="25dp"/>
 
         </LinearLayout>
 

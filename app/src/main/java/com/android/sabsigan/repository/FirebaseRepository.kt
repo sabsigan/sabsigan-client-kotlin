@@ -130,29 +130,28 @@ class FirebaseRepository() {
                         Log.d("getChatRooms", "${document.id} => ${document.data}")
 
                         var users = document["users"] as ArrayList<String>
+                        
                         var isMine = false
-
                         for (user in users) {
                             if (user.equals(uid))
                                 isMine = true
                         }
+                        if (!isMine) continue
 
-                        if (isMine) {
-                            val chatRoom = ChatRoom(
-                                id = document["id"] as String,
-                                name = document["name"] as String,
-                                users = users,
-                                created_by = document["created_by"] as String,
-                                created_at = document["created_at"] as String,
-                                updated_at = document["updated_at"] as String,
-                                last_message_at = document["last_message_at"] as String,
-                                last_message = document["last_message"] as String,
-                                member_cnt = (document["member_cnt"] as Long).toInt(),
-                                disabled = document["disabled"] as Boolean
-                            )
+                        val chatRoom = ChatRoom(
+                            id = document["id"] as String,
+                            name = document["name"] as String,
+                            users = users,
+                            created_by = document["created_by"] as String,
+                            created_at = document["created_at"] as String,
+                            updated_at = document["updated_at"] as String,
+                            last_message_at = document["last_message_at"] as String,
+                            last_message = document["last_message"] as String,
+                            member_cnt = document["member_cnt"] as String,
+                            disabled = document["disabled"] as Boolean
+                        )
 
-                            items.add(chatRoom)
-                        }
+                        items.add(chatRoom)
                     }
                 }
                 .addOnFailureListener { exception ->
@@ -192,7 +191,7 @@ class FirebaseRepository() {
                         updated_at = doc.document["updated_at"] as String,
                         last_message_at = doc.document["last_message_at"] as String,
                         last_message = doc.document["last_message"] as String,
-                        member_cnt = (doc.document["member_cnt"] as Long).toInt(),
+                        member_cnt = doc.document["member_cnt"] as String,
                         disabled = doc.document["disabled"] as Boolean
                     )
 
@@ -231,6 +230,30 @@ class FirebaseRepository() {
         try {
             val messageRef = db.collection("chatRooms").document(cid).collection("messages")
 
+            messageRef.get()
+                .addOnSuccessListener { documents ->
+                    for (document in documents) {
+                        Log.d("getChatRooms", "${document.id} => ${document.data}")
+
+                        val chatMessage = ChatMessage(
+                            cid = document["cid"] as String,
+                            uid = document["uid"] as String,
+                            id = document["id"] as String,
+                            userName = document["userName"] as String,
+                            text = document["text"] as String,
+                            type = document["type"] as String,
+                            created_at = document["created_at"] as String,
+                            updated_at = document["updated_at"] as String,
+                        )
+
+                        items.add(chatMessage)
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.w("getChatRooms", "Error getting documents: ", exception)
+                }
+
+
             messageRef.addSnapshotListener { snapshots, e ->
                 // 오류 발생 시
                 if (e != null) {
@@ -241,20 +264,35 @@ class FirebaseRepository() {
                 // 원하지 않는 문서 무시
                 if (snapshots!!.metadata.isFromCache) return@addSnapshotListener
 
+                var cnt = 0
                 for (doc in snapshots.documentChanges) {
                     Log.d("firebase", "${doc.document.id} => ${doc.document.data}")
 
+                    val chatMessage = ChatMessage(
+                        cid = doc.document["cid"] as String,
+                        uid = doc.document["uid"] as String,
+                        id = doc.document["id"] as String,
+                        userName = doc.document["userName"] as String,
+                        text = doc.document["text"] as String,
+                        type = doc.document["type"] as String,
+                        created_at = doc.document["created_at"] as String,
+                        updated_at = doc.document["updated_at"] as String,
+                    )
+
                     // 문서가 추가될 경우 추가
-                    if (doc.type == DocumentChange.Type.ADDED) {
-                    }
+                    if (doc.type == DocumentChange.Type.ADDED)
+                        items.add(chatMessage)
 
                     // 문서가 수정될 경우 수정 처리
                     if (doc.type == DocumentChange.Type.MODIFIED) {
+                        items.get(cnt).text = chatMessage.text
+                        items.get(cnt).updated_at = chatMessage.updated_at
                     }
 
                     // 문서가 삭제될 경우 삭제 처리
                     if (doc.type == DocumentChange.Type.REMOVED) {
                     }
+                    cnt++
                 }
             }
         } catch (exception: Exception) {
@@ -262,6 +300,38 @@ class FirebaseRepository() {
         }
 
         return@withContext items
+    }
+
+    fun sendMessage(message: String, cid: String) {
+        val time = getTime()
+        val chatRef = db.collection("chatRooms").document(cid).collection("messages")
+
+        val chatMessage = ChatMessage(
+            cid = cid,
+            uid = uid!!,
+            userName = "이름",
+            text = message,
+            type = "msg",
+            created_at = time,
+            updated_at = time,
+        )
+
+        chatRef.add(chatMessage)
+            .addOnSuccessListener {
+                Log.d("msg", "DocumentSnapshot written with ID: ${it.id}")
+
+                val updates = hashMapOf<String, Any>(
+                    "id" to it.id,
+                )
+
+                chatRef.document(it.id).update(updates)
+                    .addOnSuccessListener {
+                        Log.d("msg", "DocumentSnapshot written with ID: ${it}")
+                    }
+                    .addOnFailureListener {e ->
+                        Log.w("msg", "Error adding document", e)
+                    }
+            }
     }
 
     fun createChatRoom(otherUser: User, cnt: Int): Boolean {
@@ -289,7 +359,7 @@ class FirebaseRepository() {
             created_at = time,
             updated_at = time,
             last_message_at = time,
-            member_cnt = chatList.size,
+            member_cnt = chatList.size.toString(),
         )
 
         chatRef.add(chatRoom)

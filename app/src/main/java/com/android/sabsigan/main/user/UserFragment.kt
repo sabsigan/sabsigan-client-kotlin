@@ -23,11 +23,6 @@ class UserFragment : Fragment() {
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_user, container, false)
 
-//        val textView: TextView = binding.textUser
-//        viewModel.text.observe(viewLifecycleOwner) {
-//            textView.text = it
-//        }
-
         return binding.root
     }
 

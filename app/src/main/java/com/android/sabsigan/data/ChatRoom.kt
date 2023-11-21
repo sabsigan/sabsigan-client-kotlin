@@ -10,6 +10,6 @@ data class ChatRoom(
     var updated_at: String = "",
     var last_message_at: String = "", // 시간
     var last_message: String = "", // 텍스트
-    var member_cnt: Int = 0,
+    var member_cnt: String = "0",
     var disabled: Boolean = false,
     )

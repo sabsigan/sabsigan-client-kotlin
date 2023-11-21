@@ -34,7 +34,8 @@
             android:textColor="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="채팅"/>
 
         <TextView
             android:id="@+id/time"
@@ -44,7 +45,8 @@
             android:text="@{chatMessage.created_at}"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="@+id/msg"
-            app:layout_constraintEnd_toStartOf="@+id/msg" />
+            app:layout_constraintEnd_toStartOf="@+id/msg"
+            tools:text="시간"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
