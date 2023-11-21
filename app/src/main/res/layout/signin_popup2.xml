@@ -93,23 +93,14 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/constraintLayout2"
+        <Button
+            android:id="@+id/Button"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="6dp"
             android:background="@drawable/rounded_bottom_gradient"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
-
-            <TextView
-                android:id="@+id/Button"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="button"
-                android:textStyle="bold"/>
-
-        </LinearLayout>
+            android:text="LOGIN"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout2"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

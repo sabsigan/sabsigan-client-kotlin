@@ -20,12 +20,20 @@
 
     <color name="Blue_50">#E3F2FD</color>
     <color name="Blue_100">#BBDEFB</color>
+    <color name="Blue_200">#90CAF9</color>
+    <color name="Blue_300">#64B5F6</color>
+    <color name="Blue_400">#42A5F5</color>
     <color name="Blue_500">#2196F3</color>
     <color name="Blue_600">#1E88E5</color>
     <color name="Blue_700">#1976D2</color>
 
     <color name="Red_50">#FFEBEE</color>
     <color name="Red_100">#FFCDD2</color>
+    <color name="Red_200">#EF9A9A</color>
+    <color name="Red_300">#E57373</color>
+    <color name="Red_400">#EF5350</color>
+    <color name="Red_500">#F44336</color>
+    <color name="Red_600">#E53935</color>
     <color name="Red_700">#D32F2F</color>
 
     <color name="Gray_50">#FAFAFA</color>

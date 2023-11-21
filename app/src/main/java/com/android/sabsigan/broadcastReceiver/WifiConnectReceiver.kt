@@ -4,38 +4,58 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
+import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.net.wifi.p2p.WifiP2pManager
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
-import com.android.sabsigan.ViewModel.WiFiViewModel
+import com.android.sabsigan.viewModel.WiFiViewModel
 
 class WifiConnectReceiver(private val viewModel: WiFiViewModel) : BroadcastReceiver() {
-
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
         if (intent.action == ConnectivityManager.CONNECTIVITY_ACTION) {
-            val connectivityManager =
-                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val networkInfo = connectivityManager.activeNetworkInfo
 
-            val wifiInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-            val mobileInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE)
-
-            if (wifiInfo != null && wifiInfo.isConnected) {
+            if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_WIFI) {
                 // 와이파이 연결됐을 때 처리
-                viewModel.updateWiFiData("wifiInfo.isConnected")
-//                Toast.makeText(context, "와이파이가 연결되었습니다.", Toast.LENGTH_SHORT).show()
-            } else if (mobileInfo != null && mobileInfo.isConnected) {
+                val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                val wifiInfo: WifiInfo = wifiManager.connectionInfo
+                val dhcpInfo = wifiManager.dhcpInfo
+
+                viewModel.updateWiFiData(wifiInfo, dhcpInfo)
+            } else if (networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_MOBILE) {
                 // 데이터 연결됐을 때 처리
                 viewModel.updateWiFiData("mobileInfo.isConnected")
-//                Toast.makeText(context, "데이터가 연결되었습니다.", Toast.LENGTH_SHORT).show()
             } else {
                 // 와이파이 연결이 끊겼을 때 처리
                 viewModel.updateWiFiData("wifiInfo.null")
-//                Toast.makeText(context, "인터넷이 끊겼습니다.", Toast.LENGTH_SHORT).show()
             }
+
+//            val currentNetwork = connectivityManager.activeNetwork
+//            val linkProperties = connectivityManager.getLinkProperties(currentNetwork)
+//            val ttt = connectivityManager.getNetworkCapabilities(currentNetwork)
+//
+//            val linkAddresses = linkProperties?.linkAddresses // IP 주소
+//            val routeInfoList = linkProperties?.routes // 루트 정보
+//            val dnsServers    = linkProperties?.dnsServers // DNS 서버 목록
+//
+//            Log.d("current WIFI", "======================================")
+//            Log.d("current WIFI", "sss: " + ttt.toString())
+//
+//            for (linkAddress in linkAddresses!!)
+//                Log.d("current WIFI", "IP Address: " + linkAddress.address.hostAddress)
+//            for (routeInfo in routeInfoList!!) {
+//                if (routeInfo.isDefaultRoute) {
+//                    Log.d("current WIFI", "Gateway: " + routeInfo.gateway?.hostAddress)
+//                    break
+//                }
+//            }
+//            for (dnsServer in dnsServers!!)
+//                Log.d("current WIFI", "IP DNS Server: " + dnsServer.hostAddress)
+//            Log.d("current WIFI", "======================================")
         }
 
     }
