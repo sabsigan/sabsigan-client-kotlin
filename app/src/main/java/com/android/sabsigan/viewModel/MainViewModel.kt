@@ -18,11 +18,9 @@ class MainViewModel: WiFiViewModel() {
     private val _chatList = MutableLiveData<ArrayList<ChatRoom>>()
     private val _chatRoomID = MutableLiveData<String>()
 
-
     val userList: LiveData<ArrayList<User>> get() = _userList
     val chatList: LiveData<ArrayList<ChatRoom>> get() = _chatList
     val chatRoomID: LiveData<String> get() = _chatRoomID
-
 
     init {
         runBlocking {
@@ -39,9 +37,6 @@ class MainViewModel: WiFiViewModel() {
         Log.d("chatRoomFragment", "클릭")
         _chatRoomID.value = chatRoom.id
     }
-
-
-
 
 //    private val _text = MutableLiveData<String>().apply {
 //        value = "This is home Fragment"

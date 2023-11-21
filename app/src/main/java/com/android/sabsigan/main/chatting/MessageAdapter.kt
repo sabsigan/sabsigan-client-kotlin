@@ -11,7 +11,6 @@ import com.android.sabsigan.viewModel.ChatViewModel
 
 
 class MessageAdapter(private val viewModel: ChatViewModel): RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
-//    var context: Context? = null
     var messageList = arrayListOf<ChatMessage>()
 
     val TYPE_MY = 0

@@ -9,6 +9,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.android.sabsigan.R
@@ -41,10 +42,10 @@ class MainActivity2 : AppCompatActivity() {
         navView.setupWithNavController(navController)
         drawer.setupWithNavController(navController) //drawerNavigation 설정하여 동기화
 
-        viewModel.chatRoomID.observe(this) {
+        viewModel.chatRoomID.observe(this, Observer {
             Log.d("chatRoomFragment", "변경")
             openChatRoom(it)
-        }
+        })
 
         //drawer wifi선택시 와이파이 다이렉트 이동
         drawer.setNavigationItemSelectedListener {
@@ -79,7 +80,7 @@ class MainActivity2 : AppCompatActivity() {
         if (!chatRoomID.equals("")) {
             Log.d("chatRoomFragment", chatRoomID)
             val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("chatRoomID",chatRoomID)
+            intent.putExtra("chatRoomID", chatRoomID)
             startActivity(intent)
         }
     }
