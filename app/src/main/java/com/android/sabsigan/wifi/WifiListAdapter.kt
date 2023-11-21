@@ -33,28 +33,28 @@ class WifiListAdapter(val context: Context, var wifiList: MutableList<ScanResult
         val mainViewHolder = MainViewHolder(view)
 
         mainViewHolder.itemView.setOnClickListener {
-            val position = mainViewHolder.absoluteAdapterPosition
-
-            val SSID = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                wifiList[position].wifiSsid.toString()
-            else
-                wifiList[position].SSID
-//            context.startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
-
-            val builder = AlertDialog.Builder(context)
-            val builderItem = LayoutInflater.from(parent.context).inflate(R.layout.input_wifi_password, parent, false)
-            val editText = builderItem.findViewById<TextView>(R.id.editText)
-
-            with(builder){
-                setTitle("와이파이 연결")
-                setMessage("비밀번호를 입력해주세요")
-                setView(builderItem.rootView)
-                setPositiveButton("OK"){ dialogInterface: DialogInterface, i: Int ->
-                    if(editText.text != null)
-                        changeWifiConfiguration(context, SSID, editText.text.toString(), position)
-                }
-                show()
-            }
+//            val position = mainViewHolder.absoluteAdapterPosition
+//
+//            val SSID = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+//                wifiList[position].wifiSsid.toString()
+//            else
+//                wifiList[position].SSID
+////            context.startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
+//
+//            val builder = AlertDialog.Builder(context)
+//            val builderItem = LayoutInflater.from(parent.context).inflate(R.layout.input_wifi_password, parent, false)
+//            val editText = builderItem.findViewById<TextView>(R.id.editText)
+//
+//            with(builder){
+//                setTitle("와이파이 연결")
+//                setMessage("비밀번호를 입력해주세요")
+//                setView(builderItem.rootView)
+//                setPositiveButton("OK"){ dialogInterface: DialogInterface, i: Int ->
+//                    if(editText.text != null)
+//                        changeWifiConfiguration(context, SSID, editText.text.toString(), position)
+//                }
+//                show()
+//            }
         }
 
         return mainViewHolder

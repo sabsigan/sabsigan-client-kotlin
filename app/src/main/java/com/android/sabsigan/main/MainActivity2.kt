@@ -1,6 +1,8 @@
 package com.android.sabsigan.main
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import androidx.activity.viewModels
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -11,6 +13,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.android.sabsigan.R
 import com.android.sabsigan.databinding.ActivityMain2Binding
+import com.android.sabsigan.main.chatting.ChatActivity
 import com.android.sabsigan.viewModel.MainViewModel
 
 class MainActivity2 : AppCompatActivity() {
@@ -35,6 +38,11 @@ class MainActivity2 : AppCompatActivity() {
         //네비와 연결 셋업
         navView.setupWithNavController(navController)
         drawer.setupWithNavController(navController) //drawerNavigation 설정하여 동기화
+
+        viewModel.chatRoomID.observe(this) {
+            Log.d("chatRoomFragment", "변경")
+            openChatRoom(it)
+        }
     }
 
 
@@ -50,5 +58,14 @@ class MainActivity2 : AppCompatActivity() {
             binding.mainActivityLayout.closeDrawer(GravityCompat.START)
         else
             super.onBackPressed()
+    }
+
+    private fun openChatRoom(chatRoomID: String) {
+        if (!chatRoomID.equals("")) {
+            Log.d("chatRoomFragment", chatRoomID)
+            val intent = Intent(this, ChatActivity::class.java)
+            intent.putExtra("chatRoomID",chatRoomID)
+            startActivity(intent)
+        }
     }
 }

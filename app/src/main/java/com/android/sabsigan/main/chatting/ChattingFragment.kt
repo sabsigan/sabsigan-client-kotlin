@@ -37,11 +37,6 @@ class ChattingFragment : Fragment() {
         binding.lifecycleOwner = viewLifecycleOwner
 
         setupAdapter()
-
-        viewModel.chatRoomID.observe(viewLifecycleOwner) {
-            Log.d("chatRoomFragment", "변경")
-            openChatRoom(viewModel.chatRoomID.value!!)
-        }
     }
 
     override fun onDestroyView() {
@@ -51,11 +46,5 @@ class ChattingFragment : Fragment() {
 
     private fun setupAdapter() {
         binding.recyclerView.adapter = ChatListAdapter(viewModel)
-    }
-
-    private fun openChatRoom(chatRoomID: String) {
-        Log.d("chatRoomFragment", "시작")
-        val intent = Intent(context, ChatActivity::class.java)
-        startActivity(intent)
     }
 }
