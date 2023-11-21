@@ -1,5 +1,6 @@
 package com.android.sabsigan.Main
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -9,6 +10,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.android.sabsigan.R
 import com.android.sabsigan.databinding.ActivityMain2Binding
+import com.android.sabsigan.wifidirectsample.view.MainActivity3
 
 class MainActivity2 : AppCompatActivity() {
 
@@ -33,6 +35,19 @@ class MainActivity2 : AppCompatActivity() {
         navView.setupWithNavController(navController)
         drawer.setupWithNavController(navController) //drawerNavigation 설정하여 동기화
 
+
+        //drawer wifi선택시 와이파이 다이렉트 이동
+        drawer.setNavigationItemSelectedListener {
+            when(it.itemId) {
+                R.id.navigation_wifi -> {
+                    val intent = Intent(this, MainActivity3::class.java)
+                    startActivity(intent)
+                    true
+                }
+
+                else -> false
+            }
+        }
     }
 
 
