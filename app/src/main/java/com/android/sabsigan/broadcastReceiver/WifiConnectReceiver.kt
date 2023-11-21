@@ -10,7 +10,7 @@ import android.net.wifi.p2p.WifiP2pManager
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
-import com.android.sabsigan.ViewModel.WiFiViewModel
+import com.android.sabsigan.viewModel.WiFiViewModel
 
 class WifiConnectReceiver(private val viewModel: WiFiViewModel) : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
