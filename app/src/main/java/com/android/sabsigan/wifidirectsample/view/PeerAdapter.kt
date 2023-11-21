@@ -49,7 +49,6 @@ class PeerAdapter : RecyclerView.Adapter<PeerAdapter.PeerViewHolder>() {
         val address: TextView = binding.address
 
         init {
-
             binding.root.setOnClickListener {
                 ConnectPeerEvent.send(device)
             }

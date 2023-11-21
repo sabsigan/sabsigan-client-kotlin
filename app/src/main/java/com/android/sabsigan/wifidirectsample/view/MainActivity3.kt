@@ -33,7 +33,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import karrel.kr.co.wifidirectsample.event.*
 import karrel.kr.co.wifidirectsample.view.DefaultFragment
 import karrel.kr.co.wifidirectsample.view.DiscoverFragment
-import karrel.kr.co.wifidirectsample.view.PictureFragment
+import karrel.kr.co.wifidirectsample.view.ClientFragment
 import karrel.kr.co.wifidirectsample.view.ServerFragment
 
 class MainActivity3 : AppCompatActivity() {
@@ -103,7 +103,7 @@ class MainActivity3 : AppCompatActivity() {
             replaceFragment(ServerFragment(info))
         } else {
             // 게스트 이면 음악 리스트를 송신할 수 있는 화면을 보여준다
-            replaceFragment(PictureFragment(info))
+            replaceFragment(ClientFragment(info))
         }
     }
 
@@ -111,6 +111,8 @@ class MainActivity3 : AppCompatActivity() {
         val config = WifiP2pConfig()
         config.deviceAddress = device.deviceAddress
         config.groupOwnerIntent = 0
+
+        Toast.makeText(this@MainActivity3,config.deviceAddress+" 장치로 연결중",Toast.LENGTH_LONG).show()
 
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -149,12 +151,12 @@ class MainActivity3 : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item?.itemId) {
+        when (item?.itemId) { // 탐색
             R.id.action_discorvery -> {
                 discoveryPeer()
                 return true
             }
-            R.id.action_reset -> {
+            R.id.action_reset -> { //초기화
                 ResetDataEvent.send(true)
                 return true
             }
@@ -211,31 +213,29 @@ class MainActivity3 : AppCompatActivity() {
     private fun checkPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             TedPermission.create()
-                    .setPermissionListener(permissionlistener)
+                .setPermissionListener(permissionlistener)
                 .setRationaleMessage("앱을 이용하기 위해서는 접근 권한이 필요합니다")
                 .setDeniedMessage("앱에서 요구하는 권한설정이 필요합니다...\n [설정] > [권한] 에서 사용으로 활성화해주세요.")
     //                .setDeniedCloseButtonText("닫기")
     //                .setGotoSettingButtonText("설정")
     //                .setRationaleTitle("HELLO")
-                    .setPermissions(
-//                            Manifest.permission.WRITE_EXTERNAL_STORAGE, // 외부 저장소에 데이터를 쓰거나 읽을 수 있는 권한을 제공
-//                            Manifest.permission.ACCESS_COARSE_LOCATION, //대략적인 위치 정보에 액세스할 수 있는 권한을 제공
-                            Manifest.permission.ACCESS_FINE_LOCATION, //정확한 위치 정보에 액세스할 수 있는 권한을 제공
-//                            Manifest.permission.NEARBY_WIFI_DEVICES //근처의 Wi-Fi 디바이스에 대한 정보에 액세스할 수 있는 권한을 제공
-
-                    )
-                    .check()
+                .setPermissions(
+//                    Manifest.permission.WRITE_EXTERNAL_STORAGE, // 외부 저장소에 데이터를 쓰거나 읽을 수 있는 권한을 제공
+//                    Manifest.permission.ACCESS_COARSE_LOCATION, //대략적인 위치 정보에 액세스할 수 있는 권한을 제공
+//                    Manifest.permission.NEARBY_WIFI_DEVICES //근처의 Wi-Fi 디바이스에 대한 정보에 액세스할 수 있는 권한을 제공
+                      Manifest.permission.ACCESS_FINE_LOCATION //정확한 위치 정보에 액세스할 수 있는 권한을 제공
+                ).check()
         }
     }
 
     private val permissionlistener = object : PermissionListener {
         override fun onPermissionGranted() {
-            Toast.makeText(this@MainActivity3,"위치,저장소 권한 완료",Toast.LENGTH_SHORT)
+            Toast.makeText(this@MainActivity3,"위치 권한 완료",Toast.LENGTH_SHORT).show()
             registerReceiver()
         }
 
         override fun onPermissionDenied(deniedPermissions: List<String>) {
-            Toast.makeText(this@MainActivity3,"위치,저장소 권한 실패",Toast.LENGTH_SHORT)
+            Toast.makeText(this@MainActivity3,"위치 권한 실패",Toast.LENGTH_SHORT).show()
             finish()
         }
     }

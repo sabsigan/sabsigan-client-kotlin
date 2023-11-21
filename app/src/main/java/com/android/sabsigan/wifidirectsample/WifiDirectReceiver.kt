@@ -121,46 +121,12 @@ class WifiDirectReceiver(private val manager : WifiP2pManager?, private val chan
         if (networkInfo != null) {
             if (networkInfo.isConnected) {
                 manager.requestConnectionInfo(channel) { info ->
-                    Log.d(TAG,"WiFiDirectBroadcastReceiver info : $info")
+                    Log.d(TAG, "WiFiDirectBroadcastReceiver info : $info")
                     ConnectionInfoEvent.send(info)
                 }
             } else {
                 ResetDataEvent.send(true)
             }
         }
-
-//        manager?.let { manager ->
-//
-//            val networkInfo: NetworkInfo? = intent
-//                .getParcelableExtra( WifiP2pManager.EXTRA_NETWORK_INFO) as? NetworkInfo
-//
-//            if (networkInfo?.isConnected == true) {
-//
-//                // We are connected with the other device, request connection
-//                // info to find group owner IP
-//
-//                manager.requestConnectionInfo(channel, connectionListener)
-//            }
-//        }
     }
-
-    private val connectionListener = WifiP2pManager.ConnectionInfoListener { info ->
-
-        // InetAddress from WifiP2pInfo struct.
-        val groupOwnerAddress: String = info.groupOwnerAddress.hostAddress
-
-        // After the group negotiation, we can determine the group owner
-        // (server).
-        if (info.groupFormed && info.isGroupOwner) {
-            // Do whatever tasks are specific to the group owner.
-            // One common case is creating a group owner thread and accepting
-            // incoming connections.
-        } else if (info.groupFormed) {
-            // The other device acts as the peer (client). In this case,
-            // you'll want to create a peer thread that connects
-            // to the group owner.
-        }
-    }
-
-
 }

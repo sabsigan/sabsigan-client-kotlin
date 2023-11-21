@@ -1,32 +1,25 @@
 package karrel.kr.co.wifidirectsample.view
 
 import android.annotation.SuppressLint
-import android.content.ContentValues.TAG
 import android.net.wifi.p2p.WifiP2pInfo
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.android.sabsigan.databinding.FragmentMusicListBinding
 import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.InetSocketAddress
-import java.net.ServerSocket
 import java.net.Socket
 
 @SuppressLint("ValidFragment")
-class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2pInfo) : Fragment() {
+class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2pInfo) : Fragment() {
 
 //    private var galleryLoader: GalleryLoader? = null
     private var disposable: Disposable? = null
@@ -102,12 +95,12 @@ class PictureFragment @SuppressLint("ValidFragment") constructor(val info: WifiP
                     val outputStream = socket.getOutputStream()
                     val writer = BufferedWriter(OutputStreamWriter(outputStream))
 
-                    // 서버로 전송할 텍스트를 전달합니다.
+                    // 서버로 전송할 텍스트 전달
                     writer.write(message)
                     writer.newLine()
                     writer.flush()
 
-                    // 여기서는 서버로부터의 응답을 받는 코드를 추가하지 않았습니다.
+                    //TODO 여기서는 서버로부터의 응답을 받는 코드 추가
 
                     outputStream.close()
                     writer.close()
