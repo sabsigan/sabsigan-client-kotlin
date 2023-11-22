@@ -3,6 +3,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.android.sabsigan.data.ChatMessage
+import com.android.sabsigan.repository.ChatFbRepository
 import com.android.sabsigan.repository.FirebaseRepository
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -10,14 +11,14 @@ import kotlinx.coroutines.runBlocking
 
 // chatActivity viewModel
 class ChatViewModel: WiFiViewModel() {
-    private val firebaseRepository = FirebaseRepository()
+    private val fbRepository = ChatFbRepository()
 
     private var auth = Firebase.auth
     private val uid = auth.currentUser?.uid
     private val chatID = MutableLiveData<String>()
 
-    private val _messageList = MutableLiveData<ArrayList<ChatMessage>>()
-    val messageList: LiveData<ArrayList<ChatMessage>> get() = _messageList
+    private val _messageList = MutableLiveData<MutableList<ChatMessage>>()
+    val messageList: LiveData<MutableList<ChatMessage>> get() = _messageList
     val inputTxt = MutableLiveData<String>()
 
     init {
@@ -32,7 +33,7 @@ class ChatViewModel: WiFiViewModel() {
         chatID.value = cid
 
         runBlocking {
-            _messageList.value = firebaseRepository.getMessageList(chatID.value!!)
+            _messageList.value = fbRepository.getMessageList(chatID.value!!)
         }
     }
 
@@ -42,7 +43,7 @@ class ChatViewModel: WiFiViewModel() {
 
         if (msg != null && !msg.equals("")) {
             Log.d("click", "메시지 전송")
-            firebaseRepository.sendMessage(msg, chatID.value!!)
+            fbRepository.sendMessage(msg, chatID.value!!)
             inputTxt.value = ""
         }
     }

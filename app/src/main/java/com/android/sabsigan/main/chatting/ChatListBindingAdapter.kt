@@ -9,17 +9,9 @@ object ChatListBindingAdapter {
     @SuppressLint("NotifyDataSetChanged")
     @BindingAdapter("app:chatRoomItems")
     @JvmStatic
-    fun setItems(recyclerView: RecyclerView, items: ArrayList<ChatRoom>?) {
-//        if(recyclerView.adapter == null) {
-//            val adapter = ChatListAdapter()
-//            adapter.setHasStableIds(true)
-//            recyclerView.adapter = adapter
-//        }
-
+    fun setItems(recyclerView: RecyclerView, items: List<ChatRoom>?) {
         items?.let {
-            val adapter = recyclerView.adapter as ChatListAdapter
-            adapter.chatList = items
-            adapter.notifyDataSetChanged()
+            (recyclerView.adapter as ChatListAdapter).submitList(it)
         }
     }
 }

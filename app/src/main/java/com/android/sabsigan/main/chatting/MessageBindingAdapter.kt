@@ -7,20 +7,11 @@ import com.android.sabsigan.data.ChatMessage
 import com.android.sabsigan.data.ChatRoom
 
 object MessageBindingAdapter {
-    @SuppressLint("NotifyDataSetChanged")
     @BindingAdapter("app:messageItems")
     @JvmStatic
-    fun setItems(recyclerView: RecyclerView, items: ArrayList<ChatMessage>?) {
-//        if(recyclerView.adapter == null) {
-//            val adapter = ChatListAdapter()
-//            adapter.setHasStableIds(true)
-//            recyclerView.adapter = adapter
-//        }
-
+    fun setItems(recyclerView: RecyclerView, items: List<ChatMessage>?) {
         items?.let {
-            val adapter = recyclerView.adapter as MessageAdapter
-            adapter.messageList = items
-            adapter.notifyDataSetChanged()
+            (recyclerView.adapter as MessageAdapter).submitList(it)
         }
     }
 }

@@ -5,32 +5,29 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.data.User
-import com.android.sabsigan.repository.FirebaseRepository
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.android.sabsigan.repository.MainFbRepository
 import kotlinx.coroutines.runBlocking
 
 class MainViewModel: WiFiViewModel() {
-    private val firebaseRepository = FirebaseRepository()
+    private val fbRepository = MainFbRepository()
 
-    private val _userList = MutableLiveData<ArrayList<User>>()
-    private val _chatList = MutableLiveData<ArrayList<ChatRoom>>()
+    private val _userList = MutableLiveData<MutableList<User>>()
+    private val _chatList = MutableLiveData<MutableList<ChatRoom>>()
     private val _chatRoomID = MutableLiveData<String>()
 
-    val userList: LiveData<ArrayList<User>> get() = _userList
-    val chatList: LiveData<ArrayList<ChatRoom>> get() = _chatList
+    val userList: LiveData<MutableList<User>> get() = _userList
+    val chatList: LiveData<MutableList<ChatRoom>> get() = _chatList
     val chatRoomID: LiveData<String> get() = _chatRoomID
 
     init {
         runBlocking {
-            _userList.value = firebaseRepository.getUserList()
-            _chatList.value = firebaseRepository.getChatList()
+            _userList.value = fbRepository.getUserList()
+            _chatList.value = fbRepository.getChatList()
         }
     }
 
     fun clickUser(otherUser: User) {
-        firebaseRepository.createChatRoom(otherUser, 2)
+        fbRepository.createChatRoom(otherUser, 2)
     }
 
     fun clickChatRoom(chatRoom: ChatRoom) {
@@ -51,6 +48,10 @@ class MainViewModel: WiFiViewModel() {
                 online = true
             )
         )
+
+        (_userList.value as ArrayList<User>).forEach {
+            Log.d("tttt", it.id)
+        }
     }
 
 //    private val _text = MutableLiveData<String>().apply {
