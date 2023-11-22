@@ -1,5 +1,6 @@
 package com.android.sabsigan.main.chatting
 
+import MessageAdapter
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -8,10 +9,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.android.sabsigan.R
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.databinding.ActivityChatBinding
+import com.android.sabsigan.main.user.UserListAdapter
 import com.android.sabsigan.viewModel.ChatViewModel
 
 class ChatActivity : AppCompatActivity() {
@@ -32,7 +35,11 @@ class ChatActivity : AppCompatActivity() {
 
         wifiConnectReceiver = WifiConnectReceiver(viewModel)
 
-        setupAdapter()
+        binding.recyclerView.adapter = MessageAdapter(viewModel)
+
+        viewModel.messageList.observe(this, Observer {
+            (binding.recyclerView.adapter as MessageAdapter).setMessageList(it)
+        })
     }
 
     override fun onPause() {
@@ -69,9 +76,5 @@ class ChatActivity : AppCompatActivity() {
         }
 
         return false // 리시버가 현재 등록되어 있지 않음
-    }
-
-    private fun setupAdapter() {
-        binding.recyclerView.adapter = MessageAdapter(viewModel)
     }
 }

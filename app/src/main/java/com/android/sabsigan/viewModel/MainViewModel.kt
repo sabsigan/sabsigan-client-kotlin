@@ -9,21 +9,28 @@ import com.android.sabsigan.repository.MainFbRepository
 import kotlinx.coroutines.runBlocking
 
 class MainViewModel: WiFiViewModel() {
-    private val fbRepository = MainFbRepository()
+    private val fbRepository = MainFbRepository(this)
 
-    private val _userList = MutableLiveData<MutableList<User>>()
-    private val _chatList = MutableLiveData<MutableList<ChatRoom>>()
+    private val _userList = MutableLiveData<List<User>>()
+    private val _chatList = MutableLiveData<List<ChatRoom>>()
     private val _chatRoomID = MutableLiveData<String>()
 
-    val userList: LiveData<MutableList<User>> get() = _userList
-    val chatList: LiveData<MutableList<ChatRoom>> get() = _chatList
+    val userList: LiveData<List<User>> get() = _userList
+    val chatList: LiveData<List<ChatRoom>> get() = _chatList
     val chatRoomID: LiveData<String> get() = _chatRoomID
 
+    var cnt = 0
+
     init {
-        runBlocking {
-            _userList.value = fbRepository.getUserList()
-            _chatList.value = fbRepository.getChatList()
-        }
+
+    }
+
+    fun setUserList(list: List<User>) {
+        _userList.value = list
+    }
+
+    fun setChatList(list: List<ChatRoom>) {
+        _chatList.value = list
     }
 
     fun clickUser(otherUser: User) {
@@ -36,9 +43,12 @@ class MainViewModel: WiFiViewModel() {
     }
 
     fun clickKKK() {
-        _userList.value?.add(
+        cnt++
+
+        val ttt = _userList.value as ArrayList<User>
+        ttt.add(
             User(   // 여기는 datastore로 자기 로컬값 가져오기
-                id = "uid",
+                id = cnt.toString(),
                 name = "name",
                 state = "state",
                 current_wifi = "current_wifi",
@@ -48,6 +58,7 @@ class MainViewModel: WiFiViewModel() {
                 online = true
             )
         )
+        _userList.value = ttt
 
         (_userList.value as ArrayList<User>).forEach {
             Log.d("tttt", it.id)

@@ -17,17 +17,19 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 
 
-class MainFbRepository(): FirebaseRepository() {
-    private val _userList = MutableLiveData<MutableList<User>>()
+class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
+    private val _userList = MutableLiveData<List<User>>()
     private val _chatList = MutableLiveData<MutableList<ChatRoom>>()
-    val userList: LiveData<MutableList<User>> get() = _userList
+    val userList: LiveData<List<User>> get() = _userList
     val chatList: LiveData<MutableList<ChatRoom>> get() = _chatList
 
     init {
-
+        setUserList()
+        setChatList()
     }
 
-    suspend fun getUserList(): ArrayList<User> = withContext(Dispatchers.IO) { // 코틀린코루틴
+
+    private fun setUserList() {
         var items = ArrayList<User>()
 
         try {
@@ -55,6 +57,8 @@ class MainFbRepository(): FirebaseRepository() {
 
                         items.add(user)
                     }
+
+                    viewModel.setUserList(items)
                 }
                 .addOnFailureListener { exception ->
                     Log.w("getUsers", "Error getting documents: ", exception)
@@ -62,59 +66,58 @@ class MainFbRepository(): FirebaseRepository() {
 
             // 데이터 변경 처리
             query.addSnapshotListener { snapshots, e ->
-                    // 오류 발생 시
-                    if (e != null) {
-                        Log.w("fff", "Listen failed: $e")
-                        return@addSnapshotListener
-                    }
-
-                    // 원하지 않는 문서 무시
-                    if (snapshots!!.metadata.isFromCache) return@addSnapshotListener
-
-                    var cnt = 0
-                    for (doc in snapshots.documentChanges) {
-                        Log.d("firebase", "${doc.document.id} => ${doc.document.data}")
-
-                        val user = User(
-                            id = doc.document["id"] as String,
-                            name = doc.document["name"] as String,
-                            state = doc.document["state"] as String,
-                            current_wifi = doc.document["current_wifi"] as String,
-                            created_at = doc.document["created_at"] as String,
-                            updated_at = doc.document["updated_at"] as String,
-                            last_active = doc.document["last_active"] as String,
-                            online = true
-                        )
-
-                        // 문서가 추가될 경우 추가
-                        if (doc.type == DocumentChange.Type.ADDED)
-                            items.add(user)
-
-                        // 문서가 수정될 경우 수정 처리
-                        if (doc.type == DocumentChange.Type.MODIFIED) {
-                            items.get(cnt).name = user.name
-                            items.get(cnt).state = user.state
-                            items.get(cnt).current_wifi = user.current_wifi
-                            items.get(cnt).updated_at = user.updated_at
-                            items.get(cnt).last_active = user.last_active
-                            items.get(cnt).online = user.online
-                        }
-
-                        // 문서가 삭제될 경우 삭제 처리
-                        if (doc.type == DocumentChange.Type.REMOVED)
-                            items.removeAt(cnt)
-
-                        cnt++
-                    }
+                // 오류 발생 시
+                if (e != null) {
+                    Log.w("fff", "Listen failed: $e")
+                    return@addSnapshotListener
                 }
+
+                // 원하지 않는 문서 무시
+                if (snapshots!!.metadata.isFromCache) return@addSnapshotListener
+
+                var cnt = 0
+                for (doc in snapshots.documentChanges) {
+                    Log.d("firebase", "${doc.document.id} => ${doc.document.data}")
+
+                    val user = User(
+                        id = doc.document["id"] as String,
+                        name = doc.document["name"] as String,
+                        state = doc.document["state"] as String,
+                        current_wifi = doc.document["current_wifi"] as String,
+                        created_at = doc.document["created_at"] as String,
+                        updated_at = doc.document["updated_at"] as String,
+                        last_active = doc.document["last_active"] as String,
+                        online = true
+                    )
+
+                    // 문서가 추가될 경우 추가
+                    if (doc.type == DocumentChange.Type.ADDED)
+                        items.add(user)
+
+                    // 문서가 수정될 경우 수정 처리
+                    if (doc.type == DocumentChange.Type.MODIFIED) {
+                        items.get(cnt).name = user.name
+                        items.get(cnt).state = user.state
+                        items.get(cnt).current_wifi = user.current_wifi
+                        items.get(cnt).updated_at = user.updated_at
+                        items.get(cnt).last_active = user.last_active
+                        items.get(cnt).online = user.online
+                    }
+
+                    // 문서가 삭제될 경우 삭제 처리
+                    if (doc.type == DocumentChange.Type.REMOVED)
+                        items.removeAt(cnt)
+
+                    cnt++
+                }
+                viewModel.setUserList(items)
+            }
         } catch (exception: Exception) {
             Log.w("getUsers", "Error getting documents: ", exception)
         }
-
-        return@withContext items
     }
 
-    suspend fun getChatList(): ArrayList<ChatRoom> = withContext(Dispatchers.IO) {
+    private fun setChatList() {
         val items = ArrayList<ChatRoom>()
 
         try {
@@ -126,7 +129,7 @@ class MainFbRepository(): FirebaseRepository() {
                         Log.d("getChatRooms", "${document.id} => ${document.data}")
 
                         var users = document["users"] as ArrayList<String>
-                        
+
                         var isMine = false
                         for (user in users) {
                             if (user.equals(uid))
@@ -149,6 +152,7 @@ class MainFbRepository(): FirebaseRepository() {
 
                         items.add(chatRoom)
                     }
+                    viewModel.setChatList(items)
                 }
                 .addOnFailureListener { exception ->
                     Log.w("getChatRooms", "Error getting documents: ", exception)
@@ -212,12 +216,11 @@ class MainFbRepository(): FirebaseRepository() {
 
                     cnt++
                 }
+                viewModel.setChatList(items)
             }
         } catch (exception: Exception) {
             Log.w("getChatRooms", "Error getting documents: ", exception)
         }
-
-        return@withContext items
     }
 
     fun createChatRoom(otherUser: User, cnt: Int): Boolean {

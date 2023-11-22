@@ -1,24 +1,22 @@
-package com.android.sabsigan.main.chatting
-
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.ViewDataBinding
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.android.sabsigan.data.ChatMessage
-import com.android.sabsigan.data.User
+import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.databinding.AdapterMyMessageBinding
 import com.android.sabsigan.databinding.AdapterOtherMessageBinding
 import com.android.sabsigan.viewModel.ChatViewModel
 
 
-class MessageAdapter(private val viewModel: ChatViewModel): ListAdapter<ChatMessage, MessageAdapter.MessageViewHolder>(diffUtil) {
+class MessageAdapter(private val viewModel: ChatViewModel): RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
+    private var messageList = listOf<ChatMessage>()
+
     val TYPE_MY = 0
     val TYPE_OTHER = 1
 
-    class MessageViewHolder(var binding: ViewDataBinding, val viewType: Int) : RecyclerView.ViewHolder(binding.root) {
+    class MessageViewHolder private constructor(var binding: ViewDataBinding, val viewType: Int) : RecyclerView.ViewHolder(binding.root) {
         fun bind(viewModel: ChatViewModel, chatMessage: ChatMessage) {
             if (viewType == 0) {
                 (binding as AdapterMyMessageBinding).chatMessage = chatMessage
@@ -30,10 +28,25 @@ class MessageAdapter(private val viewModel: ChatViewModel): ListAdapter<ChatMess
                 binding.executePendingBindings()
             }
         }
+
+        companion object {
+            fun from(parent: ViewGroup, viewType: Int) : MessageViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = if (viewType == 0) AdapterMyMessageBinding.inflate(layoutInflater, parent, false)
+                else  AdapterOtherMessageBinding.inflate(layoutInflater, parent, false)
+
+                return MessageViewHolder(binding, viewType)
+            }
+        }
+    }
+
+    fun setMessageList(list: List<ChatMessage>) {
+        messageList = list
+        notifyDataSetChanged()
     }
 
     override fun getItemViewType(position: Int): Int {
-        if(getItem(position).uid.equals(viewModel.getUID())) {
+        if(messageList[position].uid.equals(viewModel.getUID())) {
             Log.d("ViewType", "0")
             return TYPE_MY;
         } else {
@@ -43,24 +56,12 @@ class MessageAdapter(private val viewModel: ChatViewModel): ListAdapter<ChatMess
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
-        val layoutInflater = LayoutInflater.from(parent.context)
-        val binding = if (viewType == 0) AdapterMyMessageBinding.inflate(layoutInflater, parent, false)
-        else  AdapterOtherMessageBinding.inflate(layoutInflater, parent, false)
-
-        return MessageViewHolder(binding, viewType)
+        return MessageViewHolder.from(parent, viewType)
     }
 
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
-        holder.bind(viewModel, getItem(position))
+        holder.bind(viewModel, messageList[position])
     }
 
-    companion object {
-        val diffUtil = object : DiffUtil.ItemCallback<ChatMessage>() {
-            override fun areItemsTheSame(oldItem: ChatMessage, newItem: ChatMessage) =
-                oldItem.id == newItem.id
-
-            override fun areContentsTheSame(oldItem: ChatMessage, newItem: ChatMessage) =
-                oldItem == newItem
-        }
-    }
+    override fun getItemCount() = messageList.size
 }

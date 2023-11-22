@@ -2,9 +2,8 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.gms.google-services'
+    id 'kotlin-kapt'
 }
-
-apply plugin: 'kotlin-kapt'
 
 // local.properties 값 불러오기 위함
 Properties properties = new Properties()

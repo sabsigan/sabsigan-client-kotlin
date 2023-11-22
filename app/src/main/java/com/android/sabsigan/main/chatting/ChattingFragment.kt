@@ -1,5 +1,6 @@
 package com.android.sabsigan.main.chatting
 
+import ChatListAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import com.android.sabsigan.R
 import com.android.sabsigan.databinding.FragmentChattingBinding
 import com.android.sabsigan.main.user.UserListAdapter
@@ -36,15 +38,15 @@ class ChattingFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        setupAdapter()
+        binding.recyclerView.adapter = ChatListAdapter(viewModel)
+
+        viewModel.chatList.observe(viewLifecycleOwner, Observer {
+            (binding.recyclerView.adapter as ChatListAdapter).setChatList(it)
+        })
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    private fun setupAdapter() {
-        binding.recyclerView.adapter = ChatListAdapter(viewModel)
     }
 }

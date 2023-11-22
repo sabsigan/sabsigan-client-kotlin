@@ -15,13 +15,18 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 
 
-class ChatFbRepository(): FirebaseRepository() {
+class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
 
-    suspend fun getMessageList(cid: String): ArrayList<ChatMessage> = withContext(Dispatchers.IO) {
+    init {
+
+    }
+
+    fun setMessageList() {
         val items = ArrayList<ChatMessage>()
+        val cid = viewModel.getChatID()
 
         try {
-            val messageRef = db.collection("chatRooms").document(cid).collection("messages")
+            val messageRef = db.collection("chatRooms").document(cid!!).collection("messages")
 
             messageRef.get()
                 .addOnSuccessListener { documents ->
@@ -41,6 +46,7 @@ class ChatFbRepository(): FirebaseRepository() {
 
                         items.add(chatMessage)
                     }
+                    viewModel.setMessageList(items)
                 }
                 .addOnFailureListener { exception ->
                     Log.w("getChatRooms", "Error getting documents: ", exception)
@@ -87,12 +93,11 @@ class ChatFbRepository(): FirebaseRepository() {
                     }
                     cnt++
                 }
+                viewModel.setMessageList(items)
             }
         } catch (exception: Exception) {
             Log.w("getChatRooms", "Error getting documents: ", exception)
         }
-
-        return@withContext items
     }
 
     fun sendMessage(message: String, cid: String) {
