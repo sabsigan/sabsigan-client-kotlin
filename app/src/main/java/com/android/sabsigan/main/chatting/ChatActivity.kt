@@ -1,12 +1,20 @@
 package com.android.sabsigan.main.chatting
 
 import MessageAdapter
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.view.MenuItem
+import android.view.View
+import android.widget.PopupMenu
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -30,8 +38,9 @@ class ChatActivity : AppCompatActivity() {
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_chat)
         val chatRoom = intent.getSerializableExtra("chatRoom") as ChatRoom
         val myName = intent.getStringExtra("myName")
+        val chatName = intent.getStringExtra("chatName")
 
-        viewModel.setChatInfo(chatRoom, myName!!)
+        viewModel.setChatInfo(chatRoom, myName!!, chatName!!)
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
@@ -46,6 +55,36 @@ class ChatActivity : AppCompatActivity() {
 
         viewModel.messageList.observe(this, Observer {
             (binding.recyclerView.adapter as MessageAdapter).setMessageList(it)
+        })
+
+        viewModel.msgView.observe(this, Observer {
+            val text = (it as TextView).text.toString()
+            var popup = PopupMenu(applicationContext, it)
+            menuInflater.inflate(R.menu.msg_popup, popup.menu);
+            popup.show()
+
+            popup.setOnMenuItemClickListener {
+                when(it.itemId) {
+                    R.id.msg_copy -> {
+                        val clipboad = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("label", text)
+                        clipboad.setPrimaryClip(clip)
+                        Toast.makeText(this, "클립보드에 복사되었습니다.", Toast.LENGTH_SHORT).show()
+                        return@setOnMenuItemClickListener true
+                    }
+                    R.id.msg_modify -> {
+                        Log.d("msg_modify", "sss")
+                        return@setOnMenuItemClickListener true
+                    }
+                    R.id.msg_delete -> {
+                        viewModel.deleteMsg()
+                        return@setOnMenuItemClickListener true
+                    }
+                    else -> {
+                        return@setOnMenuItemClickListener false
+                    }
+                }
+            }
         })
     }
 

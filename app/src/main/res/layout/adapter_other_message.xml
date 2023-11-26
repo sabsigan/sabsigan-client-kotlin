@@ -4,6 +4,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
+        <import type="android.view.View"/>
+
         <variable
             name="chatMessage"
             type="com.android.sabsigan.data.ChatMessage" />
@@ -40,23 +42,42 @@
             app:layout_constraintTop_toTopOf="@+id/civ"
             tools:text="이름"/>
 
-        <TextView
-            android:id="@+id/msg"
+        <LinearLayout
+            android:id="@+id/msgLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:layout_marginLeft="8dp"
             android:background="@drawable/chat_layout"
-            android:maxWidth="200dp"
-            android:paddingHorizontal="11dp"
-            android:paddingTop="11dp"
-            android:paddingBottom="12dp"
-            android:text="@{chatMessage.text}"
-            android:textColor="@color/black"
-            android:onLongClick="@{()->viewModel.otherMsgLongClick()}"
             app:layout_constraintStart_toEndOf="@+id/civ"
             app:layout_constraintTop_toBottomOf="@+id/name"
-            tools:text="채팅"/>
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginLeft="11dp"
+                android:layout_gravity="center"
+                android:padding="2dp"
+                android:src="@drawable/baseline_priority_high_24"
+                android:background="@drawable/circle"
+                app:tint="@color/Gray_600"
+                android:visibility="@{chatMessage.type == null ? View.VISIBLE : View.GONE, default = gone}"/>
+
+            <TextView
+                android:id="@+id/msg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="11dp"
+                android:paddingHorizontal="11dp"
+                android:paddingBottom="12dp"
+                android:maxWidth="200dp"
+                android:text="@{chatMessage.type == null ? viewModel.nullTxt : chatMessage.text}"
+                android:textColor="@color/black"
+                android:onLongClick="@{(view)->viewModel.msgLongClick(view, chatMessage)}"
+                tools:text="채팅"/>
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/time"
@@ -65,8 +86,8 @@
             android:layout_marginLeft="8dp"
             android:text="@{chatMessage.created_at}"
             android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="@+id/msg"
-            app:layout_constraintStart_toEndOf="@+id/msg"
+            app:layout_constraintBottom_toBottomOf="@+id/msgLayout"
+            app:layout_constraintStart_toEndOf="@+id/msgLayout"
             tools:text="시간"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

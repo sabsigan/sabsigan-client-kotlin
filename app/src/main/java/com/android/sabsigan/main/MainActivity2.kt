@@ -53,7 +53,7 @@ class MainActivity2 : AppCompatActivity() {
 
         viewModel.chatRoom.observe(this, Observer {
             Log.d("chatRoomFragment", "변경")
-            openChatRoom(it)
+            openChatRoom(it, viewModel.getClickChatName()!!)
         })
 
         //drawer wifi선택시 와이파이 다이렉트 이동
@@ -121,11 +121,14 @@ class MainActivity2 : AppCompatActivity() {
         return false // 리시버가 현재 등록되어 있지 않음
     }
 
-    private fun openChatRoom(chatRoom: ChatRoom) {
+    private fun openChatRoom(chatRoom: ChatRoom, chatName: String) {
         if (!chatRoom.id.equals("")) {
             Log.d("chatRoomFragment", chatRoom.id)
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra("chatRoom", chatRoom)
+            intent.putExtra("myName", viewModel.myName.value)
+            intent.putExtra("chatName", chatName)
+
             startActivity(intent)
         }
     }

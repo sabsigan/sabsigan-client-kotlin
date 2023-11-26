@@ -14,6 +14,8 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
         setMyInfo()
         setUserList()
         setChatList()
+
+
     }
 
     /**
@@ -30,7 +32,6 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
             }
             .addOnFailureListener { Log.d("myInfo", "get failed with ", it) }
     }
-
 
     private fun setUserList() {
         var items = ArrayList<User>()
@@ -77,7 +78,7 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
                 if (snapshots!!.metadata.isFromCache) return@addSnapshotListener
 
                 for (doc in snapshots.documentChanges) {
-                    Log.d("firebase", "${doc.document.id} => ${doc.document.data}")
+                    Log.d("userChange", "${doc.document.id} => ${doc.document.data}")
 
                     val user = User(
                         id = doc.document["id"] as String,
@@ -90,32 +91,18 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
                         online = true
                     )
 
-                    val index = items.withIndex()
-                        .first {user.id == it.value.id}
-                        .index
-
-                    // 문서가 추가될 경우 추가
-                    if (doc.type == DocumentChange.Type.ADDED) {
-                        items.add(user)
-                        Log.d("firebase", "ADDED")
-                    } else if (doc.type == DocumentChange.Type.MODIFIED) { // 문서가 수정될 경우 수정 처리
-                        items.get(index).name = user.name
-                        items.get(index).state = user.state
-                        items.get(index).current_wifi = user.current_wifi
-                        items.get(index).updated_at = user.updated_at
-                        items.get(index).last_active = user.last_active
-                        items.get(index).online = user.online
-                        Log.d("firebase", "MODIFIED")
-                    } else if (doc.type == DocumentChange.Type.REMOVED) { // 문서가 삭제될 경우 삭제 처리
-                        items.removeAt(index)
-                        Log.d("firebase", "REMOVED")
-                    }
+                    // 문서가 추가될 경우 추가 처리
+                    if (doc.type == DocumentChange.Type.ADDED)
+                        viewModel.addUserList(user)
+                    // 문서가 수정될 경우 수정 처리
+                    else if (doc.type == DocumentChange.Type.MODIFIED)
+                        viewModel.modyfyUserList(user)
+                    // 문서가 삭제될 경우 삭제 처리
+                    else if (doc.type == DocumentChange.Type.REMOVED)
+                        viewModel.removeUserList(user)
                 }
-                viewModel.setUserList(items)
             }
-        } catch (exception: Exception) {
-            Log.w("getUsers", "Error getting documents: ", exception)
-        }
+        } catch (exception: Exception) { Log.w("getUsers", "Error getting documents: ", exception) }
     }
 
     private fun setChatList() {
@@ -159,20 +146,18 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
                     Log.w("getChatRooms", "Error getting documents: ", exception)
                 }
 
-
             chatRoomsRef.addSnapshotListener { snapshots, e ->
                 // 오류 발생 시
                 if (e != null) {
-                    Log.w("fff", "Listen failed: $e")
+                    Log.w("chatRoomsChange", "Listen failed: $e")
                     return@addSnapshotListener
                 }
 
                 // 원하지 않는 문서 무시
                 if (snapshots!!.metadata.isFromCache) return@addSnapshotListener
 
-                var cnt = 0
                 for (doc in snapshots.documentChanges) {
-                    Log.d("firebase", "${doc.document.id} => ${doc.document.data}")
+                    Log.d("chatRoomsChange", "${doc.document.id} => ${doc.document.data}")
 
                     var users = doc.document["users"] as ArrayList<String>
 
@@ -196,28 +181,16 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
                         disabled = doc.document["disabled"] as Boolean
                     )
 
-                    // 문서가 추가될 경우 추가
+                    // 문서가 추가될 경우 추가 처리
                     if (doc.type == DocumentChange.Type.ADDED)
-                        items.add(chatRoom)
-
+                        viewModel.addChatList(chatRoom)
                     // 문서가 수정될 경우 수정 처리
-                    if (doc.type == DocumentChange.Type.MODIFIED) {
-                        items.get(cnt).name = chatRoom.name
-                        items.get(cnt).users = users
-                        items.get(cnt).updated_at = chatRoom.updated_at
-                        items.get(cnt).last_message_at = chatRoom.last_message_at
-                        items.get(cnt).last_message = chatRoom.last_message
-                        items.get(cnt).member_cnt = chatRoom.member_cnt
-                        items.get(cnt).disabled = chatRoom.disabled
-                    }
-
+                    else if (doc.type == DocumentChange.Type.MODIFIED)
+                        viewModel.modyfyChatList(chatRoom)
                     // 문서가 삭제될 경우 삭제 처리
-                    if (doc.type == DocumentChange.Type.REMOVED)
-                        items.removeAt(cnt)
-
-                    cnt++
+                    else if (doc.type == DocumentChange.Type.REMOVED)
+                        viewModel.removeChatList(chatRoom)
                 }
-                viewModel.setChatList(items)
             }
         } catch (exception: Exception) {
             Log.w("getChatRooms", "Error getting documents: ", exception)
@@ -275,9 +248,7 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
         )
 
         chatRef.set(chatRoom)
-            .addOnSuccessListener {
-                Log.d("createChat", "DocumentSnapshot Success")
-            }
-            .addOnFailureListener { e -> Log.w("TAG", "Error adding document", e) }
+            .addOnSuccessListener { Log.d("createChat", "DocumentSnapshot Success") }
+            .addOnFailureListener { Log.w("TAG", "Error adding document", it) }
     }
 }

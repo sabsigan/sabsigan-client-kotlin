@@ -20,15 +20,6 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
 
     }
 
-    fun setOtherName(otherUserID: String) {
-        val userRef = db.collection("users").document(otherUserID)
-        userRef.get()
-            .addOnSuccessListener {
-                viewModel.setOtherName(it["name"] as String)
-            }
-            .addOnFailureListener { Log.w("getUser", "Error getting documents: ", it) }
-    }
-
     fun setMessageList() {
         val items = ArrayList<ChatMessage>()
         val cid = viewModel.getChatID()
@@ -39,7 +30,7 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
             messageRef.get()
                 .addOnSuccessListener { documents ->
                     for (document in documents) {
-                        Log.d("getChatRooms", "${document.id} => ${document.data}")
+                        Log.d("getMsg", "${document.id} => ${document.data}")
 
                         val chatMessage = ChatMessage(
                             cid = document["cid"] as String,
@@ -47,7 +38,7 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
                             id = document["id"] as String,
                             userName = document["userName"] as String,
                             text = document["text"] as String,
-                            type = document["type"] as String,
+                            type = document["type"] as String?,
                             created_at = document["created_at"] as String,
                             updated_at = document["updated_at"] as String,
                         )
@@ -57,9 +48,8 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
                     viewModel.setMessageList(items)
                 }
                 .addOnFailureListener { exception ->
-                    Log.w("getChatRooms", "Error getting documents: ", exception)
+                    Log.w("getMsg", "Error getting documents: ", exception)
                 }
-
 
             messageRef.addSnapshotListener { snapshots, e ->
                 // 오류 발생 시
@@ -71,35 +61,29 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
                 // 원하지 않는 문서 무시
                 if (snapshots!!.metadata.isFromCache) return@addSnapshotListener
 
-                var cnt = 0
                 for (doc in snapshots.documentChanges) {
-                    Log.d("firebase", "${doc.document.id} => ${doc.document.data}")
+                    Log.d("msgChange", "${doc.document.id} => ${doc.document.data}")
 
                     val chatMessage = ChatMessage(
                         cid = doc.document["cid"] as String,
                         uid = doc.document["uid"] as String,
-                        id = doc.document["id"] as String,
+                        id = doc.document.id,
                         userName = doc.document["userName"] as String,
                         text = doc.document["text"] as String,
-                        type = doc.document["type"] as String,
+                        type = doc.document["type"] as String?,
                         created_at = doc.document["created_at"] as String,
                         updated_at = doc.document["updated_at"] as String,
                     )
 
                     // 문서가 추가될 경우 추가
                     if (doc.type == DocumentChange.Type.ADDED)
-                        items.add(chatMessage)
-
+                        viewModel.addMsgList(chatMessage)
                     // 문서가 수정될 경우 수정 처리
-                    if (doc.type == DocumentChange.Type.MODIFIED) {
-                        items.get(cnt).text = chatMessage.text
-                        items.get(cnt).updated_at = chatMessage.updated_at
-                    }
-
+                    else if (doc.type == DocumentChange.Type.MODIFIED)
+                        viewModel.modyfyMsgList(chatMessage)
                     // 문서가 삭제될 경우 삭제 처리
-                    if (doc.type == DocumentChange.Type.REMOVED) {
-                    }
-                    cnt++
+                    else if (doc.type == DocumentChange.Type.REMOVED)
+                        viewModel.removeMsgList(chatMessage)
                 }
                 viewModel.setMessageList(items)
             }
@@ -126,30 +110,48 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
             .addOnSuccessListener {
                 Log.d("msg", "DocumentSnapshot written with ID: ${it.id}")
 
-                val update1 = hashMapOf<String, Any>(
+                msgRdf.document(it.id).update(hashMapOf<String, Any>("id" to it.id)) // 자동으로 생성된 문서 이름 id로
+                    .addOnSuccessListener { Log.d("msg", "DocumentSnapshot written Success") }
+                    .addOnFailureListener { Log.w("msg", "Error adding document", it) }
+
+                val update = hashMapOf<String, Any>(
                     "last_message" to message,
                     "last_message_at" to time,
                 )
 
-                val update2 = hashMapOf<String, Any>(
-                    "id" to it.id,
-                )
-
-                chatRef.update(update1)
-                    .addOnSuccessListener {
-                        Log.d("chatRoom", "DocumentSnapshot Success")
-                    }
-                    .addOnFailureListener {e ->
-                        Log.w("chatRoom", "Error adding document", e)
-                    }
-
-                msgRdf.document(it.id).update(update2)
-                    .addOnSuccessListener {
-                        Log.d("msg", "DocumentSnapshot written Success")
-                    }
-                    .addOnFailureListener {e ->
-                        Log.w("msg", "Error adding document", e)
-                    }
+                chatRef.update(update) // chatroom 업데이트
+                    .addOnSuccessListener { Log.d("chatRoom", "DocumentSnapshot Success") }
+                    .addOnFailureListener { Log.w("chatRoom", "Error adding document", it) }
             }
+    }
+
+    fun updateMessage(message: String, cid: String, id: String) {
+        val time = getTime()
+        val chatRef = db.collection("chatRooms").document(cid)
+        val msgRdf = chatRef.collection("messages").document(id)
+
+        val update = hashMapOf<String, Any>(
+            "text" to message,
+            "updated_at" to time,
+        )
+
+        msgRdf.update(update) // msg 업데이트
+            .addOnSuccessListener { Log.d("chatRoom", "DocumentSnapshot Success") }
+            .addOnFailureListener { Log.w("chatRoom", "Error adding document", it) }
+    }
+
+    fun deleteMessage(cid: String, id: String) {
+        val time = getTime()
+        val chatRef = db.collection("chatRooms").document(cid)
+        val msgRdf = chatRef.collection("messages").document(id)
+
+        val update = hashMapOf<String, Any?>(
+            "type" to null,
+            "updated_at" to time,
+        )
+
+        msgRdf.update(update) // msg 업데이트
+            .addOnSuccessListener { Log.d("chatRoom", "DocumentSnapshot Success") }
+            .addOnFailureListener { Log.w("chatRoom", "Error adding document", it) }
     }
 }
