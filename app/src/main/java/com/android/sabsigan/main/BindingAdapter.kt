@@ -1,4 +1,4 @@
-package com.android.sabsigan.main.user
+package com.android.sabsigan.main
 
 import ChatListAdapter
 import MessageAdapter
@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.sabsigan.data.ChatMessage
 import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.data.User
+import com.android.sabsigan.main.user.UserListAdapter
 
 object BindingAdapter {
     @BindingAdapter("app:userItems")

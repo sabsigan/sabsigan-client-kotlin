@@ -13,6 +13,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.android.sabsigan.R
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
+import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.databinding.ActivityChatBinding
 import com.android.sabsigan.main.user.UserListAdapter
 import com.android.sabsigan.viewModel.ChatViewModel
@@ -27,8 +28,10 @@ class ChatActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_chat)
-        val value = intent.getStringExtra("chatRoomID")
-        viewModel.setChatID(value!!)
+        val chatRoom = intent.getSerializableExtra("chatRoom") as ChatRoom
+        val myName = intent.getStringExtra("myName")
+
+        viewModel.setChatInfo(chatRoom, myName!!)
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
@@ -36,6 +39,10 @@ class ChatActivity : AppCompatActivity() {
         wifiConnectReceiver = WifiConnectReceiver(viewModel)
 
         binding.recyclerView.adapter = MessageAdapter(viewModel)
+
+        binding.backButton.setOnClickListener {
+            finish()
+        }
 
         viewModel.messageList.observe(this, Observer {
             (binding.recyclerView.adapter as MessageAdapter).setMessageList(it)
@@ -54,7 +61,6 @@ class ChatActivity : AppCompatActivity() {
 
         if (!isReceiverRegistered(this))
             registerReceiver(wifiConnectReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
-
     }
 
     override fun onDestroy() {

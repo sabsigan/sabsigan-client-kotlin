@@ -16,9 +16,17 @@ import java.text.SimpleDateFormat
 
 
 class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
-
     init {
 
+    }
+
+    fun setOtherName(otherUserID: String) {
+        val userRef = db.collection("users").document(otherUserID)
+        userRef.get()
+            .addOnSuccessListener {
+                viewModel.setOtherName(it["name"] as String)
+            }
+            .addOnFailureListener { Log.w("getUser", "Error getting documents: ", it) }
     }
 
     fun setMessageList() {
@@ -100,31 +108,44 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
         }
     }
 
-    fun sendMessage(message: String, cid: String) {
+    fun sendMessage(message: String, cid: String, name: String) {
         val time = getTime()
-        val chatRef = db.collection("chatRooms").document(cid).collection("messages")
-
+        val chatRef = db.collection("chatRooms").document(cid)
+        val msgRdf = chatRef.collection("messages")
         val chatMessage = ChatMessage(
             cid = cid,
             uid = uid!!,
-            userName = "이름",
+            userName = name,
             text = message,
             type = "msg",
             created_at = time,
             updated_at = time,
         )
 
-        chatRef.add(chatMessage)
+        msgRdf.add(chatMessage)
             .addOnSuccessListener {
                 Log.d("msg", "DocumentSnapshot written with ID: ${it.id}")
 
-                val updates = hashMapOf<String, Any>(
+                val update1 = hashMapOf<String, Any>(
+                    "last_message" to message,
+                    "last_message_at" to time,
+                )
+
+                val update2 = hashMapOf<String, Any>(
                     "id" to it.id,
                 )
 
-                chatRef.document(it.id).update(updates)
+                chatRef.update(update1)
                     .addOnSuccessListener {
-                        Log.d("msg", "DocumentSnapshot written with ID: ${it}")
+                        Log.d("chatRoom", "DocumentSnapshot Success")
+                    }
+                    .addOnFailureListener {e ->
+                        Log.w("chatRoom", "Error adding document", e)
+                    }
+
+                msgRdf.document(it.id).update(update2)
+                    .addOnSuccessListener {
+                        Log.d("msg", "DocumentSnapshot written Success")
                     }
                     .addOnFailureListener {e ->
                         Log.w("msg", "Error adding document", e)

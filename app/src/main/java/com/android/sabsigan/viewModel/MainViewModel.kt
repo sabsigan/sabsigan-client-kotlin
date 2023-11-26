@@ -13,16 +13,38 @@ class MainViewModel: WiFiViewModel() {
 
     private val _userList = MutableLiveData<List<User>>()
     private val _chatList = MutableLiveData<List<ChatRoom>>()
-    private val _chatRoomID = MutableLiveData<String>()
+    private val _chatRoom = MutableLiveData<ChatRoom>()
 
     val userList: LiveData<List<User>> get() = _userList
     val chatList: LiveData<List<ChatRoom>> get() = _chatList
-    val chatRoomID: LiveData<String> get() = _chatRoomID
+    val chatRoom: LiveData<ChatRoom> get() = _chatRoom
 
-    var cnt = 0
+    val myName = MutableLiveData<String>()
+    val myState = MutableLiveData<String>()
 
     init {
 
+    }
+
+    private fun getOtherUserName(chatRoom: ChatRoom): String {
+        val otherUserID = chatRoom.users.withIndex()
+            .first { fbRepository.uid != it.value }
+            .index
+
+        Log.d("chatRoom test", otherUserID.toString())
+//
+//        val user = _userList.value!!.withIndex()
+//            .first { otherUserID == it.value.id }
+//            .value
+//
+//        Log.d("user test", user.name)
+
+        return "user.name"
+    }
+
+    fun setUserInfo(name: String, state: String) {
+        myName.value = name
+        myState.value = state
     }
 
     fun setUserList(list: List<User>) {
@@ -33,36 +55,48 @@ class MainViewModel: WiFiViewModel() {
         _chatList.value = list
     }
 
+    /**
+     * chatRoomName null이면 상대방 이름
+     * @param chatRoomName 사용자가 지정한 이름
+     * chatRoom의 사람이 2명일 때만 nullable
+     */
+    fun getChatRoomName(chatRoom: ChatRoom): String {
+        return chatRoom.name?: getOtherUserName(chatRoom)
+    }
+    
     fun clickUser(otherUser: User) {
-        fbRepository.createChatRoom(otherUser, 2)
+        Log.d("userFragment", "유저 클릭")
+
+        fbRepository.createChatRoom(arrayListOf(otherUser), null)
+        // 여러명 채팅방은 이름 무조건 지정해야함
+    }
+
+    fun longClickUser(): Boolean {
+        Log.d("userFragment", "유저 long클릭")
+
+        return true
     }
 
     fun clickChatRoom(chatRoom: ChatRoom) {
-        Log.d("chatRoomFragment", "클릭")
-        _chatRoomID.value = chatRoom.id
+        Log.d("chatRoomFragment", "채팅방 클릭")
+
+        _chatRoom.value = chatRoom
     }
 
-    fun clickKKK() {
-        cnt++
+    fun longClickChatRoom(chatRoom: ChatRoom): Boolean {
+        Log.d("chatRoomFragment", "채팅방 long클릭")
 
-        val ttt = _userList.value as ArrayList<User>
-        ttt.add(
-            User(   // 여기는 datastore로 자기 로컬값 가져오기
-                id = cnt.toString(),
-                name = "name",
-                state = "state",
-                current_wifi = "current_wifi",
-                created_at = "time",
-                updated_at = "time",
-                last_active = "time",
-                online = true
-            )
-        )
-        _userList.value = ttt
+        return true
+    }
 
-        (_userList.value as ArrayList<User>).forEach {
-            Log.d("tttt", it.id)
+    fun isIncluded(key: String): Boolean {
+        var result = false
+        (_chatList.value as List<ChatRoom>).forEach {
+            if (it.id.equals(key))
+                result = true
         }
+
+        return result
     }
 
 //    private val _text = MutableLiveData<String>().apply {

@@ -3,29 +3,32 @@ package com.android.sabsigan.repository
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.sabsigan.data.ChatMessage
 import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.data.User
 import com.android.sabsigan.viewModel.MainViewModel
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-
+import java.security.MessageDigest
 
 class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
-    private val _userList = MutableLiveData<List<User>>()
-    private val _chatList = MutableLiveData<MutableList<ChatRoom>>()
-    val userList: LiveData<List<User>> get() = _userList
-    val chatList: LiveData<MutableList<ChatRoom>> get() = _chatList
-
     init {
+        setMyInfo()
         setUserList()
         setChatList()
+    }
+
+    /**
+     * db에 저장된 사용자의 name, state 가져오는 함수
+     * */
+    private fun setMyInfo() {
+        val myRef = db.collection("users").document(uid!!)
+        myRef.get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    Log.d("myInfo", "DocumentSnapshot data: ${document.data}")
+                    viewModel.setUserInfo(document["name"] as String, document["state"] as String)
+                } else { Log.d("myInfo", "No such document") }
+            }
+            .addOnFailureListener { Log.d("myInfo", "get failed with ", it) }
     }
 
 
@@ -60,9 +63,7 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
 
                     viewModel.setUserList(items)
                 }
-                .addOnFailureListener { exception ->
-                    Log.w("getUsers", "Error getting documents: ", exception)
-                }
+                .addOnFailureListener { Log.w("getUsers", "Error getting documents: ", it) }
 
             // 데이터 변경 처리
             query.addSnapshotListener { snapshots, e ->
@@ -75,7 +76,6 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
                 // 원하지 않는 문서 무시
                 if (snapshots!!.metadata.isFromCache) return@addSnapshotListener
 
-                var cnt = 0
                 for (doc in snapshots.documentChanges) {
                     Log.d("firebase", "${doc.document.id} => ${doc.document.data}")
 
@@ -90,25 +90,26 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
                         online = true
                     )
 
+                    val index = items.withIndex()
+                        .first {user.id == it.value.id}
+                        .index
+
                     // 문서가 추가될 경우 추가
-                    if (doc.type == DocumentChange.Type.ADDED)
+                    if (doc.type == DocumentChange.Type.ADDED) {
                         items.add(user)
-
-                    // 문서가 수정될 경우 수정 처리
-                    if (doc.type == DocumentChange.Type.MODIFIED) {
-                        items.get(cnt).name = user.name
-                        items.get(cnt).state = user.state
-                        items.get(cnt).current_wifi = user.current_wifi
-                        items.get(cnt).updated_at = user.updated_at
-                        items.get(cnt).last_active = user.last_active
-                        items.get(cnt).online = user.online
+                        Log.d("firebase", "ADDED")
+                    } else if (doc.type == DocumentChange.Type.MODIFIED) { // 문서가 수정될 경우 수정 처리
+                        items.get(index).name = user.name
+                        items.get(index).state = user.state
+                        items.get(index).current_wifi = user.current_wifi
+                        items.get(index).updated_at = user.updated_at
+                        items.get(index).last_active = user.last_active
+                        items.get(index).online = user.online
+                        Log.d("firebase", "MODIFIED")
+                    } else if (doc.type == DocumentChange.Type.REMOVED) { // 문서가 삭제될 경우 삭제 처리
+                        items.removeAt(index)
+                        Log.d("firebase", "REMOVED")
                     }
-
-                    // 문서가 삭제될 경우 삭제 처리
-                    if (doc.type == DocumentChange.Type.REMOVED)
-                        items.removeAt(cnt)
-
-                    cnt++
                 }
                 viewModel.setUserList(items)
             }
@@ -139,7 +140,7 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
 
                         val chatRoom = ChatRoom(
                             id = document["id"] as String,
-                            name = document["name"] as String,
+                            name = document["name"] as String?,
                             users = users,
                             created_by = document["created_by"] as String,
                             created_at = document["created_at"] as String,
@@ -184,7 +185,7 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
 
                     val chatRoom = ChatRoom(
                         id = doc.document["id"] as String,
-                        name = doc.document["name"] as String,
+                        name = doc.document["name"] as String?,
                         users = users,
                         created_by = doc.document["created_by"] as String,
                         created_at = doc.document["created_at"] as String,
@@ -223,64 +224,60 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
         }
     }
 
-    fun createChatRoom(otherUser: User, cnt: Int): Boolean {
-        var value = false
-        val time = getTime()
-        val chatRef = db.collection("chatRooms")
-        val chatList = arrayListOf<User>(
-            otherUser,
-            User(   // 여기는 datastore로 자기 로컬값 가져오기
-                id = uid!!,
-                name = "name",
-                state = "state",
-                current_wifi = "current_wifi",
-                created_at = time,
-                updated_at = time,
-                last_active = time,
-                online = true
-            )
-        )
+    /**
+     * chatRoom document 생성용 해시 함수
+     * @param ids 해시값 계산을 위한 문자열 리스트
+     * @return String 해시 값
+     * */
+    fun customHash(ids: ArrayList<String>) : String {
+        // 두 문자열을 정렬하여 순서에 상관없이 같은 문자열을 생성
+        val sortedStrings = ids.sorted()
+        // 정렬된 문자열을 이용하여 고유한 해시 값을 생성
+        val combinedString = sortedStrings[0] + sortedStrings[1]
 
+        // SHA-256 해시 함수 사용
+        val bytes = MessageDigest.getInstance("SHA-256").digest(combinedString.toByteArray())
+
+        // 바이트 배열의 2/3 사용하여 16진수 문자열로 변환하여 반환
+        val halfLength = (bytes.size / 3) * 2
+        val halfBytes = bytes.copyOfRange(0, halfLength)
+
+        // 바이트 배열을 16진수 문자열로 변환하여 반환
+        return halfBytes.joinToString("") { "%02x".format(it) }
+    }
+
+    /**
+     * 채팅방 생성 메서드
+     * 
+     * @param otherUsers 자신을 제외한 채팅방 유저들
+     * @param cname 채팅방 이름, otherUsers.size가 1일 때만 nullable
+     */
+    fun createChatRoom(otherUsers: ArrayList<User>, cname: String?) {
+        val users = arrayListOf(uid!!)
+        otherUsers.forEach { users.add(it.id) }
+        val chatRoomID = customHash(users)
+
+        if (viewModel.isIncluded(chatRoomID)) // 이미 있는 채팅방이면 안 만듦
+            return
+
+        val chatRef = db.collection("chatRooms").document(chatRoomID)
+        val time = getTime()
         val chatRoom = ChatRoom(
+            id = chatRoomID,
             created_by = uid!!,
-            name = otherUser.name,
-            users = arrayListOf(uid, otherUser.id),
+            name = cname,
+            users = users,
+            current_wifi = viewModel.getwifiInfo().value!!,
             created_at = time,
             updated_at = time,
             last_message_at = time,
-            member_cnt = chatList.size.toString(),
+            member_cnt = (otherUsers.size + 1).toString(),
         )
 
-        chatRef.add(chatRoom)
+        chatRef.set(chatRoom)
             .addOnSuccessListener {
-                Log.d("createChat", "DocumentSnapshot written with ID: ${it.id}")
-                val query = chatRef.document(it.id).collection("members")
-
-                val updates = hashMapOf<String, Any>(
-                    "id" to it.id,
-                )
-
-                chatRef.document(it.id).update(updates)
-                    .addOnSuccessListener {
-                        Log.d("createChat", "DocumentSnapshot written with ID: ${it}")
-                    }
-                    .addOnFailureListener {e ->
-                        Log.w("createChat", "Error adding document", e)
-                    }
-
-                for (user in chatList) {
-                    query.add(user)
-                        .addOnSuccessListener {
-                            Log.d("createChat", "DocumentSnapshot written with ID: ${it.id}")
-                            value = true
-                        }
-                        .addOnFailureListener { e ->
-                            Log.w("createChat", "Error adding document", e)
-                        }
-                }
+                Log.d("createChat", "DocumentSnapshot Success")
             }
             .addOnFailureListener { e -> Log.w("TAG", "Error adding document", e) }
-
-        return value
     }
 }

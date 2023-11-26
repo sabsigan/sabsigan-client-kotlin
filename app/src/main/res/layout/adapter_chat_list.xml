@@ -20,7 +20,8 @@
         android:paddingHorizontal="16dp"
         android:orientation="horizontal"
         android:background="?android:attr/selectableItemBackground"
-        android:onClick="@{()->viewModel.clickChatRoom(chatRoom)}">
+        android:onClick="@{()->viewModel.clickChatRoom(chatRoom)}"
+        android:onLongClick="@{()->viewModel.longClickChatRoom(chatRoom)}">
 
         <ImageView
             android:layout_width="48dp"
@@ -41,7 +42,7 @@
                 android:ellipsize="end"
                 android:maxWidth="150dp"
                 android:maxLines="1"
-                android:text="@{chatRoom.name}"
+                android:text="@{viewModel.getChatRoomName(chatRoom)}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="이름"/>

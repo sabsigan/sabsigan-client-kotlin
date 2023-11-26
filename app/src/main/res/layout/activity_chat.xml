@@ -24,15 +24,17 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
+                android:id="@+id/backButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/baseline_arrow_back_ios_new_24"/>
+                android:src="@drawable/baseline_arrow_back_ios_new_24" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="이름"/>
+                android:text="@{viewModel.chatRoom}"
+                tools:text="이름"/>
 
         </Toolbar>
 
@@ -40,6 +42,8 @@
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:paddingTop="10dp"
+            android:clipToPadding="false"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toTopOf="@+id/inputLayout"
             app:layout_constraintTop_toBottomOf="@+id/toolbar"
@@ -75,7 +79,7 @@
                 android:layout_gravity="start"
                 android:background="@drawable/rounded_layout"
                 android:elevation="8dp"
-                android:onClick="@{()->viewModel.getMessageTxt()}"
+                android:onClick="@{()->viewModel.sendBtnClick()}"
                 app:cardCornerRadius="25dp"/>
 
         </LinearLayout>

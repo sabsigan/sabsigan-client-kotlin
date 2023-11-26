@@ -1,6 +1,9 @@
 package com.android.sabsigan.main
 
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
@@ -13,6 +16,8 @@ import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.android.sabsigan.R
+import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
+import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.databinding.ActivityMain2Binding
 import com.android.sabsigan.main.MainActivity2
 import com.android.sabsigan.main.chatting.ChatActivity
@@ -20,13 +25,17 @@ import com.android.sabsigan.viewModel.MainViewModel
 import com.android.sabsigan.wifidirectsample.view.MainActivity3
 
 class MainActivity2 : AppCompatActivity() {
+    private var mBinding: ActivityMain2Binding? = null
+    private val binding get() = mBinding!!
+    private lateinit var wifiConnectReceiver: WifiConnectReceiver
     private val viewModel by viewModels<MainViewModel>()
-    private lateinit var binding: ActivityMain2Binding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMain2Binding.inflate(layoutInflater)
+        mBinding = ActivityMain2Binding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        wifiConnectReceiver = WifiConnectReceiver(viewModel)
 
         //엑션바 설정
         setSupportActionBar(binding.toolbar)
@@ -42,7 +51,7 @@ class MainActivity2 : AppCompatActivity() {
         navView.setupWithNavController(navController)
         drawer.setupWithNavController(navController) //drawerNavigation 설정하여 동기화
 
-        viewModel.chatRoomID.observe(this, Observer {
+        viewModel.chatRoom.observe(this, Observer {
             Log.d("chatRoomFragment", "변경")
             openChatRoom(it)
         })
@@ -61,6 +70,26 @@ class MainActivity2 : AppCompatActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+
+        if (isReceiverRegistered(this))
+            unregisterReceiver(wifiConnectReceiver)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (!isReceiverRegistered(this))
+            registerReceiver(wifiConnectReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if (isReceiverRegistered(this))
+            unregisterReceiver(wifiConnectReceiver)
+    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) { //앱바 왼쪽 상단 매뉴 선택 (home자리임)
@@ -72,15 +101,31 @@ class MainActivity2 : AppCompatActivity() {
     override fun onBackPressed() {
         if(binding.mainActivityLayout.isDrawerOpen(binding.navDrawer))
             binding.mainActivityLayout.closeDrawer(GravityCompat.START)
-        else
-            super.onBackPressed()
+        else {
+//            super.onBackPressed()
+            finish()
+        }
     }
 
-    private fun openChatRoom(chatRoomID: String) {
-        if (!chatRoomID.equals("")) {
-            Log.d("chatRoomFragment", chatRoomID)
+    private fun isReceiverRegistered(context: Context): Boolean {
+        val pm = context.packageManager
+        val intent = Intent(ConnectivityManager.CONNECTIVITY_ACTION)
+        val receivers = pm.queryBroadcastReceivers(intent, 0)
+
+        for (receiver in receivers) {
+            if (receiver.activityInfo.packageName == context.packageName) {
+                return true // 리시버가 현재 등록되어 있음
+            }
+        }
+
+        return false // 리시버가 현재 등록되어 있지 않음
+    }
+
+    private fun openChatRoom(chatRoom: ChatRoom) {
+        if (!chatRoom.id.equals("")) {
+            Log.d("chatRoomFragment", chatRoom.id)
             val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("chatRoomID", chatRoomID)
+            intent.putExtra("chatRoom", chatRoom)
             startActivity(intent)
         }
     }
