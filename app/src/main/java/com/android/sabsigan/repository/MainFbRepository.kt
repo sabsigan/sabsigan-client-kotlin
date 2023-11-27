@@ -14,8 +14,6 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
         setMyInfo()
         setUserList()
         setChatList()
-
-
     }
 
     /**
@@ -110,6 +108,8 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
 
         try {
             val chatRoomsRef = db.collection("chatRooms")
+            val query = chatRoomsRef
+                .whereEqualTo("current_wifi", viewModel.getwifiInfo())
 
             chatRoomsRef.get()
                 .addOnSuccessListener { documents ->
@@ -206,7 +206,10 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
         // 두 문자열을 정렬하여 순서에 상관없이 같은 문자열을 생성
         val sortedStrings = ids.sorted()
         // 정렬된 문자열을 이용하여 고유한 해시 값을 생성
-        val combinedString = sortedStrings[0] + sortedStrings[1]
+
+        var combinedString = ""
+        sortedStrings.forEach { combinedString += it}
+        combinedString += viewModel.getwifiInfo().value // 채팅방에 포함된 유저 id와 wifi 이름으로 해시키 생성
 
         // SHA-256 해시 함수 사용
         val bytes = MessageDigest.getInstance("SHA-256").digest(combinedString.toByteArray())

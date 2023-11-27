@@ -39,11 +39,8 @@
                 android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:layout_marginLeft="11dp"
-                android:padding="2dp"
-                android:src="@drawable/baseline_priority_high_24"
-                android:background="@drawable/circle"
-                android:backgroundTint="@color/Blue_200"
-                app:tint="@color/Gray_600"
+                android:src="@drawable/baseline_error_24"
+                app:tint="@color/Gray_400"
                 android:visibility="@{chatMessage.type == null ? View.VISIBLE : View.GONE, default = gone}"/>
 
             <TextView

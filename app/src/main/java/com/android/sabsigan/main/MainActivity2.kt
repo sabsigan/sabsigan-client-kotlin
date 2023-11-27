@@ -10,6 +10,7 @@ import android.view.MenuItem
 import androidx.activity.viewModels
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -18,9 +19,11 @@ import androidx.navigation.ui.setupWithNavController
 import com.android.sabsigan.R
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.data.ChatRoom
+import com.android.sabsigan.data.User
 import com.android.sabsigan.databinding.ActivityMain2Binding
 import com.android.sabsigan.main.MainActivity2
 import com.android.sabsigan.main.chatting.ChatActivity
+import com.android.sabsigan.main.chatting.CreateChatActivity
 import com.android.sabsigan.viewModel.MainViewModel
 import com.android.sabsigan.wifidirectsample.view.MainActivity3
 
@@ -35,7 +38,12 @@ class MainActivity2 : AppCompatActivity() {
         mBinding = ActivityMain2Binding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        window.statusBarColor = ContextCompat.getColor(this, R.color.custom_blue)
+
         wifiConnectReceiver = WifiConnectReceiver(viewModel)
+
+        if (!isReceiverRegistered(this))
+            registerReceiver(wifiConnectReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
 
         //엑션바 설정
         setSupportActionBar(binding.toolbar)
@@ -55,6 +63,12 @@ class MainActivity2 : AppCompatActivity() {
             Log.d("chatRoomFragment", "변경")
             openChatRoom(it, viewModel.getClickChatName()!!)
         })
+
+        binding.temp.setOnClickListener {
+            val intent = Intent(this, CreateChatActivity::class.java)
+            intent.putExtra("userList", viewModel.userList.value as ArrayList<User>)
+            startActivity(intent)
+        }
 
         //drawer wifi선택시 와이파이 다이렉트 이동
         drawer.setNavigationItemSelectedListener {

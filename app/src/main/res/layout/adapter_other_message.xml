@@ -58,9 +58,7 @@
                 android:layout_height="20dp"
                 android:layout_marginLeft="11dp"
                 android:layout_gravity="center"
-                android:padding="2dp"
-                android:src="@drawable/baseline_priority_high_24"
-                android:background="@drawable/circle"
+                android:src="@drawable/baseline_error_24"
                 app:tint="@color/Gray_600"
                 android:visibility="@{chatMessage.type == null ? View.VISIBLE : View.GONE, default = gone}"/>
 

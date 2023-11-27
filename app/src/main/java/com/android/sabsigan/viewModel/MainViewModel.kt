@@ -164,7 +164,7 @@ class MainViewModel: WiFiViewModel() {
 
     fun isIncluded(key: String): Boolean {
         var result = false
-        (_chatList.value as List<ChatRoom>).forEach {
+        (_chatList.value as ArrayList<ChatRoom>).forEach {
             if (it.id.equals(key))
                 result = true
         }
