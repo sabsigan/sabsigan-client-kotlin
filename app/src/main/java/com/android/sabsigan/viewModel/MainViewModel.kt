@@ -3,9 +3,11 @@ package com.android.sabsigan.viewModel
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.data.User
 import com.android.sabsigan.repository.MainFbRepository
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class MainViewModel: WiFiViewModel() {
@@ -24,7 +26,16 @@ class MainViewModel: WiFiViewModel() {
     val myState = MutableLiveData<String>()
 
     init {
+        viewModelScope.launch {
+            val myInfo = fbRepository.getMyInfo()
+            myName.value = myInfo?.get("myName")
+            myState.value = myInfo?.get("myState")
 
+            _userList.value = fbRepository.getUserList()
+            _chatList.value = fbRepository.getChatList()
+            fbRepository.getChangeUserList()
+            fbRepository.getChangeChatList()
+        }
     }
 
     private fun getOtherUserName(chatRoom: ChatRoom): String {
@@ -41,15 +52,6 @@ class MainViewModel: WiFiViewModel() {
         return user.name
     }
 
-    fun setUserInfo(name: String, state: String) {
-        myName.value = name
-        myState.value = state
-    }
-
-    fun setUserList(list: List<User>) {
-        _userList.value = list
-    }
-
     fun addUserList(user: User) {
         val index = userList.value!!.withIndex()
             .firstOrNull  {user.id == it.value.id}
@@ -58,7 +60,6 @@ class MainViewModel: WiFiViewModel() {
         if (index == -1) {
             (_userList.value as ArrayList<User>).add(user)  // 이미 있는 유저면
             _userList.value = _userList.value               // 값 변경을 databinding으로 알아차릴 수 있게
-            Log.d("userChange", "ADDED")
         } else
             modyfyUserList(user)
     }
@@ -76,7 +77,6 @@ class MainViewModel: WiFiViewModel() {
         _userList.value?.get(index)?.online = user.online
 
         _userList.value = _userList.value // 값 변경을 databinding으로 알아차릴 수 있게
-        Log.d("userChange", "MODIFIED")
     }
 
     fun removeUserList(user: User) {

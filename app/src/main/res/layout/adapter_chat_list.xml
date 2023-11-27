@@ -4,6 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
     <data>
+        <import type="android.view.View"/>
+
         <variable
             name="chatRoom"
             type="com.android.sabsigan.data.ChatRoom" />
@@ -51,13 +53,14 @@
                 android:id="@+id/memberCnt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="4dp"
+                android:layout_marginLeft="8dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="@{chatRoom.member_cnt}"
                 app:layout_constraintStart_toEndOf="@+id/name"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="2" />
+                android:visibility="@{chatRoom.getMemberInt() == 2 ? View.GONE : View.VISIBLE, default = gone}"
+                tools:text="사람 수" />
 
             <TextView
                 android:id="@+id/date"

@@ -1,5 +1,7 @@
 package com.android.sabsigan.data
 
+import java.io.Serializable
+
 data class User(
     val id: String = "",
     var name: String = "",
@@ -10,4 +12,4 @@ data class User(
     var updated_at: String = "",
     var last_active: String = "",
     var online: Boolean = false,
-    )
+    ) : Serializable

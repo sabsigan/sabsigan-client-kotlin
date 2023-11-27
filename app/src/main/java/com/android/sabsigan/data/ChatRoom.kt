@@ -2,7 +2,6 @@ package com.android.sabsigan.data
 
 import java.io.Serializable
 
-
 data class ChatRoom (
     val id: String = "",
     var name: String?,
@@ -15,4 +14,6 @@ data class ChatRoom (
     var last_message: String = "", // 텍스트
     var member_cnt: String = "0",
     var disabled: Boolean = false,
-    ) : Serializable
+    ) : Serializable {
+        fun getMemberInt() = member_cnt.toInt()
+    }

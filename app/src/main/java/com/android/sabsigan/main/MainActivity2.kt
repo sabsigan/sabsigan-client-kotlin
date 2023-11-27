@@ -67,6 +67,7 @@ class MainActivity2 : AppCompatActivity() {
         binding.temp.setOnClickListener {
             val intent = Intent(this, CreateChatActivity::class.java)
             intent.putExtra("userList", viewModel.userList.value as ArrayList<User>)
+
             startActivity(intent)
         }
 
@@ -138,9 +139,10 @@ class MainActivity2 : AppCompatActivity() {
     private fun openChatRoom(chatRoom: ChatRoom, chatName: String) {
         if (!chatRoom.id.equals("")) {
             Log.d("chatRoomFragment", chatRoom.id)
+
             val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("chatRoom", chatRoom)
             intent.putExtra("myName", viewModel.myName.value)
+            intent.putExtra("chatRoom", chatRoom)
             intent.putExtra("chatName", chatName)
 
             startActivity(intent)
