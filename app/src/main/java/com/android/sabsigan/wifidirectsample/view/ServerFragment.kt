@@ -22,6 +22,7 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
+import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
@@ -33,6 +34,9 @@ class ServerFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
     private lateinit var binding : FragmentServerBinding
 
     var messageToSend: String? = null
+    private lateinit var serverSocket : ServerSocket
+    private lateinit var socket : Socket
+    private val port = 8988
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -82,11 +86,11 @@ class ServerFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
                 // 매핑 블록 내부
 
                 // 8988 포트에서 ServerSocket을 생성
-                val serverSocket = ServerSocket(8988)
+                serverSocket = ServerSocket(port)
                 // 클라이언트 연결을 수락
-                val client = serverSocket.accept()
+                socket = serverSocket.accept()
                 // 클라이언트에서 데이터를 읽을 BufferedReader를 생성
-                val reader = BufferedReader(InputStreamReader(client.getInputStream()))
+                val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
 
                 // BufferedReader를 사용하여 클라이언트에서 전송된 텍스트를 읽습니다.
                 val receivedText = reader.readLine()
@@ -114,6 +118,51 @@ class ServerFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
                 runServer()
             }
 
+    }
+
+    private fun sendTextToServer(message: String) {
+//        val host = info.groupOwnerAddress
+//        val socket = Socket()
+//        val port = 8988
+
+        println("host : $host, port : $port")
+
+        disposable?.dispose()
+
+        disposable = Observable.just(message)
+            .subscribeOn(Schedulers.io())
+            .observeOn(Schedulers.io())
+            .doOnNext {
+                try {
+//                    socket.bind(null)
+//                    socket.connect(InetSocketAddress(host, port), 5000)
+
+                    val outputStream = socket.getOutputStream()
+                    val writer = BufferedWriter(OutputStreamWriter(outputStream))
+
+                    // 서버로 전송할 텍스트 전달
+                    writer.write(message)
+                    writer.newLine()
+                    writer.flush()
+
+                    //TODO 여기서는 서버로부터의 응답을 받는 코드 추가
+
+                    outputStream.close()
+                    writer.close()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                } finally {
+                    if (socket.isConnected) {
+                        try {
+                            socket.close()
+                        } catch (e: IOException) {
+                            // Give up
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            }
+            .subscribe()
     }
 
 
