@@ -77,6 +77,7 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         android:background="@drawable/nav_layout"
+        android:backgroundTint="@color/white"
         app:headerLayout="@layout/nav_drawer_header"
         app:menu="@menu/side_nav_menu" />
 
