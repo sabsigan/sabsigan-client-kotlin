@@ -6,7 +6,7 @@
     <string name="title_chatting">채팅</string>
 
 
-    <string name="init_state_message">Initial state.Click the \n menu navigation button.</string>
+    <string name="init_state_message">초기 상태 입니다.\n메뉴 버튼을 눌러 기기를 탐색해주세요.</string>
     <string name="my_device">My device</string>
     <string name="device_name">Device name</string>
     <string name="status">State</string>
@@ -16,5 +16,5 @@
     <string name="group_owner">Group Owner</string>
     <string name="host_name">Host Name</string>
     <string name="select_picture">Choose a picture</string>
-    <string name="send_picture">Send pictures</string>
+    <string name="send_text">메시지 전송</string>
 </resources>

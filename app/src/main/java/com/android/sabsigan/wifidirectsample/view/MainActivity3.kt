@@ -31,10 +31,11 @@ import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.normal.TedPermission
 import io.reactivex.android.schedulers.AndroidSchedulers
 import karrel.kr.co.wifidirectsample.event.*
+import karrel.kr.co.wifidirectsample.view.ClientFragment
 import karrel.kr.co.wifidirectsample.view.DefaultFragment
 import karrel.kr.co.wifidirectsample.view.DiscoverFragment
-import karrel.kr.co.wifidirectsample.view.ClientFragment
 import karrel.kr.co.wifidirectsample.view.ServerFragment
+
 
 class MainActivity3 : AppCompatActivity() {
 
@@ -46,17 +47,24 @@ class MainActivity3 : AppCompatActivity() {
     private lateinit var wifiInfo: WifiP2pInfo
     private lateinit var binding : ActivityMain3Binding
 
+    private var groupformed : Boolean = false
+    private var exitMenuItem: MenuItem? = null
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMain3Binding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.toolbar)
-
         setupBroadcatEvents()
         setupIntentFilter()
         setupWifiP2pManager()
         checkPermission()
+
+
+        setSupportActionBar(binding.toolbar)
+
+
 
     }
 
@@ -70,8 +78,6 @@ class MainActivity3 : AppCompatActivity() {
         // 내 디바이스 정보, About My Devices
         MyDeviceInfoEvent.receive().observeOn(AndroidSchedulers.mainThread()).subscribe {
             //TODO 화면 출력
-//            deviceName.text = it.deviceName
-//            status.text = getDeviceStatus(it.status)
             binding.contentMain.deviceName.text = it.deviceName
             binding.contentMain.status.text = getDeviceStatus(it.status)
             Log.d(TAG,"내 디바이스 이름: "+it.deviceName)
@@ -84,12 +90,13 @@ class MainActivity3 : AppCompatActivity() {
             replaceFragment(DefaultFragment())
         }
 
-        // 와이파이 다이레긑 연결, Wi-Fi Direct Connection
+        // 와이파이 다이렉트  연결, Wi-Fi Direct Connection
         ConnectPeerEvent.receive().subscribe { connect(it) }
 
         // 와이파이 접속시 정보, About Wi-Fi access
         ConnectionInfoEvent.receive().observeOn(AndroidSchedulers.mainThread()).subscribe {
             setupConnectInfo(it)
+
         }
     }
 
@@ -97,13 +104,19 @@ class MainActivity3 : AppCompatActivity() {
     private fun setupConnectInfo(info: WifiP2pInfo) {
         this.wifiInfo = info
 
-        // 그룹오너 여부
-        if (info.isGroupOwner) {
-            // 그룹 오너이면 서버를 보여주고
-            replaceFragment(ServerFragment(info))
+        groupformed = info.groupFormed // 그룹 형성 여부
+
+        if (info.groupFormed) {
+            // 그룹오너 여부
+            if (info.isGroupOwner) {
+                // 그룹 오너이면 서버 화면을 보여주고
+                replaceFragment(ServerFragment(info))
+            } else {
+                // 게스트 이면 클라이언트 화면을 보여준다
+                replaceFragment(ClientFragment(info))
+            }
         } else {
-            // 게스트 이면 음악 리스트를 송신할 수 있는 화면을 보여준다
-            replaceFragment(ClientFragment(info))
+            Log.d("setupConnectInfo", groupformed.toString() )
         }
     }
 
@@ -112,7 +125,7 @@ class MainActivity3 : AppCompatActivity() {
         config.deviceAddress = device.deviceAddress
         config.groupOwnerIntent = 0
 
-        Toast.makeText(this@MainActivity3,config.deviceAddress+" 장치로 연결중",Toast.LENGTH_LONG).show()
+        Toast.makeText(this@MainActivity3,device.deviceName+" 장치로 연결중",Toast.LENGTH_LONG).show()
 
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -133,6 +146,7 @@ class MainActivity3 : AppCompatActivity() {
 
             override fun onSuccess() {
                 Log.d(TAG,"connect!!!")
+                setExitMenuVisible(true) // 나가기 버튼 생김
             }
 
             override fun onFailure(reason: Int) {
@@ -143,21 +157,50 @@ class MainActivity3 : AppCompatActivity() {
 
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-
         val menuInflater = menuInflater
-        menuInflater.inflate(R.menu.menu_main, menu)
+        menuInflater.inflate(R.menu.menu_direct, menu)
 
+        exitMenuItem = menu?.findItem(R.id.action_Exit)
+        setExitMenuVisible(false)
         return true
     }
 
+    fun setExitMenuVisible(b : Boolean) {
+        // 예시: 조건에 따라 보이기/숨기기
+        exitMenuItem?.isVisible = b
+
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item?.itemId) { // 탐색
+        when (item.itemId) { // 탐색
             R.id.action_discorvery -> {
                 discoveryPeer()
                 return true
             }
-            R.id.action_reset -> { //초기화
-                ResetDataEvent.send(true)
+            R.id.action_Exit -> { //나가기
+//                ResetDataEvent.send(true)
+
+                if (groupformed){
+                    val actionListener: WifiP2pManager.ActionListener =
+                        object : WifiP2pManager.ActionListener {
+                            override fun onSuccess() {
+                                // 그룹 제거 성공
+                                Toast.makeText(this@MainActivity3,"나가기 성공",Toast.LENGTH_SHORT).show()
+                                finish()
+                            }
+
+                            override fun onFailure(reason: Int) {
+                                // 그룹 제거 실패
+                                Toast.makeText(this@MainActivity3,"나가기 실패",Toast.LENGTH_SHORT).show()
+                            }
+                        }
+
+                    manager!!.removeGroup(channel, actionListener)
+                } else {
+                  //TODO 아직 그룹이 형성되지 않았을때 처리
+                    Toast.makeText(this@MainActivity3,"아직 채팅방이 생성되지 않았습니다.",Toast.LENGTH_SHORT).show()
+                }
+
                 return true
             }
 
@@ -252,7 +295,6 @@ class MainActivity3 : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        ResetDataEvent.send(true)
         unregisterRecevier()
     }
 
@@ -285,8 +327,10 @@ class MainActivity3 : AppCompatActivity() {
     }
 
     private fun replaceFragment(fragment: Fragment) {
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.fragmentContainer, fragment)
-        transaction.commit()
+        if(!isDestroyed) {
+            val transaction = supportFragmentManager.beginTransaction()
+            transaction.replace(R.id.fragmentContainer, fragment)
+            transaction.commit()
+        }
     }
 }

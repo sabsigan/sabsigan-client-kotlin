@@ -9,7 +9,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.android.sabsigan.databinding.FragmentMusicListBinding
 import io.reactivex.Observable
@@ -17,16 +16,10 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.io.BufferedReader
-import java.io.BufferedWriter
-import java.io.IOException
 import java.io.InputStreamReader
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
-import java.net.InetSocketAddress
 import java.net.Socket
-import java.net.SocketException
 import java.util.concurrent.Executors
 
 @SuppressLint("ValidFragment")
@@ -47,6 +40,8 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
     private lateinit var reader: BufferedReader
     private lateinit var writer: PrintWriter
     private lateinit var handler: Handler
+
+    private var clientThread: Thread? = null
     private val threadPool = Executors.newFixedThreadPool(1) // 스레드 풀
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -62,8 +57,8 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
 
         handler = Handler(Looper.getMainLooper())
 
-        Thread {
-            // 5초 동안 서버에 연결 시도
+        clientThread = Thread {
+
             try {
                 socket = Socket(host, port)
                 reader = BufferedReader(InputStreamReader(socket.getInputStream()))
@@ -77,7 +72,7 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
 
                 // 서버에서 데이터를 계속 읽어오기
                 while (true) {
-                    val message = reader.readLine()
+                    val message = reader.readLine() ?: break // 연결이 종료되면 루프 종료
                     handler.post {
                         binding.sendedText.text = "Server: $message\n"
                     }
@@ -87,10 +82,12 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
 //                handler.post {
 //                    connectStatusTextView.text = "Connection Failed"
 //                }
-                Log.d("ClientFragment", "Connection Failed")
+                Log.d("ClientFragment", "socket Connection Failed")
                 e.printStackTrace()
             }
-        }.start()
+        }
+
+        clientThread?.start()
 
         binding.send.setOnClickListener {
             // 전송 버튼 클릭 시 메시지 서버로 전송
@@ -115,8 +112,16 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
             writer.close()
         } catch (e: Exception) {
             e.printStackTrace()
+        } finally {
+            threadPool.shutdown() // 앱 종료 시 스레드 풀을 종료
+            clientThread?.interrupt()
+            try {
+                clientThread?.join() //스레드 종료까지 기다림
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
+            }
         }
-        threadPool.shutdown() // 앱 종료 시 스레드 풀을 종료
+
     }
 
 
