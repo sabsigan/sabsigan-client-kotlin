@@ -12,7 +12,7 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.runBlocking
 
 class MainViewModel: WiFiViewModel() {
-    private val firebaseRepository = FirebaseRepository()
+//    private val firebaseRepository = FirebaseRepository()
 
     private val _userList = MutableLiveData<ArrayList<User>>()
     private val _chatList = MutableLiveData<ArrayList<ChatRoom>>()
@@ -26,13 +26,13 @@ class MainViewModel: WiFiViewModel() {
 
     init {
         runBlocking {
-            _userList.value = firebaseRepository.getUserList()
-            _chatList.value = firebaseRepository.getChatList()
+//            _userList.value = firebaseRepository.getUserList()
+//            _chatList.value = firebaseRepository.getChatList()
         }
     }
 
     fun clickUser(otherUser: User) {
-        firebaseRepository.createChatRoom(otherUser, 2)
+//        firebaseRepository.createChatRoom(otherUser, 2)
     }
 
     fun clickChatRoom(chatRoom: ChatRoom) {
