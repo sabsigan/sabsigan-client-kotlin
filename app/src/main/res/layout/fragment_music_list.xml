@@ -93,7 +93,7 @@
         android:layout_marginLeft="@dimen/spacing_large"
         android:layout_marginTop="@dimen/spacing_large"
         android:gravity="center_vertical"
-        android:text="@string/send_picture"
+        android:text="@string/send_text"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/line2" />
 
@@ -105,7 +105,7 @@
         android:layout_marginTop="72dp"
         android:background="@color/Gray_500"
         android:text="client"
-        android:textSize="25dp"
+        android:textSize="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/pictureTitle"
         app:layout_constraintVertical_bias="0.377"
@@ -116,7 +116,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:hint="전송할 메시지 입력"
+        android:hint="전송할 메시지 입력해주세요"
         app:layout_constraintTop_toBottomOf="@+id/sended_text"
         tools:layout_editor_absoluteX="0dp" />
 

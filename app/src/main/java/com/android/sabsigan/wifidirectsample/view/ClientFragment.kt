@@ -3,6 +3,9 @@ package karrel.kr.co.wifidirectsample.view
 import android.annotation.SuppressLint
 import android.net.wifi.p2p.WifiP2pInfo
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,11 +15,12 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import java.io.BufferedWriter
-import java.io.IOException
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.io.OutputStreamWriter
-import java.net.InetSocketAddress
+import java.io.PrintWriter
 import java.net.Socket
+import java.util.concurrent.Executors
 
 @SuppressLint("ValidFragment")
 class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2pInfo) : Fragment() {
@@ -25,27 +29,99 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
     private var disposable: Disposable? = null
     private lateinit var binding: FragmentMusicListBinding
 
-    private var message : String = ""
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?)
-    : View? {
-        // Inflate the layout for this fragment
+    private val host = info.groupOwnerAddress
+    private val port = 8988
+
+    private lateinit var socket: Socket
+    private lateinit var reader: BufferedReader
+    private lateinit var writer: PrintWriter
+    private lateinit var handler: Handler
+
+    private var clientThread: Thread? = null
+    private val threadPool = Executors.newFixedThreadPool(1) // 스레드 풀
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+
         binding = FragmentMusicListBinding.inflate(inflater, container, false)
         return binding.root
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        println("host : $host, port : $port")
         setupData()
 
-        setupButtons()
+        handler = Handler(Looper.getMainLooper())
+
+        clientThread = Thread {
+
+            try {
+                socket = Socket(host, port)
+                reader = BufferedReader(InputStreamReader(socket.getInputStream()))
+                writer = PrintWriter(OutputStreamWriter(socket.getOutputStream()), true)
+
+                Log.d("ClientFragment","Connected to Server")
+//                handler.post {
+                    // 연결 성공 시 UI 업데이트 등 필요한 작업 수행
+//                    connectStatusTextView.text = "Connected to Server"
+//                }
+
+                // 서버에서 데이터를 계속 읽어오기
+                while (true) {
+                    val message = reader.readLine() ?: break // 연결이 종료되면 루프 종료
+                    handler.post {
+                        binding.sendedText.text = "Server: $message\n"
+                    }
+                }
+            } catch (e: Exception) {
+                // 연결 실패
+//                handler.post {
+//                    connectStatusTextView.text = "Connection Failed"
+//                }
+                Log.d("ClientFragment", "socket Connection Failed")
+                e.printStackTrace()
+            }
+        }
+
+        clientThread?.start()
+
+        binding.send.setOnClickListener {
+            // 전송 버튼 클릭 시 메시지 서버로 전송
+            threadPool.execute {
+                val message = binding.sendingText.text.toString()
+                writer.println(message)
+                binding.sendingText.text.clear()
+                Log.d("ClientFragment", "Message sent to server: $message")
+//                handler.post { //내가 보낸 텍스트를 텍스트 뷰에 표시하는 부분
+//                    receivedMessagesTextView.append("Client: $message\n")
+//                }
+            }
+        }
+
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        try {
+            socket.close()
+            reader.close()
+            writer.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            threadPool.shutdown() // 앱 종료 시 스레드 풀을 종료
+            clientThread?.interrupt()
+            try {
+                clientThread?.join() //스레드 종료까지 기다림
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
+            }
+        }
 
-        disposable?.dispose()
     }
+
+
 
 
     private fun setupData() {
@@ -60,66 +136,6 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
                     binding.hostName.text = it
                 }
     }
-
-
-
-
-    private fun setupButtons() {
-        binding.send.setOnClickListener{
-            message = binding.sendingText.text.toString()
-            if(message.isNotBlank()){
-                sendTextToServer(message)
-            }
-        }
-    }
-
-
-
-    private fun sendTextToServer(message: String) {
-        val host = info.groupOwnerAddress
-        val socket = Socket()
-        val port = 8988
-
-        println("host : $host, port : $port")
-
-        disposable?.dispose()
-
-        disposable = Observable.just(message)
-            .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.io())
-            .doOnNext {
-                    try {
-                    socket.bind(null)
-                    socket.connect(InetSocketAddress(host, port), 5000)
-
-                    val outputStream = socket.getOutputStream()
-                    val writer = BufferedWriter(OutputStreamWriter(outputStream))
-
-                    // 서버로 전송할 텍스트 전달
-                    writer.write(message)
-                    writer.newLine()
-                    writer.flush()
-
-                    //TODO 여기서는 서버로부터의 응답을 받는 코드 추가
-
-                    outputStream.close()
-                    writer.close()
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                } finally {
-                    if (socket.isConnected) {
-                        try {
-                            socket.close()
-                        } catch (e: IOException) {
-                            // Give up
-                            e.printStackTrace()
-                        }
-                    }
-                }
-            }
-            .subscribe()
-    }
-
 
 
 //    private fun sendPictureFile(message: String) {

@@ -55,7 +55,7 @@
             <TextView
                 android:id="@+id/deviceName"
                 style="@style/TextView.value"
-                tools:text="레이나" />
+                tools:text="my phone" />
 
         </LinearLayout>
 

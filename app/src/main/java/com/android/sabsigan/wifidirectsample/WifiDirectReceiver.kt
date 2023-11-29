@@ -121,7 +121,7 @@ class WifiDirectReceiver(private val manager : WifiP2pManager?, private val chan
         if (networkInfo != null) {
             if (networkInfo.isConnected) {
                 manager.requestConnectionInfo(channel) { info ->
-                    Log.d(TAG, "WiFiDirectBroadcastReceiver info : $info")
+                    Log.d(TAG, "WiFiDirectBroadcastReceiver setConnectionInfo : $info")
                     ConnectionInfoEvent.send(info)
                 }
             } else {
