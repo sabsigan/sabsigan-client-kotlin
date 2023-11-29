@@ -47,11 +47,9 @@ class ChatActivity : AppCompatActivity() {
 
         wifiConnectReceiver = WifiConnectReceiver(viewModel)
 
-        binding.recyclerView.adapter = MessageAdapter(viewModel)
+        binding.backButton.setOnClickListener { finish() }
 
-        binding.backButton.setOnClickListener {
-            finish()
-        }
+        binding.recyclerView.adapter = MessageAdapter(viewModel)
 
         viewModel.messageList.observe(this, Observer {
             (binding.recyclerView.adapter as MessageAdapter).setMessageList(it)

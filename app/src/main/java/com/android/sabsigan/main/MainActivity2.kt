@@ -1,5 +1,6 @@
 package com.android.sabsigan.main
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -7,6 +8,8 @@ import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
@@ -38,15 +41,14 @@ class MainActivity2 : AppCompatActivity() {
         mBinding = ActivityMain2Binding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        window.statusBarColor = ContextCompat.getColor(this, R.color.custom_blue)
-
+        val activityLauncher = openActivityResultLauncher()
         wifiConnectReceiver = WifiConnectReceiver(viewModel)
 
         if (!isReceiverRegistered(this))
             registerReceiver(wifiConnectReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
 
-        //엑션바 설정
-        setSupportActionBar(binding.toolbar)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.custom_blue) // 스테이터스바 색 변경
+        setSupportActionBar(binding.toolbar)        //엑션바 설정
         supportActionBar?.setTitle(R.string.app_name)
         supportActionBar?.setDisplayHomeAsUpEnabled(true) // 왼쪽 상단에 버튼 만들기
         supportActionBar?.setHomeAsUpIndicator(R.drawable.baseline_menu_24) // 왼쪽 상단 버튼 아이콘 지정
@@ -120,6 +122,17 @@ class MainActivity2 : AppCompatActivity() {
 //            super.onBackPressed()
             finish()
         }
+    }
+
+    private fun openActivityResultLauncher() : ActivityResultLauncher<Intent> {
+        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                Log.d("create ChatRoom", "Success")
+                val t = it.data?.getSerializableExtra("selectedList") as List<User>
+            } else { Log.d("create ChatRoom", "failed") }
+        }
+
+        return resultLauncher
     }
 
     private fun isReceiverRegistered(context: Context): Boolean {
