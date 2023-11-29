@@ -56,7 +56,6 @@
             android:id="@+id/inputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="8dp"
             android:background="@color/white"
             android:orientation="horizontal"
             app:layout_constraintTop_toBottomOf="@+id/recyclerView"
@@ -66,24 +65,29 @@
                 android:id="@+id/messageBox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:background="@color/Gray_100"
-                android:maxLines="3"
-                android:inputType="textMultiLine"
                 android:layout_weight="1"
+                android:layout_margin="16dp"
+                android:padding="10dp"
+                android:background="@drawable/rounded_layout_14"
+                android:backgroundTint="@color/Gray_100"
+                android:inputType="textMultiLine"
+                android:maxLines="3"
                 android:text="@={viewModel.inputTxt}"
                 android:hint="메세지 보내기" />
 
-            <Button
+            <ImageView
                 android:id="@+id/sendButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_margin="8dp"
-                android:layout_gravity="start"
+                android:layout_marginVertical="16dp"
+                android:layout_marginRight="16dp"
+                android:paddingVertical="10dp"
+                android:paddingLeft="3dp"
                 android:background="@drawable/rounded_layout"
+                android:src="@drawable/baseline_send_24"
                 android:elevation="8dp"
-                android:onClick="@{()->viewModel.sendBtnClick()}"
-                app:cardCornerRadius="25dp"/>
+                android:outlineSpotShadowColor="@color/Gray_700"
+                android:onClick="@{()->viewModel.sendBtnClick()}"/>
 
         </LinearLayout>
 

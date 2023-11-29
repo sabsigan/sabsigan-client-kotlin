@@ -5,11 +5,19 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MenuItem
+import android.view.WindowInsets
+import android.view.WindowManager
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -18,7 +26,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
@@ -27,12 +34,10 @@ import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.data.User
 import com.android.sabsigan.databinding.ActivityMain2Binding
-import com.android.sabsigan.main.MainActivity2
 import com.android.sabsigan.main.chatting.ChatActivity
 import com.android.sabsigan.main.chatting.CreateChatActivity
 import com.android.sabsigan.viewModel.MainViewModel
 import com.android.sabsigan.wifidirectsample.view.MainActivity3
-import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class MainActivity2 : AppCompatActivity() {
     private var mBinding: ActivityMain2Binding? = null
@@ -70,22 +75,30 @@ class MainActivity2 : AppCompatActivity() {
             openChatRoom(it, viewModel.getClickChatName()!!)
         })
 
-        binding.temp.setOnClickListener {
+        binding.addChat.setOnClickListener {
             val layoutInflater = LayoutInflater.from(this)
-            val view = layoutInflater.inflate(R.layout.create_chat_topsheet, null)
+            val view = layoutInflater.inflate(R.layout.top_dialog_layout, null)
 
             val alertDialog = AlertDialog.Builder(this, R.style.CustomAlertDialog)
                 .setView(view)
                 .create()
-
             alertDialog.window?.setGravity(Gravity.TOP)
+            alertDialog.window?.setWindowAnimations(R.style.TopPopupStyle)
+
+            val backButton = view.findViewById<ImageView>(R.id.backButton)
+            val directChat =  view.findViewById<LinearLayout>(R.id.directChat)
+            val groupChat =  view.findViewById<LinearLayout>(R.id.groupChat)
+
+            backButton.setOnClickListener { alertDialog.dismiss() }
+            directChat.setOnClickListener {
+                openActivity(Intent(this, MainActivity3::class.java))  // 와이파이 다이랙트 채팅 액티비티
+                alertDialog.dismiss() }
+            groupChat.setOnClickListener {
+                openActivity(Intent(this, CreateChatActivity::class.java)) // 그룹 채팅 생성 액티비티
+                alertDialog.dismiss()
+            }
+
             alertDialog.show()
-
-
-//            val intent = Intent(this, CreateChatActivity::class.java)
-//            intent.putExtra("userList", viewModel.userList.value as ArrayList<User>)
-//
-//            startActivity(intent)
         }
 
         //drawer wifi선택시 와이파이 다이렉트 이동
@@ -162,6 +175,13 @@ class MainActivity2 : AppCompatActivity() {
         }
 
         return false // 리시버가 현재 등록되어 있지 않음
+    }
+
+    private fun openActivity(intent: Intent) {
+        intent.addFlags (Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        intent.putExtra("userList", viewModel.userList.value as ArrayList<User>)
+
+        startActivity(intent)
     }
 
     private fun openChatRoom(chatRoom: ChatRoom, chatName: String) {
