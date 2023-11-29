@@ -7,10 +7,13 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.MenuItem
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -29,6 +32,7 @@ import com.android.sabsigan.main.chatting.ChatActivity
 import com.android.sabsigan.main.chatting.CreateChatActivity
 import com.android.sabsigan.viewModel.MainViewModel
 import com.android.sabsigan.wifidirectsample.view.MainActivity3
+import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class MainActivity2 : AppCompatActivity() {
     private var mBinding: ActivityMain2Binding? = null
@@ -67,10 +71,21 @@ class MainActivity2 : AppCompatActivity() {
         })
 
         binding.temp.setOnClickListener {
-            val intent = Intent(this, CreateChatActivity::class.java)
-            intent.putExtra("userList", viewModel.userList.value as ArrayList<User>)
+            val layoutInflater = LayoutInflater.from(this)
+            val view = layoutInflater.inflate(R.layout.create_chat_topsheet, null)
 
-            startActivity(intent)
+            val alertDialog = AlertDialog.Builder(this, R.style.CustomAlertDialog)
+                .setView(view)
+                .create()
+
+            alertDialog.window?.setGravity(Gravity.TOP)
+            alertDialog.show()
+
+
+//            val intent = Intent(this, CreateChatActivity::class.java)
+//            intent.putExtra("userList", viewModel.userList.value as ArrayList<User>)
+//
+//            startActivity(intent)
         }
 
         //drawer wifi선택시 와이파이 다이렉트 이동
