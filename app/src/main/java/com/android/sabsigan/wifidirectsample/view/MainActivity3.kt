@@ -62,6 +62,7 @@ class MainActivity3 : AppCompatActivity() {
         checkPermission()
 
 
+        binding.toolbar.title = "WiFi-Direct Chat"
         setSupportActionBar(binding.toolbar)
 
 

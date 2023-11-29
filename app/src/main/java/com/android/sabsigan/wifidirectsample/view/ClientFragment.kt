@@ -10,7 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.android.sabsigan.databinding.FragmentMusicListBinding
+import com.android.sabsigan.databinding.FragmentClientBinding
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -27,7 +27,7 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
 
 //    private var galleryLoader: GalleryLoader? = null
     private var disposable: Disposable? = null
-    private lateinit var binding: FragmentMusicListBinding
+    private lateinit var binding: FragmentClientBinding
 
     private val host = info.groupOwnerAddress
     private val port = 8988
@@ -42,7 +42,7 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        binding = FragmentMusicListBinding.inflate(inflater, container, false)
+        binding = FragmentClientBinding.inflate(inflater, container, false)
         return binding.root
 
     }
