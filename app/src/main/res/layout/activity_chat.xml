@@ -24,15 +24,20 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
+                android:id="@+id/backButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/baseline_arrow_back_ios_new_24"/>
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/ripple_unbounded"
+                android:src="@drawable/baseline_arrow_back_ios_new_24" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="이름"/>
+                android:text="@{viewModel.chatName}"
+                tools:text="이름"/>
 
         </Toolbar>
 
@@ -40,10 +45,12 @@
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:paddingVertical="10dp"
+            android:clipToPadding="false"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:stackFromEnd="true"
+            app:layout_constraintBottom_toTopOf="@+id/inputLayout"
             app:layout_constraintTop_toBottomOf="@+id/toolbar"
-            app:layout_constraintBottom_toTopOf="@+id/inputLayout" />
+            app:messageItems="@{viewModel.messageList}" />
 
         <LinearLayout
             android:id="@+id/inputLayout"
@@ -52,6 +59,7 @@
             android:padding="8dp"
             android:background="@color/white"
             android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@+id/recyclerView"
             app:layout_constraintBottom_toBottomOf="parent">
 
             <EditText
@@ -59,22 +67,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="10dp"
-                android:background="@null"
+                android:background="@color/Gray_100"
                 android:maxLines="3"
                 android:inputType="textMultiLine"
                 android:layout_weight="1"
+                android:text="@={viewModel.inputTxt}"
                 android:hint="메세지 보내기" />
 
-            <androidx.cardview.widget.CardView
+            <Button
                 android:id="@+id/sendButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginLeft="8dp"
+                android:layout_margin="8dp"
                 android:layout_gravity="start"
+                android:background="@drawable/rounded_layout"
                 android:elevation="8dp"
-                app:cardCornerRadius="25dp">
-
-            </androidx.cardview.widget.CardView>
+                android:onClick="@{()->viewModel.sendBtnClick()}"
+                app:cardCornerRadius="25dp"/>
 
         </LinearLayout>
 

@@ -1,12 +1,14 @@
 package com.android.sabsigan.main.user
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import com.android.sabsigan.R
 import com.android.sabsigan.databinding.FragmentUserBinding
 import com.android.sabsigan.viewModel.MainViewModel
@@ -23,11 +25,6 @@ class UserFragment : Fragment() {
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_user, container, false)
 
-//        val textView: TextView = binding.textUser
-//        viewModel.text.observe(viewLifecycleOwner) {
-//            textView.text = it
-//        }
-
         return binding.root
     }
 
@@ -37,15 +34,15 @@ class UserFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        setupAdapter()
+        binding.recyclerView.adapter = UserListAdapter(viewModel)
+
+        viewModel.userList.observe(viewLifecycleOwner, Observer {
+            (binding.recyclerView.adapter as UserListAdapter).setUserList(it)
+        })
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    fun setupAdapter() {
-        binding.recyclerView.adapter = UserListAdapter(viewModel)
     }
 }

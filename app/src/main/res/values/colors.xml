@@ -10,6 +10,8 @@
     <color name="transparent">#00000000</color>
 
     <!-- 테스트 색 -->
+    <color name="custom_blue">#bdd7fc</color>
+
     <color name="black_white">#FFFFFF</color>
     <color name="black2">#010101</color>
     <color name="gradient">#FFFFFFFF</color>

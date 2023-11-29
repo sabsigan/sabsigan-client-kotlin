@@ -8,7 +8,7 @@ import com.android.sabsigan.databinding.AdapterUserListBinding
 import com.android.sabsigan.viewModel.MainViewModel
 
 class UserListAdapter(private val viewModel: MainViewModel): RecyclerView.Adapter<UserListAdapter.UserViewHolder>() {
-    var userList = arrayListOf<User>()
+    private var userList = listOf<User>()
 
     class UserViewHolder private constructor(val binding: AdapterUserListBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(viewModel: MainViewModel, user: User) {
@@ -25,6 +25,11 @@ class UserListAdapter(private val viewModel: MainViewModel): RecyclerView.Adapte
                 return UserViewHolder(binding)
             }
         }
+    }
+
+    fun setUserList(list: List<User>) {
+        userList = list
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {

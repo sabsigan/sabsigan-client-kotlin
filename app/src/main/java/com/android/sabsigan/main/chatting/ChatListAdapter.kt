@@ -1,14 +1,14 @@
-package com.android.sabsigan.main.chatting
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.android.sabsigan.data.ChatRoom
+import com.android.sabsigan.data.User
 import com.android.sabsigan.databinding.AdapterChatListBinding
 import com.android.sabsigan.viewModel.MainViewModel
 
 class ChatListAdapter(private val viewModel: MainViewModel): RecyclerView.Adapter<ChatListAdapter.ChatListViewHolder>() {
-    var chatList = arrayListOf<ChatRoom>()
+    private var chatList = listOf<ChatRoom>()
 
     class ChatListViewHolder private constructor(val binding: AdapterChatListBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(viewModel: MainViewModel, chatRoom: ChatRoom) {
@@ -25,6 +25,11 @@ class ChatListAdapter(private val viewModel: MainViewModel): RecyclerView.Adapte
                 return ChatListViewHolder(binding)
             }
         }
+    }
+
+    fun setChatList(list: List<ChatRoom>) {
+        chatList = list
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatListViewHolder {
