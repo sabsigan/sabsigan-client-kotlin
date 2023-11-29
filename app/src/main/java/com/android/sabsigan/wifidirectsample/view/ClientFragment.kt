@@ -30,11 +30,7 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
     private lateinit var binding: FragmentMusicListBinding
 
     private val host = info.groupOwnerAddress
-//    private val socket = Socket()
     private val port = 8988
-
-//    private var message : String = ""
-//    private val handler = Handler()
 
     private lateinit var socket: Socket
     private lateinit var reader: BufferedReader
@@ -43,6 +39,7 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
 
     private var clientThread: Thread? = null
     private val threadPool = Executors.newFixedThreadPool(1) // 스레드 풀
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         binding = FragmentMusicListBinding.inflate(inflater, container, false)

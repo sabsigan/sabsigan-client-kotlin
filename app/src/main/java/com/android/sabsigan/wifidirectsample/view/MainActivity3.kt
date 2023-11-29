@@ -166,7 +166,7 @@ class MainActivity3 : AppCompatActivity() {
     }
 
     fun setExitMenuVisible(b : Boolean) {
-        // 예시: 조건에 따라 보이기/숨기기
+        //나가기 버튼 조건에 따라 보이기/숨기기
         exitMenuItem?.isVisible = b
 
     }
