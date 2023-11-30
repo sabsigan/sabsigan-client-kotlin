@@ -18,6 +18,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -32,6 +33,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.android.sabsigan.R
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.data.ChatRoom
+import com.android.sabsigan.data.SimpleUser
 import com.android.sabsigan.data.User
 import com.android.sabsigan.databinding.ActivityMain2Binding
 import com.android.sabsigan.main.chatting.ChatActivity
@@ -91,10 +93,18 @@ class MainActivity2 : AppCompatActivity() {
 
             backButton.setOnClickListener { alertDialog.dismiss() }
             directChat.setOnClickListener {
-                openActivity(Intent(this, MainActivity3::class.java))  // 와이파이 다이랙트 채팅 액티비티
+                val intent =  Intent(this, MainActivity3::class.java) // 와이파이 다이렉트 채팅
+                intent.addFlags (Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                intent.putExtra("userList", viewModel.userList.value as ArrayList<User>)
+
+                startActivity(intent)
                 alertDialog.dismiss() }
             groupChat.setOnClickListener {
-                openActivity(Intent(this, CreateChatActivity::class.java)) // 그룹 채팅 생성 액티비티
+                val intent =  Intent(this, CreateChatActivity::class.java) // 그룹 채팅 생성 액티비티
+                intent.addFlags (Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                intent.putExtra("userList", viewModel.userList.value as ArrayList<User>)
+
+                activityLauncher.launch(intent)
                 alertDialog.dismiss()
             }
 
@@ -156,7 +166,11 @@ class MainActivity2 : AppCompatActivity() {
         val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == Activity.RESULT_OK) {
                 Log.d("create ChatRoom", "Success")
-                val t = it.data?.getSerializableExtra("selectedList") as List<User>
+                val list = it.data?.getSerializableExtra("selectedList") as ArrayList<User>
+                val chatRoomName = it.data?.getStringExtra("chatRoomName")
+                Log.d("create ChatRoom", chatRoomName!!)
+
+                viewModel.createGroupChat(list, chatRoomName)
             } else { Log.d("create ChatRoom", "failed") }
         }
 
@@ -175,13 +189,6 @@ class MainActivity2 : AppCompatActivity() {
         }
 
         return false // 리시버가 현재 등록되어 있지 않음
-    }
-
-    private fun openActivity(intent: Intent) {
-        intent.addFlags (Intent.FLAG_ACTIVITY_NO_ANIMATION)
-        intent.putExtra("userList", viewModel.userList.value as ArrayList<User>)
-
-        startActivity(intent)
     }
 
     private fun openChatRoom(chatRoom: ChatRoom, chatName: String) {

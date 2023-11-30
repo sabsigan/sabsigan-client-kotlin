@@ -1,5 +1,6 @@
 package com.android.sabsigan.viewModel
 
+import android.net.wifi.ScanResult
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -18,6 +19,9 @@ class MainViewModel: WiFiViewModel() {
     private val _chatRoom = MutableLiveData<ChatRoom>()
     private val clickChatName = MutableLiveData<String>()
 
+    private val userComparator : Comparator<User> = compareBy { it.name }
+    private val chatRoomComparator : Comparator<ChatRoom> = compareByDescending { it.last_message_at }
+
     val userList: LiveData<List<User>> get() = _userList
     val chatList: LiveData<List<ChatRoom>> get() = _chatList
     val chatRoom: LiveData<ChatRoom> get() = _chatRoom
@@ -32,7 +36,9 @@ class MainViewModel: WiFiViewModel() {
             myState.value = myInfo?.get("myState")
 
             _userList.value = fbRepository.getUserList()
+            _userList.value = _userList.value!!.sortedWith(userComparator).toMutableList() // 이름 순으로 정렬
             _chatList.value = fbRepository.getChatList()
+            _chatList.value = _chatList.value!!.sortedWith(chatRoomComparator).toMutableList() // 시간 순으로 정렬
             fbRepository.getChangeUserList()
             fbRepository.getChangeChatList()
         }
@@ -59,7 +65,8 @@ class MainViewModel: WiFiViewModel() {
 
         if (index == -1) {
             (_userList.value as ArrayList<User>).add(user)  // 이미 있는 유저면
-            _userList.value = _userList.value               // 값 변경을 databinding으로 알아차릴 수 있게
+
+            _userList.value = _userList.value!!.sortedWith(userComparator).toMutableList() // 이름 순으로 정렬
         } else
             modyfyUserList(user)
     }
@@ -76,13 +83,13 @@ class MainViewModel: WiFiViewModel() {
         _userList.value?.get(index)?.last_active = user.last_active
         _userList.value?.get(index)?.online = user.online
 
-        _userList.value = _userList.value // 값 변경을 databinding으로 알아차릴 수 있게
+        _userList.value = _userList.value!!.sortedWith(userComparator).toMutableList() // 이름 순으로 정렬
     }
 
     fun removeUserList(user: User) {
         (_userList.value as ArrayList<User>).remove(user)
 
-        _userList.value = _userList.value // 값 변경을 databinding으로 알아차릴 수 있게
+        _userList.value = _userList.value!!.sortedWith(userComparator).toMutableList() // 이름 순으로 정렬
         Log.d("userChange", "REMOVED")
     }
 
@@ -97,7 +104,7 @@ class MainViewModel: WiFiViewModel() {
 
         if (index == -1) {
             (_chatList.value as ArrayList<ChatRoom>).add(chatRoom)  // 이미 있는 유저면
-            _userList.value = _userList.value               // 값 변경을 databinding으로 알아차릴 수 있게
+            _chatList.value = _chatList.value!!.sortedWith(chatRoomComparator).toMutableList() // 시간 순으로 정렬
             Log.d("chatRoomChange", "ADDED")
         } else
             modyfyChatList(chatRoom)
@@ -116,14 +123,14 @@ class MainViewModel: WiFiViewModel() {
         _chatList.value?.get(index)?.member_cnt = chatRoom.member_cnt
         _chatList.value?.get(index)?.disabled = chatRoom.disabled
 
-        _chatList.value = _chatList.value // 값 변경을 databinding으로 알아차릴 수 있게
+        _chatList.value = _chatList.value!!.sortedWith(chatRoomComparator).toMutableList() // 시간 순으로 정렬
         Log.d("chatRoomChange", "MODIFIED")
     }
 
     fun removeChatList(chatRoom: ChatRoom) {
         (_chatList.value as ArrayList<ChatRoom>).remove(chatRoom)
 
-        _chatList.value = _chatList.value // 값 변경을 databinding으로 알아차릴 수 있게
+        _chatList.value = _chatList.value!!.sortedWith(chatRoomComparator).toMutableList() // 시간 순으로 정렬
         Log.d("chatRoomChange", "REMOVED")
     }
 
@@ -135,6 +142,10 @@ class MainViewModel: WiFiViewModel() {
      * chatRoom의 사람이 2명일 때만 nullable
      */
     fun getChatRoomName(chatRoom: ChatRoom) = chatRoom.name?: getOtherUserName(chatRoom)
+
+    fun createGroupChat(users: ArrayList<User>, chatName: String) {
+        fbRepository.createChatRoom(users, chatName)
+    }
     
     fun clickUser(otherUser: User) {
         Log.d("userFragment", "유저 클릭")

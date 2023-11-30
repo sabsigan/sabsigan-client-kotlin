@@ -12,4 +12,6 @@ data class User(
     var updated_at: String = "",
     var last_active: String = "",
     var online: Boolean = false,
-    ) : Serializable
+    ) : Serializable {
+    constructor(user: SimpleUser) : this(id = user.id, name = user.name)
+}

@@ -24,6 +24,8 @@ class ChatViewModel: WiFiViewModel() {
     private val _msgView = MutableLiveData<View>()
     private var msgId = ""
 
+    private val msgComparator : Comparator<ChatMessage> = compareBy { it.created_at }
+
     val inputTxt = MutableLiveData<String>()
     val nullTxt = "메시지가 삭제되었습니다"
     val messageList: LiveData<List<ChatMessage>> get() = _messageList
@@ -41,6 +43,7 @@ class ChatViewModel: WiFiViewModel() {
 
     fun setMessageList(list: List<ChatMessage>) {
         _messageList.value = list
+        _messageList.value = _messageList.value!!.sortedWith(msgComparator).toMutableList() // 시간 순으로 정렬
     }
 
     fun addMsgList(chatMsg: ChatMessage) {
@@ -50,7 +53,7 @@ class ChatViewModel: WiFiViewModel() {
 
         if (index == -1) {
             (_messageList.value as ArrayList<ChatMessage>).add(chatMsg)  // 이미 있는 유저면
-            _messageList.value = _messageList.value               // 값 변경을 databinding으로 알아차릴 수 있게
+            _messageList.value = _messageList.value!!.sortedWith(msgComparator).toMutableList() // 시간 순으로 정렬
             Log.d("msgChange", "ADDED")
         } else
             modyfyMsgList(chatMsg)
@@ -66,14 +69,14 @@ class ChatViewModel: WiFiViewModel() {
         _messageList.value?.get(index)?.type = chatMsg.type
         _messageList.value?.get(index)?.updated_at = chatMsg.updated_at
 
-        _messageList.value = _messageList.value // 값 변경을 databinding으로 알아차릴 수 있게
+        _messageList.value = _messageList.value!!.sortedWith(msgComparator).toMutableList() // 시간 순으로 정렬
         Log.d("msgChange", "MODIFIED")
     }
 
     fun removeMsgList(chatMsg: ChatMessage) {
         (_messageList.value as ArrayList<ChatMessage>).remove(chatMsg)
 
-        _messageList.value = _messageList.value // 값 변경을 databinding으로 알아차릴 수 있게
+        _messageList.value = _messageList.value!!.sortedWith(msgComparator).toMutableList() // 시간 순으로 정렬
         Log.d("msgChange", "REMOVED")
     }
 
@@ -89,7 +92,7 @@ class ChatViewModel: WiFiViewModel() {
         Log.d("click", "메시지 전송 버튼 클릭")
         val msg = inputTxt.value
 
-        if (msg != null && !msg.equals("")) {
+        if (msg != null && msg.isNotEmpty() && !msg.isNullOrBlank()) {
             Log.d("click", "메시지 전송")
             fbRepository.sendMessage(msg, chatRoom.id, myName)
             inputTxt.value = ""

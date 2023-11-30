@@ -4,12 +4,15 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.SearchView
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import com.android.sabsigan.R
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
+import com.android.sabsigan.data.SimpleUser
 import com.android.sabsigan.data.User
 import com.android.sabsigan.databinding.ActivityCreateChatBinding
 import com.android.sabsigan.main.user.SearchUserAdapter
@@ -30,10 +33,10 @@ class CreateChatActivity : AppCompatActivity() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        binding.backButton.setOnClickListener { finish() }
-
         binding.selectRecyclerView.adapter = SelectedUserAdapter(viewModel)
         binding.userRecyclerView.adapter = SearchUserAdapter(viewModel)
+
+        binding.backButton.setOnClickListener { finish() }
 
         binding.searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener,
             androidx.appcompat.widget.SearchView.OnQueryTextListener {
@@ -46,6 +49,31 @@ class CreateChatActivity : AppCompatActivity() {
                 return true
             }
         })
+
+        binding.nextBtn.setOnClickListener {
+            if (binding.nextBtn.text.equals("다음") && viewModel.selectedList.value != null) {
+                binding.nextBtn.text = "확인"
+
+                binding.setChatNameLayout.visibility = View.VISIBLE
+                binding.userRecyclerView.visibility = View.GONE
+                // editText 포커싱
+                binding.inputChatName.requestFocus()
+                // 키보드 올리기
+                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(binding.inputChatName, InputMethodManager.SHOW_IMPLICIT)
+            } else { // 확인
+                val text = viewModel.inputTxt.value
+
+                if (text != null && text.isNotEmpty() && !text.isNullOrBlank()) {
+                    val intent = Intent()
+                    val list = viewModel.selectedList.value!!.map { user -> User(id = user.id, name = user.name) }
+                    intent.putExtra("selectedList", list as ArrayList<User>)
+                    intent.putExtra("chatRoomName", text)
+                    setResult(RESULT_OK, intent)
+                    finish()
+                }
+            }
+        }
 
 //        viewModel.inputTxt.observe(this, Observer {
 //            (binding.userRecyclerView.adapter as SelectUserAdapter).filter.filter(it)
@@ -62,9 +90,5 @@ class CreateChatActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-
-//        val intent = Intent()
-//        intent.putExtra("selectedList", viewModel.selectedList.value as ArrayList<User>)
-//        setResult(RESULT_OK, intent)
     }
 }

@@ -315,5 +315,6 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
         chatRef.set(chatRoom)
             .addOnSuccessListener { Log.d("createChat", "DocumentSnapshot Success") }
             .addOnFailureListener { Log.w("TAG", "Error adding document", it) }
+
     }
 }

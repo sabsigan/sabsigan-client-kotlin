@@ -16,6 +16,8 @@ class CreateChatViewModel: WiFiViewModel() {
     val selectedList: LiveData<List<SimpleUser>> get() = _selectedList
     val inputTxt = MutableLiveData<String>()
 
+    var temp = false
+
     fun setUserList(list: List<User>) {
         // User 리스트를 SimpleUser 리스트로
         userList = list.map { user -> SimpleUser(id = user.id, name = user.name) }
