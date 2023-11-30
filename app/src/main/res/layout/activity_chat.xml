@@ -83,11 +83,12 @@
                 android:layout_marginRight="16dp"
                 android:paddingVertical="10dp"
                 android:paddingLeft="3dp"
-                android:background="@drawable/rounded_layout"
-                android:src="@drawable/baseline_send_24"
                 android:elevation="8dp"
                 android:outlineSpotShadowColor="@color/Gray_700"
-                android:onClick="@{()->viewModel.sendBtnClick()}"/>
+                android:onClick="@{()->viewModel.sendBtnClick()}"
+                android:background="@drawable/rounded_layout"
+                android:src="@drawable/baseline_send_24" />
+                <!-- app:tint="@{viewModel.inputTxt == null > }" -->
 
         </LinearLayout>
 

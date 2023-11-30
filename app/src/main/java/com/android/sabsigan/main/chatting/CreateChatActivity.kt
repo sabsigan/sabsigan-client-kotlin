@@ -3,6 +3,7 @@ package com.android.sabsigan.main.chatting
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.SearchView
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
@@ -11,7 +12,8 @@ import com.android.sabsigan.R
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.data.User
 import com.android.sabsigan.databinding.ActivityCreateChatBinding
-import com.android.sabsigan.main.user.SelectUserAdapter
+import com.android.sabsigan.main.user.SearchUserAdapter
+import com.android.sabsigan.main.user.SelectedUserAdapter
 import com.android.sabsigan.viewModel.CreateChatViewModel
 
 class CreateChatActivity : AppCompatActivity() {
@@ -25,41 +27,37 @@ class CreateChatActivity : AppCompatActivity() {
 
         val userList = intent.getSerializableExtra("userList") as List<User>
         viewModel.setUserList(userList)
-
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
         binding.backButton.setOnClickListener { finish() }
 
-        binding.userRecyclerView.adapter = SelectUserAdapter(viewModel)
+        binding.selectRecyclerView.adapter = SelectedUserAdapter(viewModel)
+        binding.userRecyclerView.adapter = SearchUserAdapter(viewModel)
 
+        binding.searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener,
+            androidx.appcompat.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return true
+            }
 
-
-//        var searchViewTextListener: SearchView.OnQueryTextListener =
-//            object : SearchView.OnQueryTextListener {
-//                //검색버튼 입력시 호출, 검색버튼이 없으므로 사용하지 않음
-//                override fun onQueryTextSubmit(s: String): Boolean {
-//                    return false
-//                }
-//
-//                //텍스트 입력/수정시에 호출
-//                override fun onQueryTextChange(s: String): Boolean {
-//                    return false
-//                }
-//            }
-//
-//        binding.searchView.setOnQueryTextListener(searchViewTextListener)
-
-
-
-
-            viewModel.userList.observe(this, Observer {
-            (binding.userRecyclerView.adapter as SelectUserAdapter).setUserList(it)
+            override fun onQueryTextChange(newText: String?): Boolean {
+                viewModel.searchUser(newText)
+                return true
+            }
         })
 
-//        val myName = intent.array
+//        viewModel.inputTxt.observe(this, Observer {
+//            (binding.userRecyclerView.adapter as SelectUserAdapter).filter.filter(it)
+//        })
 
-//        intent.
+        viewModel.selectedList.observe(this, Observer {
+            (binding.selectRecyclerView.adapter as SelectedUserAdapter).setUserList(it)
+        })
+
+        viewModel.searchedList.observe(this, Observer {
+            (binding.userRecyclerView.adapter as SearchUserAdapter).setUserList(it)
+        })
     }
 
     override fun onDestroy() {
