@@ -139,6 +139,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics'
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore")
+    implementation 'com.google.firebase:firebase-storage'
     
     // Permission 요청, 관리를 위한 라이브러리
     implementation 'io.github.ParkSangGwon:tedpermission-normal:3.3.0'

@@ -3,6 +3,7 @@ import android.util.Log
 import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.android.sabsigan.data.ChatMessage
 import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.data.User
@@ -10,6 +11,7 @@ import com.android.sabsigan.repository.ChatFbRepository
 import com.android.sabsigan.repository.FirebaseRepository
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 // chatActivity viewModel
@@ -35,6 +37,7 @@ class ChatViewModel: WiFiViewModel() {
     val gray = "#EEEEEE"
 
     init {
+
     }
 
     fun getUID() = fbRepository.uid
@@ -85,7 +88,11 @@ class ChatViewModel: WiFiViewModel() {
         this.myName = myName
         this.chatName = chatName
 
-        fbRepository.setMessageList()
+
+        viewModelScope.launch {
+            _messageList.value = fbRepository.getMsgList(chatRoom.id)
+            fbRepository.getChanggeMsgList(chatRoom.id)
+        }
     }
 
     fun sendBtnClick() {
