@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
+import android.net.wifi.p2p.WifiP2pDevice.UNAVAILABLE
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
@@ -19,6 +20,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.android.sabsigan.R
 import com.android.sabsigan.databinding.ActivityMain3Binding
@@ -27,6 +29,7 @@ import com.android.sabsigan.wifidirectsample.event.ConnectionInfoEvent
 import com.android.sabsigan.wifidirectsample.event.MyDeviceInfoEvent
 import com.android.sabsigan.wifidirectsample.event.ResetDataEvent
 import com.android.sabsigan.wifidirectsample.event.StatusChangedEvent
+import com.android.sabsigan.wifidirectsample.event.WifiEnable
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.normal.TedPermission
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -49,17 +52,21 @@ class MainActivity3 : AppCompatActivity() {
 
     private var groupformed : Boolean = false
     private var exitMenuItem: MenuItem? = null
-
+    private val NEARBY_WIFI_PERMISSION_REQUEST_CODE = 123
+    private val LOCATION_PERMISSION_REQUEST_CODE = 124
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMain3Binding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupBroadcatEvents()
-        setupIntentFilter()
+
+
         setupWifiP2pManager()
         checkPermission()
+        setupBroadcatEvents()
+        setupIntentFilter()
+
 
 
         binding.toolbar.title = "WiFi-Direct Chat"
@@ -74,21 +81,28 @@ class MainActivity3 : AppCompatActivity() {
         // 상태 : 와이파이 연결 가능 상태, Status: Wi-Fi enabled
         StatusChangedEvent.receive().subscribe {
             println("status change : ${it.name}")
-            replaceFragment(DefaultFragment())
+            binding.contentMain.status.text =  it.name
+
+            if(it.equals(WifiEnable.ENABLE)) {
+                replaceFragment(DiscoverFragment())
+            } else{
+                replaceFragment(DefaultFragment())
+            }
+
         }
         // 내 디바이스 정보, About My Devices
         MyDeviceInfoEvent.receive().observeOn(AndroidSchedulers.mainThread()).subscribe {
             //TODO 화면 출력
             binding.contentMain.deviceName.text = it.deviceName
-            binding.contentMain.status.text = getDeviceStatus(it.status)
+//            binding.contentMain.status.text = getDeviceStatus(it.status)
             Log.d(TAG,"내 디바이스 이름: "+it.deviceName)
-            Log.d(TAG,"내 디바이스 상태: "+it.status)
+//            Log.d(TAG,"내 디바이스 상태: "+it.status)
 
         }
 
         // 데이터 초기화, Data initialization
         ResetDataEvent.receive().observeOn(AndroidSchedulers.mainThread()).subscribe {
-            replaceFragment(DefaultFragment())
+//            replaceFragment(DefaultFragment())
         }
 
         // 와이파이 다이렉트  연결, Wi-Fi Direct Connection
@@ -178,54 +192,14 @@ class MainActivity3 : AppCompatActivity() {
                 discoveryPeer()
                 return true
             }
-            R.id.action_Exit -> { //나가기
-//                ResetDataEvent.send(true)
-
-                if (groupformed){
-                    val actionListener: WifiP2pManager.ActionListener =
-                        object : WifiP2pManager.ActionListener {
-                            override fun onSuccess() {
-                                // 그룹 제거 성공
-                                Toast.makeText(this@MainActivity3,"나가기 성공",Toast.LENGTH_SHORT).show()
-                                finish()
-                            }
-
-                            override fun onFailure(reason: Int) {
-                                // 그룹 제거 실패
-                                Toast.makeText(this@MainActivity3,"나가기 실패",Toast.LENGTH_SHORT).show()
-                            }
-                        }
-
-                    manager!!.removeGroup(channel, actionListener)
-                } else {
-                  //TODO 아직 그룹이 형성되지 않았을때 처리
-                    Toast.makeText(this@MainActivity3,"아직 채팅방이 생성되지 않았습니다.",Toast.LENGTH_SHORT).show()
-                }
-
-                return true
-            }
 
         }
         return super.onOptionsItemSelected(item)
     }
 
+    @SuppressLint("MissingPermission")
     private fun discoveryPeer() {
 
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            Toast.makeText(this@MainActivity3,"권한 실패로 인한 주변 기기찾기 실패 ",Toast.LENGTH_LONG).show()
-            return
-        }
         manager!!.discoverPeers(channel, object : WifiP2pManager.ActionListener {
 
             override fun onSuccess() {
@@ -254,23 +228,7 @@ class MainActivity3 : AppCompatActivity() {
     }
 
 
-    private fun checkPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            TedPermission.create()
-                .setPermissionListener(permissionlistener)
-                .setRationaleMessage("앱을 이용하기 위해서는 접근 권한이 필요합니다")
-                .setDeniedMessage("앱에서 요구하는 권한설정이 필요합니다...\n [설정] > [권한] 에서 사용으로 활성화해주세요.")
-    //                .setDeniedCloseButtonText("닫기")
-    //                .setGotoSettingButtonText("설정")
-    //                .setRationaleTitle("HELLO")
-                .setPermissions(
-//                    Manifest.permission.WRITE_EXTERNAL_STORAGE, // 외부 저장소에 데이터를 쓰거나 읽을 수 있는 권한을 제공
-//                    Manifest.permission.ACCESS_COARSE_LOCATION, //대략적인 위치 정보에 액세스할 수 있는 권한을 제공
-//                    Manifest.permission.NEARBY_WIFI_DEVICES //근처의 Wi-Fi 디바이스에 대한 정보에 액세스할 수 있는 권한을 제공
-                      Manifest.permission.ACCESS_FINE_LOCATION //정확한 위치 정보에 액세스할 수 있는 권한을 제공
-                ).check()
-        }
-    }
+
 
     private val permissionlistener = object : PermissionListener {
         override fun onPermissionGranted() {
@@ -334,4 +292,100 @@ class MainActivity3 : AppCompatActivity() {
             transaction.commit()
         }
     }
+
+
+
+
+    // 권한을 확인하고 요청하는 메서드
+    private fun checkPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // S 이상에서만 NEARBY_WIFI_DEVICES 권한을 요청합니다.
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.NEARBY_WIFI_DEVICES
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.NEARBY_WIFI_DEVICES),
+                    NEARBY_WIFI_PERMISSION_REQUEST_CODE
+                )
+            } else {
+                // NEARBY_WIFI_DEVICES 권한이 이미 허용되어 있는 경우 처리할 작업을 여기에 추가합니다.
+                discoveryPeer()
+            }
+        } else {
+            // S 미만 버전에서는 NEARBY_WIFI_DEVICES 권한을 요청하지 않습니다.
+
+            // LOCATION 권한을 확인하고 요청합니다.
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    LOCATION_PERMISSION_REQUEST_CODE
+                )
+            } else {
+                // ACCESS_FINE_LOCATION 권한이 이미 허용되어 있는 경우 처리할 작업을 여기에 추가합니다.
+                discoveryPeer()
+            }
+        }
+    }
+
+
+    // 권한 요청 결과를 처리하는 메서드
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            NEARBY_WIFI_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // NEARBY_WIFI_DEVICES 권한이 허용된 경우 처리할 작업을 여기에 추가합니다.
+                    discoveryPeer()
+                } else {
+                    // NEARBY_WIFI_DEVICES 권한이 거부된 경우 사용자에게 알림을 표시하거나 다른 처리를 수행할 수 있습니다.
+                    Toast.makeText(this@MainActivity3,"NEARBY_WIFI 권한 허용 실패",Toast.LENGTH_SHORT).show()
+                }
+            }
+            LOCATION_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // ACCESS_FINE_LOCATION 권한이 허용된 경우 처리할 작업을 여기에 추가합니다.
+                    discoveryPeer()
+                } else {
+                    // ACCESS_FINE_LOCATION 권한이 거부된 경우 사용자에게 알림을 표시하거나 다른 처리를 수행할 수 있습니다.
+                    Toast.makeText(this@MainActivity3,"ACCESS_FINE 권한 허용 실패",Toast.LENGTH_SHORT).show()
+                }
+            }
+            // 다른 권한 요청에 대한 처리를 추가할 수 있습니다.
+        }
+    }
+
+
+//    private fun checkPermission() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//            TedPermission.create()
+//                .setPermissionListener(permissionlistener)
+//                .setRationaleMessage("앱을 이용하기 위해서는 접근 권한이 필요합니다")
+//                .setDeniedMessage("앱에서 요구하는 권한설정이 필요합니다...\n [설정] > [권한] 에서 사용으로 활성화해주세요.")
+//                //                .setDeniedCloseButtonText("닫기")
+//                //                .setGotoSettingButtonText("설정")
+//                //                .setRationaleTitle("HELLO")
+//                .setPermissions(
+////                    Manifest.permission.WRITE_EXTERNAL_STORAGE, // 외부 저장소에 데이터를 쓰거나 읽을 수 있는 권한을 제공
+////                    Manifest.permission.ACCESS_COARSE_LOCATION, //대략적인 위치 정보에 액세스할 수 있는 권한을 제공
+////                    Manifest.permission.NEARBY_WIFI_DEVICES //근처의 Wi-Fi 디바이스에 대한 정보에 액세스할 수 있는 권한을 제공
+//                    Manifest.permission.ACCESS_FINE_LOCATION //정확한 위치 정보에 액세스할 수 있는 권한을 제공
+//                ).check()
+//        }
+//    }
+
+
+
+
 }

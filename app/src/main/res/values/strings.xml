@@ -9,7 +9,7 @@
     <string name="init_state_message">초기 상태 입니다.\n메뉴 버튼을 눌러 기기를 탐색해주세요.</string>
     <string name="my_device">My device</string>
     <string name="device_name">Device name</string>
-    <string name="status">State</string>
+    <string name="status">WiFi State</string>
     <string name="connectable">Connectable</string>
     <string name="searched_device">Discovered Devices</string>
     <string name="connect_info">Connection Information</string>

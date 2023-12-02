@@ -1,6 +1,7 @@
 package com.android.sabsigan.wifidirectsample
 
 import android.Manifest
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.ContentValues.TAG
 import android.content.Context
@@ -18,6 +19,7 @@ import com.android.sabsigan.wifidirectsample.event.ResetDataEvent
 import com.android.sabsigan.wifidirectsample.event.StatusChangedEvent
 import com.android.sabsigan.wifidirectsample.event.WifiEnable
 import android.net.wifi.p2p.WifiP2pManager.Channel
+import android.os.Build
 import androidx.core.app.ActivityCompat
 
 class WifiDirectReceiver(private val manager : WifiP2pManager?, private val channel : Channel) : BroadcastReceiver() {
@@ -40,19 +42,15 @@ class WifiDirectReceiver(private val manager : WifiP2pManager?, private val chan
                 if (manager != null) {
                     val peerListListener =
                         WifiP2pManager.PeerListListener { peerList -> sendPeerListEvent(peerList) }
-                    if (ActivityCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.ACCESS_FINE_LOCATION
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        // TODO: Consider calling
-                        //    ActivityCompat#requestPermissions
-                        // here to request the missing permissions, and then overriding
-                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                        //                                          int[] grantResults)
-                        // to handle the case where the user grants the permission. See the documentation
-                        // for ActivityCompat#requestPermissions for more details.
-                        return
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        if (ActivityCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.NEARBY_WIFI_DEVICES
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            return
+                        }
                     }
                     manager.requestPeers(channel, peerListListener)
                     Log.d(TAG, "P2P peers changed")
@@ -109,9 +107,8 @@ class WifiDirectReceiver(private val manager : WifiP2pManager?, private val chan
     // 내 정보 보내기
     private fun sendMyDeviceInfo(intent: Intent) {
         val myDeviceInfo = intent.getParcelableExtra<WifiP2pDevice>(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE)
-        if (myDeviceInfo != null) {
-            MyDeviceInfoEvent.send(myDeviceInfo)
-        }
+
+        myDeviceInfo?.let { MyDeviceInfoEvent.send(it) }
 
         println("WiFiDirectBroadcastReceiver myDeviceInfo : $myDeviceInfo")
     }
@@ -124,9 +121,10 @@ class WifiDirectReceiver(private val manager : WifiP2pManager?, private val chan
                     Log.d(TAG, "WiFiDirectBroadcastReceiver setConnectionInfo : $info")
                     ConnectionInfoEvent.send(info)
                 }
-            } else {
-                ResetDataEvent.send(true)
             }
+//            else {
+//                ResetDataEvent.send(true)
+//            }
         }
     }
 }
