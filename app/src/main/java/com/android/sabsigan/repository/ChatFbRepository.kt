@@ -1,5 +1,6 @@
 package com.android.sabsigan.repository
 
+import android.net.Uri
 import android.util.Log
 import com.android.sabsigan.data.ChatMessage
 import com.android.sabsigan.data.ChatRoom
@@ -11,10 +12,12 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
+import java.util.Date
 
 
 class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
@@ -97,7 +100,7 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
         }
     }
 
-    fun sendMessage(message: String, cid: String, name: String) {
+    fun sendMessage(type: String, message: String, cid: String, name: String) {
         val time = getTime()
         val chatRef = db.collection("chatRooms").document(cid)
         val msgRdf = chatRef.collection("messages")
@@ -106,7 +109,7 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
             uid = uid!!,
             userName = name,
             text = message,
-            type = "msg",
+            type = type,
             created_at = time,
             updated_at = time,
         )
@@ -115,7 +118,8 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
             .addOnSuccessListener {
                 Log.d("msg", "DocumentSnapshot written with ID: ${it.id}")
 
-                msgRdf.document(it.id).update(hashMapOf<String, Any>("id" to it.id)) // 자동으로 생성된 문서 이름 id로
+                msgRdf.document(it.id)
+                    .update(hashMapOf<String, Any>("id" to it.id)) // 자동으로 생성된 문서 이름 id로
                     .addOnSuccessListener { Log.d("msg", "DocumentSnapshot written Success") }
                     .addOnFailureListener { Log.w("msg", "Error adding document", it) }
 
@@ -157,6 +161,43 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
 
         msgRdf.update(update) // msg 업데이트
             .addOnSuccessListener { Log.d("chatRoom", "DocumentSnapshot Success") }
-            .addOnFailureListener { Log.w("chatRoom", "Error adding document", it) }
+            .addOnFailureListener { Log.e("chatRoom", "Error adding document", it) }
+    }
+
+    fun uploadImg(uri: Uri, cid: String, name: String) {
+        //파일 이름 생성.
+        var fileName = "${uid}_${SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())}.png"
+        //파일 업로드, 다운로드, 삭제, 메타데이터 가져오기 또는 업데이트를 하기 위해 참조를 생성.
+        //참조는 클라우드 파일을 가리키는 포인터라고 할 수 있음.
+
+        var imagesRef =
+            storage.reference.child("images/").child(fileName)    //기본 참조 위치/images/${fileName}
+        //이미지 파일 업로드
+        imagesRef.putFile(uri!!)
+            .addOnSuccessListener {
+                sendMessage("img", fileName, cid, name)
+                Log.d("fileUpload", "fileUpload Success")
+            }
+            .addOnFailureListener { Log.e("fileUpload", "Error upload img", it) }
+    }
+
+    suspend fun downloadImg(fileName: String): Uri? {
+        return try {
+            var imagesRef = storage.reference.child("images/").child(fileName)    //기본 참조 위치/images/${fileName}
+            var uri: Uri? = null
+
+            imagesRef.downloadUrl
+                .addOnSuccessListener {
+                    uri = it
+                    Log.d("fileDownload", "fileDownload Success $uri")
+                }
+                .addOnFailureListener { Log.e("fileDownload", "Error download img", it) }
+                .await()
+
+            uri
+        } catch (e: FirebaseException) {
+            Log.w("getMSG", "Error getting documents: ", e)
+            null
+        }
     }
 }

@@ -5,6 +5,8 @@ import android.net.wifi.WifiInfo
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
 
 open class WiFiViewModel: ViewModel() {
     private var _ssid = MutableLiveData<String>()
@@ -45,4 +47,6 @@ open class WiFiViewModel: ViewModel() {
     }
 
     fun getBSSID() = _bssid;
+
+    fun getTime() = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
 }

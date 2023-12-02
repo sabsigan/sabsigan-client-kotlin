@@ -16,6 +16,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowManager
 import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.EditText
@@ -274,6 +275,7 @@ class WifiSelectorActivity : AppCompatActivity() {
             if (nickName == null || nickName.equals("")) {
                 Toast.makeText(this, "닉네임을 다시 입력해주세요", Toast.LENGTH_SHORT).show()
             } else {
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE); // 화면 텨치 막기
                 signUp(nickName, state) // 회원가입
                 alertDialog.dismiss()
             }
@@ -312,6 +314,8 @@ class WifiSelectorActivity : AppCompatActivity() {
                         .document(userID)
                         .set(user)
                         .addOnSuccessListener {
+                            // 화면 터치 풀기
+                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                             goToMain()
                         }
                         .addOnFailureListener { e ->

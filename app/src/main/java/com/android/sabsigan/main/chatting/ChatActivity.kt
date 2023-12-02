@@ -11,11 +11,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
@@ -36,7 +38,7 @@ import com.android.sabsigan.main.user.UserListAdapter
 import com.android.sabsigan.viewModel.ChatViewModel
 import io.reactivex.annotations.NonNull
 
-class ChatActivity : AppCompatActivity() {
+class ChatActivity : AppCompatActivity(), View.OnClickListener {
     private var mBinding: ActivityChatBinding? = null // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
     private val binding get() = mBinding!!
 
@@ -44,6 +46,13 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var wifiConnectReceiver: WifiConnectReceiver
 
     private lateinit var activityLauncher: ActivityResultLauncher<Intent>
+
+    private val permission = // 안드로이드 버전에 따라 권한 요청 다르게
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            Manifest.permission.READ_MEDIA_IMAGES
+        else
+            Manifest.permission.READ_EXTERNAL_STORAGE
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,30 +71,18 @@ class ChatActivity : AppCompatActivity() {
         wifiConnectReceiver = WifiConnectReceiver(viewModel)
 
         binding.backButton.setOnClickListener { finish() }
+        binding.plusBtn.setOnClickListener(this)
+        binding.galleryBtn.setOnClickListener(this)
+        binding.fileBtn.setOnClickListener(this)
+        binding.toolbar.setOnClickListener(this)
+        binding.recyclerViewLayout.setOnClickListener(this)
+        binding.messageBox.setOnClickListener(this)
 
-        binding.plusBtn.setOnClickListener {
+        binding.recyclerView.adapter = MessageAdapter(this, viewModel)
 
-            when {
-                ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                -> {
-                    // 권한이 존재하는 경우
-                    // TODO 이미지를 가져옴
-//                    getImageFromAlbum()
-                    openGalley()
-                }
-                shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE) -> {
-                    // 권한이 거부 되어 있는 경우
-                    showPermissionContextPopup()
-                }
-                else -> {
-                    // 처음 권한을 시도했을 때 띄움
-                    requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1000)
-                }
-            }
-        }
-
-        binding.recyclerView.adapter = MessageAdapter(viewModel)
+        viewModel.inputTxt.observe(this, Observer {
+            viewModel.MsgNotEmpty.value = !it.isNullOrBlank()
+        })
 
         viewModel.messageList.observe(this, Observer {
             (binding.recyclerView.adapter as MessageAdapter).setMessageList(it)
@@ -144,62 +141,54 @@ class ChatActivity : AppCompatActivity() {
             unregisterReceiver(wifiConnectReceiver)
     }
 
-    private fun openActivityResultLauncher() : ActivityResultLauncher<Intent> {
-        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (it.resultCode == Activity.RESULT_OK && it.data != null) {
-                Log.d("getImages", "Success")
-                val imageUri = it.data!!.data
-                Log.d("getImages", "$imageUri")
+    override fun onClick(v: View?) {
+        Log.d("클릭", "ㅇㅇㅇㅇㅇㅇㅇ")
 
-            } else { Log.d("getImages", "failed") }
-        }
+        when (v?.id) {
+            R.id.plusBtn -> {
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(binding.messageBox.windowToken, 0)
+                binding.plusLayout.visibility = View.VISIBLE
+                binding.recyclerView.scrollToPosition(viewModel.messageList.value!!.size-1)
+            }
 
-        return resultLauncher
-    }
+            R.id.galleryBtn -> {
+                binding.plusLayout.visibility = View.GONE
+                when {
+                    ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+                    -> {
+                        // 권한이 존재하는 경우
+                        openGalley()
+                    }
+                    shouldShowRequestPermissionRationale(permission) -> {
+                        // 권한이 거부 되어 있는 경우
+                        showPermissionContextPopup()
+                    }
+                    else -> {
+                        // 처음 권한을 시도했을 때 띄움
+                        requestPermissions(arrayOf(permission), 1000)
+                    }
+                }
+            }
 
-    private fun isReceiverRegistered(context: Context): Boolean {
-        val pm = context.packageManager
-        val intent = Intent(ConnectivityManager.CONNECTIVITY_ACTION)
-        val receivers = pm.queryBroadcastReceivers(intent, 0)
+            R.id.messageBox -> {
+                binding.plusLayout.visibility = View.GONE
+                binding.recyclerView.scrollToPosition(viewModel.messageList.value!!.size-1)
+            }
 
-        for (receiver in receivers) {
-            if (receiver.activityInfo.packageName == context.packageName) {
-                return true // 리시버가 현재 등록되어 있음
+            else -> {
+                    binding.plusLayout.visibility = View.GONE
+                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(binding.messageBox.windowToken, 0)
             }
         }
-
-        return false // 리시버가 현재 등록되어 있지 않음
     }
 
-    private fun checkPermissions(): Boolean {
-        var result = ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE)
-
-        if (result == PackageManager.PERMISSION_GRANTED)
-            return true
-
-        return false
-    }
-
-    private fun showPermissionContextPopup() {
-        AlertDialog.Builder(this)
-            .setTitle("권한이 필요합니다")
-            .setMessage("전자액자에서 사진을 선택하려면 권한이 필요합니다.")
-            .setPositiveButton("동의하기", {_, _ ->
-                requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),1000)
-            })
-            .setNegativeButton("취소하기",{ _,_ ->})
-            .create()
-            .show()
-    }
-
-    private fun requestPermissions() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(
-                android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
-            1000
-        )
+    override fun onBackPressed() {
+        if (binding.plusLayout.visibility == View.VISIBLE)
+            binding.plusLayout.visibility = View.GONE
+        else
+            finish()
     }
 
     override fun onRequestPermissionsResult(
@@ -224,6 +213,47 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
+    private fun openActivityResultLauncher() : ActivityResultLauncher<Intent> {
+        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK && it.data != null) {
+                Log.d("getImages", "Success")
+                viewModel.imgUri = it.data!!.data
+                viewModel.sendBtnClick()
+
+                Log.d("getImages", "${viewModel.imgUri}")
+
+            } else { Log.d("getImages", "failed") }
+        }
+
+        return resultLauncher
+    }
+
+
+    private fun isReceiverRegistered(context: Context): Boolean {
+        val pm = context.packageManager
+        val intent = Intent(ConnectivityManager.CONNECTIVITY_ACTION)
+        val receivers = pm.queryBroadcastReceivers(intent, 0)
+
+        for (receiver in receivers) {
+            if (receiver.activityInfo.packageName == context.packageName) {
+                return true // 리시버가 현재 등록되어 있음
+            }
+        }
+
+        return false // 리시버가 현재 등록되어 있지 않음
+    }
+
+    private fun showPermissionContextPopup() {
+        AlertDialog.Builder(this)
+            .setTitle("권한이 필요합니다")
+            .setMessage("전자액자에서 사진을 선택하려면 권한이 필요합니다.")
+            .setPositiveButton("동의하기") { _, _ ->
+                requestPermissions(arrayOf(permission), 1000)
+            }
+            .setNegativeButton("취소하기",{ _,_ ->})
+            .create()
+            .show()
+    }
 
     private fun openGalley() {
         val intent = Intent()

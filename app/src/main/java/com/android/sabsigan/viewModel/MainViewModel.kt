@@ -134,6 +134,19 @@ class MainViewModel: WiFiViewModel() {
         Log.d("chatRoomChange", "REMOVED")
     }
 
+    fun isTextType(text: String): String {
+        val split = text.split(".")
+
+        if (split.size > 1) {
+            if (split[1] == "png")
+                return "사진"
+            else
+                return "문서"
+        }
+
+        return text
+    }
+
     fun getClickChatName() = clickChatName.value
 
     /**
