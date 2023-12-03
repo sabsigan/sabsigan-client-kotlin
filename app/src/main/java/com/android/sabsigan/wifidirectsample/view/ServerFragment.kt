@@ -1,24 +1,34 @@
 package karrel.kr.co.wifidirectsample.view
 
 import android.annotation.SuppressLint
+import android.app.Activity.RESULT_OK
+import android.content.Intent
 import android.net.wifi.p2p.WifiP2pInfo
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.android.sabsigan.databinding.FragmentServerBinding
+import com.android.sabsigan.wifidirectsample.MessageType
+import com.bumptech.glide.Glide
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.io.BufferedReader
+import java.io.File
+import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
+import java.nio.file.Files
 import java.util.*
 import java.util.concurrent.Executors
 
@@ -72,17 +82,73 @@ class ServerFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
 
         binding.send.setOnClickListener {
             threadPool.execute {
+                val messageType = MessageType.TEXT
                 val message = binding.sendingText.text.toString()
+
+                writer.println(messageType.name)
+
                 writer.println(message)
                 binding.sendingText.text.clear()
                 Log.d("ServerFragment", "Message sent to client: $message")
-//            activity?.runOnUiThread { //내가 보낸 텍스트를 텍스트 뷰에 표시하는 부분
-//                binding.sendedText.text = "Server: $message\n"
-//            }
+
+//              activity?.runOnUiThread { //내가 보낸 텍스트를 텍스트 뷰에 표시하는 부분
+//                  binding.sendedText.text = "Server: $message\n"
+//              }
             }
         }
 
+//        binding.btnImg.setOnClickListener {
+//            threadPool.execute {
+//                val messageType = MessageType.IMAGE
+//
+//                // 이미지 파일을 바이트 배열로 변환하여 전송
+//                val imageFile = File("path/to/image.jpg")
+////                val imageBytes = Files.readAllBytes(imageFile.toPath())
+////                clientSocket.getOutputStream().write(imageBytes, 0, imageBytes.size)
+//
+//                Log.d("ServerFragment", "Image sent to client")
+//            }
+//        }
+
+        binding.btnImg.setOnClickListener{
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            activityResult.launch(intent)
+        }
+
+
+
+
     }
+
+    private val activityResult: ActivityResultLauncher<Intent> = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()) {
+
+        if(it.resultCode == RESULT_OK && it.data != null) {
+            val url = it.data!!.data
+            val inputStream = requireContext().contentResolver.openInputStream(url!!)
+            val imageBytes = inputStream?.readBytes()
+
+            // 이미지 데이터를 서버로 전송
+            threadPool.execute {
+                val messageType = MessageType.IMAGE
+                writer.println(messageType.name)
+
+                // 이미지 데이터를 서버로 전송
+                imageBytes?.let {
+                    clientSocket.getOutputStream().write(it, 0, it.size)
+                    Log.d("ClientActivity", "Image sent to server")
+                }
+            }
+
+            Glide.with(this)
+                .load(url)
+                .into(binding.imgview)
+        }
+    }
+
+
+
 
     private fun setupData() {
         binding.groupOwner.text = "yes"
