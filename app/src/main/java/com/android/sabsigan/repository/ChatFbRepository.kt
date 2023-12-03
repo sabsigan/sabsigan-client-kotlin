@@ -169,16 +169,14 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
         var fileName = "${uid}_${SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())}.$fileType"
         //파일 업로드, 다운로드, 삭제, 메타데이터 가져오기 또는 업데이트를 하기 위해 참조를 생성.
         //참조는 클라우드 파일을 가리키는 포인터라고 할 수 있음.
-
-        var imagesRef =
-            storage.reference.child("images/").child(fileName)    //기본 참조 위치/images/${fileName}
+        var imagesRef = storage.reference.child("images/").child(fileName)    //기본 참조 위치/images/${fileName}
         //이미지 파일 업로드
         imagesRef.putFile(uri!!)
             .addOnSuccessListener {
                 sendMessage("img", fileName, cid, name)
-                Log.d("fileUpload", "fileUpload Success")
+                Log.d("imgUpload", "fileUpload Success")
             }
-            .addOnFailureListener { Log.e("fileUpload", "Error upload img", it) }
+            .addOnFailureListener { Log.e("img", "Error upload img", it) }
     }
 
     suspend fun downloadImg(fileName: String): Uri? {
@@ -189,14 +187,14 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
             imagesRef.downloadUrl
                 .addOnSuccessListener {
                     uri = it
-                    Log.d("fileDownload", "fileDownload Success $uri")
+                    Log.d("img", "fileDownload Success $uri")
                 }
                 .addOnFailureListener { Log.e("fileDownload", "Error download img", it) }
                 .await()
 
             uri
         } catch (e: FirebaseException) {
-            Log.w("getMSG", "Error getting documents: ", e)
+            Log.w("imgDownload", "Error getting documents: ", e)
             null
         }
     }
@@ -206,15 +204,36 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
         var fileName = "${uid}_${SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())}.$fileType"
         //파일 업로드, 다운로드, 삭제, 메타데이터 가져오기 또는 업데이트를 하기 위해 참조를 생성.
         //참조는 클라우드 파일을 가리키는 포인터라고 할 수 있음.
-
-        var imagesRef =
+        var fileRef =
             storage.reference.child("files/").child(fileName)    //기본 참조 위치/images/${fileName}
         //이미지 파일 업로드
-        imagesRef.putFile(uri!!)
+        fileRef.putFile(uri!!)
             .addOnSuccessListener {
                 sendMessage("file", fileName, cid, name)
                 Log.d("fileUpload", "fileUpload Success")
             }
             .addOnFailureListener { Log.e("fileUpload", "Error upload img", it) }
+    }
+
+    suspend fun downloadFile(fileName: String): Uri? {
+        return try {
+            //파일 업로드, 다운로드, 삭제, 메타데이터 가져오기 또는 업데이트를 하기 위해 참조를 생성.
+            //참조는 클라우드 파일을 가리키는 포인터라고 할 수 있음.
+            var fileRef = storage.reference.child("files/").child(fileName)    //기본 참조 위치/images/${fileName}
+            var uri: Uri? = null
+
+            fileRef.downloadUrl
+                .addOnSuccessListener {
+                    uri = it
+                    Log.d("fileDownload", "fileDownload Success $uri")
+                }
+                .addOnFailureListener { Log.e("fileDownload", "Error download img", it) }
+                .await()
+
+            uri
+        } catch (e: FirebaseException) {
+            Log.w("fileDownload", "Error getting documents: ", e)
+            null
+        }
     }
 }

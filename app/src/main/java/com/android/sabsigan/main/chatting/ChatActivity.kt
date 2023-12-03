@@ -108,6 +108,13 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener {
                 showImgPopup(it.id, it.text)
             }
         })
+
+        viewModel.clickedFile.observe(this, Observer {
+            if (it != null) {
+                val fileHelper = FileHelper(this)
+                fileHelper.saveAllFile(it.uri!!, it.name)
+            }
+        })
     }
 
     override fun onPause() {

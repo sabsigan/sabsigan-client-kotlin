@@ -9,7 +9,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.android.sabsigan.data.ChatMessage
 import com.android.sabsigan.data.ChatRoom
+import com.android.sabsigan.data.FileTemp
 import com.android.sabsigan.repository.ChatFbRepository
+import com.android.sabsigan.repository.FileHelper
 import kotlinx.coroutines.launch
 
 class ChatViewModel: WiFiViewModel() {
@@ -21,10 +23,13 @@ class ChatViewModel: WiFiViewModel() {
 
     private val msgComparator : Comparator<ChatMessage> = compareBy { it.created_at }
     private val _messageList = MutableLiveData<List<ChatMessage>>()
-    private var _clickedMessage = MutableLiveData<ChatMessage?>()
+    private val _clickedMessage = MutableLiveData<ChatMessage?>()
+    private val _clickedFile = MutableLiveData<FileTemp?>()
 
     val messageList: LiveData<List<ChatMessage>> get() = _messageList
     val clickedMessage: LiveData<ChatMessage?> get() = _clickedMessage
+    val clickedFile : LiveData<FileTemp?> get() = _clickedFile
+
     val imgMap = HashMap<String, Uri>()
 
     val inputTxt = MutableLiveData<String>()
@@ -178,6 +183,14 @@ class ChatViewModel: WiFiViewModel() {
         Log.d("img", "클릭")
         clickedMsgView = null
         _clickedMessage.value = chatMsg
+    }
+
+    fun fileClick(chatMsg: ChatMessage) {
+        Log.d("file", "클릭")
+
+        viewModelScope.launch {
+            _clickedFile.value = FileTemp(chatMsg.text, fbRepository.downloadFile(chatMsg.text))
+        }
     }
 
     fun msgLongClick(view: View, chatMsg: ChatMessage): Boolean {

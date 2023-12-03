@@ -127,7 +127,9 @@
                     android:gravity="center"
                     android:visibility="@{viewModel.isFile(chatMessage.type) ? View.VISIBLE : View.GONE, default = gone}"
                     android:background="@drawable/chat_layout"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:onClick="@{()->viewModel.fileClick(chatMessage)}"
+                    android:onLongClick="@{(v)->viewModel.msgLongClick(v, chatMessage)}">
 
                     <ImageView
                         android:layout_width="wrap_content"
