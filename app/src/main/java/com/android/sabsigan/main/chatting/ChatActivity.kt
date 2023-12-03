@@ -77,7 +77,11 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener {
         val myName = intent.getStringExtra("myName")
         val chatName = intent.getStringExtra("chatName")
 
+//        if (일반 채팅)
         viewModel.setChatInfo(chatRoom, myName!!, chatName!!)
+//        else (다이렉트 채팅)
+//        viewModel.setChatInfo(myName!!, chatName!!)
+
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 

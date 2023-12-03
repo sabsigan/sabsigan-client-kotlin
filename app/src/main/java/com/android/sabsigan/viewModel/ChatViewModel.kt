@@ -151,6 +151,12 @@ class ChatViewModel: WiFiViewModel() {
         }
     }
 
+    fun setChatInfo(myName: String, chatName: String) {
+        this.chatRoom = ChatRoom(name = null, users = arrayListOf())
+        this.myName = myName
+        this.chatName = chatName
+    }
+
     fun sendBtnClick() {
         Log.d("click", "메시지 전송 버튼 클릭")
 
