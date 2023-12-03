@@ -1,6 +1,7 @@
 package karrel.kr.co.wifidirectsample.view
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
 import android.net.wifi.p2p.WifiP2pInfo
 import android.os.Bundle
 import android.os.Handler
@@ -10,12 +11,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.android.sabsigan.databinding.FragmentMusicListBinding
+import com.android.sabsigan.databinding.FragmentClientBinding
+import com.android.sabsigan.wifidirectsample.MessageType
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.io.BufferedReader
+import java.io.IOException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
@@ -27,7 +30,7 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
 
 //    private var galleryLoader: GalleryLoader? = null
     private var disposable: Disposable? = null
-    private lateinit var binding: FragmentMusicListBinding
+    private lateinit var binding: FragmentClientBinding
 
     private val host = info.groupOwnerAddress
     private val port = 8988
@@ -42,7 +45,7 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        binding = FragmentMusicListBinding.inflate(inflater, container, false)
+        binding = FragmentClientBinding.inflate(inflater, container, false)
         return binding.root
 
     }
@@ -73,7 +76,11 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
                     handler.post {
                         binding.sendedText.text = "Server: $message\n"
                     }
+                    receiveAndDisplayImage()
                 }
+
+
+
             } catch (e: Exception) {
                 // 연결 실패
 //                handler.post {
@@ -99,6 +106,28 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
             }
         }
 
+    }
+
+    // 이미지를 서버로부터 받아오고 이미지뷰에 표시하는 함수
+    private fun receiveAndDisplayImage() {
+        try {
+            val messageType = MessageType.valueOf(reader.readLine())
+
+            if (messageType == MessageType.IMAGE) {
+                val inputStream = socket.getInputStream()
+
+                // 이미지 데이터를 읽어와 Bitmap으로 변환
+                val bitmap = BitmapFactory.decodeStream(inputStream)
+
+                // UI 업데이트는 메인 스레드에서 수행
+                activity?.runOnUiThread {
+                    // 이미지뷰에 Bitmap 설정
+                    binding.imgview.setImageBitmap(bitmap)
+                }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
     override fun onDestroy() {

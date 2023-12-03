@@ -15,7 +15,7 @@
         style="@style/TextView.name"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="레이나" />
+        tools:text="user" />
 
     <TextView
         android:id="@+id/address"
@@ -23,7 +23,7 @@
         android:layout_marginTop="@dimen/spacing_small"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/name"
-        tools:text="123456789" />
+        tools:text="aa:bb:cc:dd:ee" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
