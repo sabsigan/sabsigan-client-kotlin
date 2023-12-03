@@ -260,44 +260,12 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
     }
 
     /**
-     * chatRoom document 생성용 해시 함수
-     * @param ids 해시값 계산을 위한 문자열 리스트
-     * @return String 해시 값
-     * */
-    fun customHash(ids: ArrayList<String>) : String {
-        // 두 문자열을 정렬하여 순서에 상관없이 같은 문자열을 생성
-        val sortedStrings = ids.sorted()
-        // 정렬된 문자열을 이용하여 고유한 해시 값을 생성
-
-        var combinedString = ""
-        sortedStrings.forEach { combinedString += it}
-        combinedString += viewModel.getwifiInfo().value // 채팅방에 포함된 유저 id와 wifi 이름으로 해시키 생성
-
-        // SHA-256 해시 함수 사용
-        val bytes = MessageDigest.getInstance("SHA-256").digest(combinedString.toByteArray())
-
-        // 바이트 배열의 2/3 사용하여 16진수 문자열로 변환하여 반환
-        val halfLength = (bytes.size / 3) * 2
-        val halfBytes = bytes.copyOfRange(0, halfLength)
-
-        // 바이트 배열을 16진수 문자열로 변환하여 반환
-        return halfBytes.joinToString("") { "%02x".format(it) }
-    }
-
-    /**
      * 채팅방 생성 메서드
      * 
      * @param otherUsers 자신을 제외한 채팅방 유저들
      * @param cname 채팅방 이름, otherUsers.size가 1일 때만 nullable
      */
-    fun createChatRoom(otherUsers: ArrayList<User>, cname: String?) {
-        val users = arrayListOf(uid!!)
-        otherUsers.forEach { users.add(it.id) }
-        val chatRoomID = customHash(users)
-
-        if (viewModel.isIncluded(chatRoomID)) // 이미 있는 채팅방이면 안 만듦
-            return
-
+    suspend fun createChatRoom(users: ArrayList<String>, chatRoomID: String, cname: String?): ChatRoom? {
         val chatRef = db.collection("chatRooms").document(chatRoomID)
         val time = getTime()
         val chatRoom = ChatRoom(
@@ -309,12 +277,19 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
             created_at = time,
             updated_at = time,
             last_message_at = time,
-            member_cnt = (otherUsers.size + 1).toString(),
+            member_cnt = (users.size).toString(),
         )
 
-        chatRef.set(chatRoom)
-            .addOnSuccessListener { Log.d("createChat", "DocumentSnapshot Success") }
-            .addOnFailureListener { Log.w("TAG", "Error adding document", it) }
+        var result = false
 
+        chatRef.set(chatRoom)
+            .addOnSuccessListener {
+                Log.d("createChat", "DocumentSnapshot Success")
+                result = true
+            }
+            .addOnFailureListener { Log.w("TAG", "Error adding document", it) }
+            .await()
+
+        return if(result) chatRoom else null
     }
 }

@@ -8,7 +8,7 @@
 
     <item
         android:id="@+id/navigation_chatting"
-        android:icon="@drawable/baseline_chat_bubble_outline_24"
+        android:icon="@drawable/baseline_forum_24"
         android:title="@string/title_chatting" />
 
 </menu>

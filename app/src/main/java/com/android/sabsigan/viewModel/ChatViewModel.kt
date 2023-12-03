@@ -1,16 +1,15 @@
 package com.android.sabsigan.viewModel
 
 import android.net.Uri
+import android.text.Layout
 import android.util.Log
 import android.view.View
-import android.widget.ImageView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.android.sabsigan.data.ChatMessage
 import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.repository.ChatFbRepository
-import com.bumptech.glide.Glide
 import kotlinx.coroutines.launch
 
 class ChatViewModel: WiFiViewModel() {
@@ -20,21 +19,21 @@ class ChatViewModel: WiFiViewModel() {
     private lateinit var myName: String
     private lateinit var chatName: String
 
-    private val _messageList = MutableLiveData<List<ChatMessage>>()
-    private val _msgView = MutableLiveData<View>()
-
     private val msgComparator : Comparator<ChatMessage> = compareBy { it.created_at }
-    private var msgId = ""
+    private val _messageList = MutableLiveData<List<ChatMessage>>()
+    private var _clickedMessage = MutableLiveData<ChatMessage?>()
 
     val messageList: LiveData<List<ChatMessage>> get() = _messageList
+    val clickedMessage: LiveData<ChatMessage?> get() = _clickedMessage
     val imgMap = HashMap<String, Uri>()
-    val msgView: LiveData<View> get() = _msgView
 
     val inputTxt = MutableLiveData<String>()
     val MsgNotEmpty = MutableLiveData<Boolean>()
 
+    var clickedMsgView: View? = null
+
     val nullTxt = "메시지가 삭제되었습니다"
-    var imgUri:Uri? = null
+    var uri:Uri? = null
 
     init {
         MsgNotEmpty.value = false
@@ -52,6 +51,35 @@ class ChatViewModel: WiFiViewModel() {
             return true
 
         return false
+    }
+
+    fun isFile(type: String?): Boolean {
+        if (type == null)
+            return false
+
+        if (type == "file")
+            return true
+
+        return false
+    }
+
+    fun isImg(type: String?): Boolean {
+        if (type == null)
+            return false
+
+        if (type == "img")
+            return true
+
+        return false
+    }
+
+    fun fileType(chatMsg: ChatMessage): String {
+        if (chatMsg.type == "file") {
+            val file = chatMsg.text.split(".")
+            return file[1]
+        }
+
+        return ""
     }
 
     fun addMsgList(chatMsg: ChatMessage) {
@@ -125,25 +153,37 @@ class ChatViewModel: WiFiViewModel() {
             Log.d("click", "메시지 전송")
             fbRepository.sendMessage("msg", inputTxt.value!!, chatRoom.id, myName)
             inputTxt.value = ""
-        } else if (imgUri != null) {
-            fbRepository.uploadImg(imgUri!!, chatRoom.id, myName)
-            imgUri = null
         }
     }
 
-    fun updateMsg(text: String) {
+    fun sendFileOrImg(type: String?, extension: String?) {
+        if (type != null && type == "msg" && uri != null) {
+            fbRepository.uploadImg(uri!!, chatRoom.id, myName, extension!!)
+            uri = null
+        } else if (type != null && uri != null) {
+            fbRepository.uploadFile(uri!!, chatRoom.id, myName, extension!!)
+            uri = null
+        }
+    }
+
+    fun updateMsg(text: String, msgId: String) {
         fbRepository.updateMessage(text, chatRoom.id, msgId)
     }
 
-    fun deleteMsg() {
+    fun deleteMsg(msgId: String) {
         fbRepository.deleteMessage(chatRoom.id, msgId)
+    }
+
+    fun imgClick(chatMsg: ChatMessage) {
+        Log.d("img", "클릭")
+        clickedMsgView = null
+        _clickedMessage.value = chatMsg
     }
 
     fun msgLongClick(view: View, chatMsg: ChatMessage): Boolean {
         Log.d("MSG", "롱클릭")
-
-        _msgView.value = view
-        msgId = chatMsg.id
+        clickedMsgView = view
+        _clickedMessage.value = chatMsg
 
         return true
     }

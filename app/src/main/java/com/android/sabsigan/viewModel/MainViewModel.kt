@@ -6,10 +6,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.android.sabsigan.data.ChatRoom
+import com.android.sabsigan.data.NotificationHelper
 import com.android.sabsigan.data.User
 import com.android.sabsigan.repository.MainFbRepository
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.security.MessageDigest
 
 class MainViewModel: WiFiViewModel() {
     private val fbRepository = MainFbRepository(this)
@@ -18,6 +20,7 @@ class MainViewModel: WiFiViewModel() {
     private val _chatList = MutableLiveData<List<ChatRoom>>()
     private val _chatRoom = MutableLiveData<ChatRoom>()
     private val clickChatName = MutableLiveData<String>()
+    private val _clickUser = MutableLiveData<User?>()
 
     private val userComparator : Comparator<User> = compareBy { it.name }
     private val chatRoomComparator : Comparator<ChatRoom> = compareByDescending { it.last_message_at }
@@ -25,6 +28,7 @@ class MainViewModel: WiFiViewModel() {
     val userList: LiveData<List<User>> get() = _userList
     val chatList: LiveData<List<ChatRoom>> get() = _chatList
     val chatRoom: LiveData<ChatRoom> get() = _chatRoom
+    val clickUser: LiveData<User?> get() = _clickUser
 
     val myName = MutableLiveData<String>()
     val myState = MutableLiveData<String>()
@@ -93,10 +97,6 @@ class MainViewModel: WiFiViewModel() {
         Log.d("userChange", "REMOVED")
     }
 
-    fun setChatList(list: List<ChatRoom>) {
-        _chatList.value = list
-    }
-
     fun addChatList(chatRoom: ChatRoom) {
         val index = chatList.value!!.withIndex()
             .firstOrNull  {chatRoom.id == it.value.id}
@@ -156,15 +156,37 @@ class MainViewModel: WiFiViewModel() {
      */
     fun getChatRoomName(chatRoom: ChatRoom) = chatRoom.name?: getOtherUserName(chatRoom)
 
-    fun createGroupChat(users: ArrayList<User>, chatName: String) {
-        fbRepository.createChatRoom(users, chatName)
+    fun createChat(otherUsers: ArrayList<User>, chatName: String? = null) {
+        val users = arrayListOf(fbRepository.uid!!)
+        otherUsers.forEach { users.add(it.id) }
+        val chatRoomID = customHash(users)
+        val chatRoom = isIncluded(chatRoomID)
+
+        if (chatRoom != null) { // 이미 있는 채팅방이면 안 만듦
+            clickChatName.value = getChatRoomName(chatRoom)
+            _chatRoom.value = chatRoom!!
+
+            return
+        }
+
+        viewModelScope.launch {
+            val result = fbRepository.createChatRoom(users, chatRoomID, chatName)
+
+            if (result != null) {
+                clickChatName.value = getChatRoomName(result)
+                _chatRoom.value = result!!
+            }
+        }
     }
     
     fun clickUser(otherUser: User) {
         Log.d("userFragment", "유저 클릭")
 
-        fbRepository.createChatRoom(arrayListOf(otherUser), null)
-        // 여러명 채팅방은 이름 무조건 지정해야함
+        _clickUser.value = otherUser
+    }
+
+    fun setUserNull() {
+        _clickUser.value = null
     }
 
     fun longClickUser(): Boolean {
@@ -186,14 +208,15 @@ class MainViewModel: WiFiViewModel() {
         return true
     }
 
-    fun isIncluded(key: String): Boolean {
-        var result = false
-        (_chatList.value as ArrayList<ChatRoom>).forEach {
-            if (it.id.equals(key))
-                result = true
-        }
+    fun isIncluded(key: String): ChatRoom? {
+        val chatRoom = chatList.value!!.withIndex()
+            .firstOrNull() { key == it.value.id }
+            ?.value
 
-        return result
+        if (chatRoom != null)
+            return chatRoom
+
+        else return null
     }
 
 //    private val _text = MutableLiveData<String>().apply {

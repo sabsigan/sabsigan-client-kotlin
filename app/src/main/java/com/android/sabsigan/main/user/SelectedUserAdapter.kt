@@ -14,6 +14,7 @@ class SelectedUserAdapter(private val viewModel: CreateChatViewModel): RecyclerV
         fun bind(viewModel: CreateChatViewModel, user: SimpleUser) {
             binding.user = user
             binding.viewModel = viewModel
+            binding.imageView.setImageBitmap(viewModel.generateAvatar(user.id))
             binding.executePendingBindings()
         }
 

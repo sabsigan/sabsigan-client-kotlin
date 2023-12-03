@@ -1,9 +1,11 @@
 package com.android.sabsigan.main
 
 import android.app.Activity
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
@@ -11,14 +13,8 @@ import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MenuItem
-import android.view.WindowInsets
-import android.view.WindowManager
-import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -33,7 +29,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.android.sabsigan.R
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.data.ChatRoom
-import com.android.sabsigan.data.SimpleUser
+import com.android.sabsigan.data.NotificationHelper
 import com.android.sabsigan.data.User
 import com.android.sabsigan.databinding.ActivityMain2Binding
 import com.android.sabsigan.main.chatting.ChatActivity
@@ -47,12 +43,15 @@ class MainActivity2 : AppCompatActivity() {
     private lateinit var wifiConnectReceiver: WifiConnectReceiver
     private val viewModel by viewModels<MainViewModel>()
 
+    private val permission = android.Manifest.permission.POST_NOTIFICATIONS
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMain2Binding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val activityLauncher = openActivityResultLauncher()
+        val notfication = NotificationHelper(this)
         wifiConnectReceiver = WifiConnectReceiver(viewModel)
 
         if (!isReceiverRegistered(this))
@@ -75,6 +74,15 @@ class MainActivity2 : AppCompatActivity() {
         viewModel.chatRoom.observe(this, Observer {
             Log.d("chatRoomFragment", "변경")
             openChatRoom(it, viewModel.getClickChatName()!!)
+        })
+
+        viewModel.chatList.observe(this, Observer {
+//            val intent = Intent(this, AlertDialog::class.java).apply {
+//            }
+//            val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+//
+//            val temp = notfication.getChannelNotification("test", "testtest")
+//            notfication.getManager().notify(1, temp.build())
         })
 
         binding.addChat.setOnClickListener {
@@ -135,6 +143,8 @@ class MainActivity2 : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        requestNotificationPermission()
+
         if (!isReceiverRegistered(this))
             registerReceiver(wifiConnectReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록
     }
@@ -170,7 +180,7 @@ class MainActivity2 : AppCompatActivity() {
                 val chatRoomName = it.data?.getStringExtra("chatRoomName")
                 Log.d("create ChatRoom", chatRoomName!!)
 
-                viewModel.createGroupChat(list, chatRoomName)
+                viewModel.createChat(list, chatRoomName)
             } else { Log.d("create ChatRoom", "failed") }
         }
 
@@ -189,6 +199,48 @@ class MainActivity2 : AppCompatActivity() {
         }
 
         return false // 리시버가 현재 등록되어 있지 않음
+    }
+
+    private val requestNotificationPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { ok ->
+            if (ok) {
+                // 알림권한 허용 o
+            } else {
+                // 알림권한 허용 x. 자유롭게 대응..
+            }
+        }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+                -> {
+                    // 권한이 존재하는 경우
+                }
+                shouldShowRequestPermissionRationale(permission) -> {
+                    // 권한이 거부 되어 있는 경우
+                    showPermissionContextPopup()
+                }
+                else -> {
+                    // 처음 권한을 시도했을 때 띄움
+                    requestPermissions(arrayOf(permission), 1000)
+                }
+            }
+        }
+    }
+
+    private fun showPermissionContextPopup() {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("권한이 필요합니다")
+            .setMessage("알림을 받으시려면 권한이 필요합니다.")
+            .setPositiveButton("동의하기") { _, _ ->
+                requestPermissions(arrayOf(permission), 1000)
+            }
+            .setNegativeButton("취소하기",{ _,_ ->})
+            .create()
+            .show()
     }
 
     private fun openChatRoom(chatRoom: ChatRoom, chatName: String) {

@@ -164,9 +164,9 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
             .addOnFailureListener { Log.e("chatRoom", "Error adding document", it) }
     }
 
-    fun uploadImg(uri: Uri, cid: String, name: String) {
+    fun uploadImg(uri: Uri, cid: String, name: String, fileType: String) {
         //파일 이름 생성.
-        var fileName = "${uid}_${SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())}.png"
+        var fileName = "${uid}_${SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())}.$fileType"
         //파일 업로드, 다운로드, 삭제, 메타데이터 가져오기 또는 업데이트를 하기 위해 참조를 생성.
         //참조는 클라우드 파일을 가리키는 포인터라고 할 수 있음.
 
@@ -199,5 +199,22 @@ class ChatFbRepository(val viewModel: ChatViewModel): FirebaseRepository() {
             Log.w("getMSG", "Error getting documents: ", e)
             null
         }
+    }
+
+    fun uploadFile(uri: Uri, cid: String, name: String, fileType: String) {
+        //파일 이름 생성.
+        var fileName = "${uid}_${SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())}.$fileType"
+        //파일 업로드, 다운로드, 삭제, 메타데이터 가져오기 또는 업데이트를 하기 위해 참조를 생성.
+        //참조는 클라우드 파일을 가리키는 포인터라고 할 수 있음.
+
+        var imagesRef =
+            storage.reference.child("files/").child(fileName)    //기본 참조 위치/images/${fileName}
+        //이미지 파일 업로드
+        imagesRef.putFile(uri!!)
+            .addOnSuccessListener {
+                sendMessage("file", fileName, cid, name)
+                Log.d("fileUpload", "fileUpload Success")
+            }
+            .addOnFailureListener { Log.e("fileUpload", "Error upload img", it) }
     }
 }

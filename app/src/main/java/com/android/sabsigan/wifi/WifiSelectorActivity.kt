@@ -42,6 +42,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import de.hdodenhof.circleimageview.CircleImageView
 
 import io.reactivex.annotations.NonNull
 import java.lang.Math.abs
@@ -251,12 +252,12 @@ class WifiSelectorActivity : AppCompatActivity() {
     private fun showSignUpDialog() {
         Log.d(TAG, "호출")
         val layoutInflater = LayoutInflater.from(this)
-        val view = layoutInflater.inflate(R.layout.signin_popup2, null)
-
+        val view = layoutInflater.inflate(R.layout.signin_popup, null)
         val alertDialog = AlertDialog.Builder(this, R.style.CustomAlertDialog)
             .setView(view)
             .create()
 
+        val userImg = view.findViewById<CircleImageView>(R.id.UserImg)
         val textTitle = view.findViewById<TextView>(R.id.Title)
         val inputNickname =  view.findViewById<EditText>(R.id.inputNickname)
         val inputTemp =  view.findViewById<EditText>(R.id.inputTemp)
@@ -266,6 +267,7 @@ class WifiSelectorActivity : AppCompatActivity() {
         inputNickname.hint = "닉네임을 입력하세요"
         inputTemp.hint = "상태 메시지를 입력해주세요"
         buttonConfirm.text = "시작하기"
+
         buttonConfirm.setOnClickListener {
             val nickName = inputNickname.text.toString()
             val state = inputTemp.text.toString()
@@ -276,14 +278,18 @@ class WifiSelectorActivity : AppCompatActivity() {
                 Toast.makeText(this, "닉네임을 다시 입력해주세요", Toast.LENGTH_SHORT).show()
             } else {
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE); // 화면 텨치 막기
-                signUp(nickName, state) // 회원가입
-                alertDialog.dismiss()
+                signUp(nickName, state, userImg, alertDialog) // 회원가입
             }
         }
         alertDialog.show()
     }
 
-    private fun signUp(name:String, state:String) {
+    private fun signUp(
+        name: String,
+        state: String,
+        userImg: CircleImageView,
+        alertDialog: AlertDialog
+    ) {
         var value = false
 
         auth.signInAnonymously()
@@ -308,6 +314,8 @@ class WifiSelectorActivity : AppCompatActivity() {
                         online = true
                     )
 
+                    userImg.setImageBitmap(viewModel.generateAvatar(userID))
+
                     val db = Firebase.firestore
 
                     db.collection("users")
@@ -316,6 +324,7 @@ class WifiSelectorActivity : AppCompatActivity() {
                         .addOnSuccessListener {
                             // 화면 터치 풀기
                             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                            alertDialog.dismiss()
                             goToMain()
                         }
                         .addOnFailureListener { e ->

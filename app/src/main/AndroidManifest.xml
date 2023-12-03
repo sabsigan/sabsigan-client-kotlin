@@ -11,10 +11,11 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <!-- 파일 읽기 쓰기 -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-    
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!--  알림 권한  -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-feature android:name="android.hardware.wifi" />
 
@@ -29,6 +30,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Sabsigan"
         tools:targetApi="33">
+
         <activity
             android:name=".main.chatting.CreateChatActivity"
             android:exported="false" />
@@ -45,8 +47,8 @@
         <activity
             android:name=".main.chatting.ChatActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".main.MainActivity2"
             android:exported="true"

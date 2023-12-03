@@ -14,6 +14,7 @@ class UserListAdapter(private val viewModel: MainViewModel): RecyclerView.Adapte
         fun bind(viewModel: MainViewModel, user: User) {
             binding.user = user
             binding.viewModel = viewModel
+            binding.imageView.setImageBitmap(viewModel.generateAvatar(user.id))
             binding.executePendingBindings()
         }
 
