@@ -10,6 +10,7 @@
     <dimen name="pageMarginAndOffset">50dp</dimen>
     <dimen name="next_item_visible_width">50dp</dimen>
     <dimen name="viewpager_horizontal_margin">10dp</dimen>
+    <dimen name="avatar_size">48dp</dimen>
 
     <!--genaral spacing-->
     <dimen name="spacing_small">4dp</dimen>

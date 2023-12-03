@@ -1,6 +1,12 @@
 package com.android.sabsigan.viewModel
 
+import com.android.sabsigan.data.User
+import com.android.sabsigan.repository.SignFbRepository
+
+
 class WifiSelectorViewModel: WiFiViewModel() {
-//    var iconColor = ObservableField<String>()
-//    var shadowColor = ObservableField<String>()
+    private val fbRepository = SignFbRepository()
+
+    fun getUID() = fbRepository.uid
+
 }

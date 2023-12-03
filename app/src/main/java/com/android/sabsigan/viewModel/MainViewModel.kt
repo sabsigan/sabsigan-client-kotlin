@@ -1,14 +1,17 @@
 package com.android.sabsigan.viewModel
 
+import android.net.wifi.ScanResult
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.android.sabsigan.data.ChatRoom
+import com.android.sabsigan.data.NotificationHelper
 import com.android.sabsigan.data.User
 import com.android.sabsigan.repository.MainFbRepository
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.security.MessageDigest
 
 class MainViewModel: WiFiViewModel() {
     private val fbRepository = MainFbRepository(this)
@@ -17,10 +20,15 @@ class MainViewModel: WiFiViewModel() {
     private val _chatList = MutableLiveData<List<ChatRoom>>()
     private val _chatRoom = MutableLiveData<ChatRoom>()
     private val clickChatName = MutableLiveData<String>()
+    private val _clickUser = MutableLiveData<User?>()
+
+    private val userComparator : Comparator<User> = compareBy { it.name }
+    private val chatRoomComparator : Comparator<ChatRoom> = compareByDescending { it.last_message_at }
 
     val userList: LiveData<List<User>> get() = _userList
     val chatList: LiveData<List<ChatRoom>> get() = _chatList
     val chatRoom: LiveData<ChatRoom> get() = _chatRoom
+    val clickUser: LiveData<User?> get() = _clickUser
 
     val myName = MutableLiveData<String>()
     val myState = MutableLiveData<String>()
@@ -32,7 +40,9 @@ class MainViewModel: WiFiViewModel() {
             myState.value = myInfo?.get("myState")
 
             _userList.value = fbRepository.getUserList()
+            _userList.value = _userList.value!!.sortedWith(userComparator).toMutableList() // 이름 순으로 정렬
             _chatList.value = fbRepository.getChatList()
+            _chatList.value = _chatList.value!!.sortedWith(chatRoomComparator).toMutableList() // 시간 순으로 정렬
             fbRepository.getChangeUserList()
             fbRepository.getChangeChatList()
         }
@@ -59,7 +69,8 @@ class MainViewModel: WiFiViewModel() {
 
         if (index == -1) {
             (_userList.value as ArrayList<User>).add(user)  // 이미 있는 유저면
-            _userList.value = _userList.value               // 값 변경을 databinding으로 알아차릴 수 있게
+
+            _userList.value = _userList.value!!.sortedWith(userComparator).toMutableList() // 이름 순으로 정렬
         } else
             modyfyUserList(user)
     }
@@ -76,18 +87,14 @@ class MainViewModel: WiFiViewModel() {
         _userList.value?.get(index)?.last_active = user.last_active
         _userList.value?.get(index)?.online = user.online
 
-        _userList.value = _userList.value // 값 변경을 databinding으로 알아차릴 수 있게
+        _userList.value = _userList.value!!.sortedWith(userComparator).toMutableList() // 이름 순으로 정렬
     }
 
     fun removeUserList(user: User) {
         (_userList.value as ArrayList<User>).remove(user)
 
-        _userList.value = _userList.value // 값 변경을 databinding으로 알아차릴 수 있게
+        _userList.value = _userList.value!!.sortedWith(userComparator).toMutableList() // 이름 순으로 정렬
         Log.d("userChange", "REMOVED")
-    }
-
-    fun setChatList(list: List<ChatRoom>) {
-        _chatList.value = list
     }
 
     fun addChatList(chatRoom: ChatRoom) {
@@ -97,7 +104,7 @@ class MainViewModel: WiFiViewModel() {
 
         if (index == -1) {
             (_chatList.value as ArrayList<ChatRoom>).add(chatRoom)  // 이미 있는 유저면
-            _userList.value = _userList.value               // 값 변경을 databinding으로 알아차릴 수 있게
+            _chatList.value = _chatList.value!!.sortedWith(chatRoomComparator).toMutableList() // 시간 순으로 정렬
             Log.d("chatRoomChange", "ADDED")
         } else
             modyfyChatList(chatRoom)
@@ -116,15 +123,28 @@ class MainViewModel: WiFiViewModel() {
         _chatList.value?.get(index)?.member_cnt = chatRoom.member_cnt
         _chatList.value?.get(index)?.disabled = chatRoom.disabled
 
-        _chatList.value = _chatList.value // 값 변경을 databinding으로 알아차릴 수 있게
+        _chatList.value = _chatList.value!!.sortedWith(chatRoomComparator).toMutableList() // 시간 순으로 정렬
         Log.d("chatRoomChange", "MODIFIED")
     }
 
     fun removeChatList(chatRoom: ChatRoom) {
         (_chatList.value as ArrayList<ChatRoom>).remove(chatRoom)
 
-        _chatList.value = _chatList.value // 값 변경을 databinding으로 알아차릴 수 있게
+        _chatList.value = _chatList.value!!.sortedWith(chatRoomComparator).toMutableList() // 시간 순으로 정렬
         Log.d("chatRoomChange", "REMOVED")
+    }
+
+    fun isTextType(text: String): String {
+        val split = text.split(".")
+
+        if (split.size > 1) {
+            if (split[1] == "png")
+                return "사진"
+            else
+                return "문서"
+        }
+
+        return text
     }
 
     fun getClickChatName() = clickChatName.value
@@ -135,12 +155,38 @@ class MainViewModel: WiFiViewModel() {
      * chatRoom의 사람이 2명일 때만 nullable
      */
     fun getChatRoomName(chatRoom: ChatRoom) = chatRoom.name?: getOtherUserName(chatRoom)
+
+    fun createChat(otherUsers: ArrayList<User>, chatName: String? = null) {
+        val users = arrayListOf(fbRepository.uid!!)
+        otherUsers.forEach { users.add(it.id) }
+        val chatRoomID = customHash(users)
+        val chatRoom = isIncluded(chatRoomID)
+
+        if (chatRoom != null) { // 이미 있는 채팅방이면 안 만듦
+            clickChatName.value = getChatRoomName(chatRoom)
+            _chatRoom.value = chatRoom!!
+
+            return
+        }
+
+        viewModelScope.launch {
+            val result = fbRepository.createChatRoom(users, chatRoomID, chatName)
+
+            if (result != null) {
+                clickChatName.value = getChatRoomName(result)
+                _chatRoom.value = result!!
+            }
+        }
+    }
     
     fun clickUser(otherUser: User) {
         Log.d("userFragment", "유저 클릭")
 
-        fbRepository.createChatRoom(arrayListOf(otherUser), null)
-        // 여러명 채팅방은 이름 무조건 지정해야함
+        _clickUser.value = otherUser
+    }
+
+    fun setUserNull() {
+        _clickUser.value = null
     }
 
     fun longClickUser(): Boolean {
@@ -162,14 +208,15 @@ class MainViewModel: WiFiViewModel() {
         return true
     }
 
-    fun isIncluded(key: String): Boolean {
-        var result = false
-        (_chatList.value as ArrayList<ChatRoom>).forEach {
-            if (it.id.equals(key))
-                result = true
-        }
+    fun isIncluded(key: String): ChatRoom? {
+        val chatRoom = chatList.value!!.withIndex()
+            .firstOrNull() { key == it.value.id }
+            ?.value
 
-        return result
+        if (chatRoom != null)
+            return chatRoom
+
+        else return null
     }
 
 //    private val _text = MutableLiveData<String>().apply {

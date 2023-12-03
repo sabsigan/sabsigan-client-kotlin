@@ -3,15 +3,15 @@ package com.android.sabsigan.main.user
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.android.sabsigan.data.User
-import com.android.sabsigan.databinding.AdapterUserListBinding
-import com.android.sabsigan.viewModel.MainViewModel
+import com.android.sabsigan.data.SimpleUser
+import com.android.sabsigan.databinding.AdapterSelectedUserBinding
+import com.android.sabsigan.viewModel.CreateChatViewModel
 
-class UserListAdapter(private val viewModel: MainViewModel): RecyclerView.Adapter<UserListAdapter.UserViewHolder>() {
-    private var userList = listOf<User>()
-
-    class UserViewHolder private constructor(val binding: AdapterUserListBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(viewModel: MainViewModel, user: User) {
+class SelectedUserAdapter(private val viewModel: CreateChatViewModel): RecyclerView.Adapter<SelectedUserAdapter.UserViewHolder>() {
+    private var userList = listOf<SimpleUser>()
+    class UserViewHolder private constructor(val binding: AdapterSelectedUserBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(viewModel: CreateChatViewModel, user: SimpleUser) {
             binding.user = user
             binding.viewModel = viewModel
             binding.imageView.setImageBitmap(viewModel.generateAvatar(user.id))
@@ -19,16 +19,16 @@ class UserListAdapter(private val viewModel: MainViewModel): RecyclerView.Adapte
         }
 
         companion object {
-            fun from(parent: ViewGroup) : UserViewHolder {
+            fun from(parent: ViewGroup): UserViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                val binding = AdapterUserListBinding.inflate(layoutInflater, parent, false)
+                val binding = AdapterSelectedUserBinding.inflate(layoutInflater, parent, false)
 
                 return UserViewHolder(binding)
             }
         }
     }
 
-    fun setUserList(list: List<User>) {
+    fun setUserList(list: List<SimpleUser>) {
         userList = list
         notifyDataSetChanged()
     }

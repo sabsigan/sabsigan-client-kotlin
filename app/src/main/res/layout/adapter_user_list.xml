@@ -6,6 +6,8 @@
     tools:context=".main.user.UserListAdapter">
 
     <data>
+        <import type="android.view.View"/>
+
         <variable
             name="user"
             type="com.android.sabsigan.data.User" />
@@ -25,10 +27,11 @@
         android:onClick="@{()->viewModel.clickUser(user)}"
         android:onLongClick="@{()->viewModel.longClickUser()}">
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imageView"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/circle"/>
+            android:src="@color/Gray_500"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -42,14 +45,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@{user.name}"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/black"
                 tools:text="이름" />
 
             <TextView
                 android:id="@+id/state"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="2dp"
                 android:text="@{user.state}"
-                tools:text="상메"/>
+                android:visibility="@{user.state.blank ? View.GONE : View.VISIBLE}"
+                tools:text="상메" />
 
         </LinearLayout>
 

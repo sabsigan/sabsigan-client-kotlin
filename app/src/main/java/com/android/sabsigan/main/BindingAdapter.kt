@@ -8,7 +8,8 @@ import com.android.sabsigan.data.ChatMessage
 import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.data.SimpleUser
 import com.android.sabsigan.data.User
-import com.android.sabsigan.main.user.SelectUserAdapter
+import com.android.sabsigan.main.user.SearchUserAdapter
+import com.android.sabsigan.main.user.SelectedUserAdapter
 import com.android.sabsigan.main.user.UserListAdapter
 
 object BindingAdapter {
@@ -40,7 +41,15 @@ object BindingAdapter {
     @JvmStatic
     fun setSearches(recyclerView: RecyclerView, items: MutableList<SimpleUser>?) {
         items?.let {
-            (recyclerView.adapter as SelectUserAdapter).setUserList(it)
+            (recyclerView.adapter as SearchUserAdapter).setUserList(it)
+        }
+    }
+
+    @BindingAdapter("app:selectedUsers")
+    @JvmStatic
+    fun setSelected(recyclerView: RecyclerView, items: MutableList<SimpleUser>?) {
+        items?.let {
+            (recyclerView.adapter as SelectedUserAdapter).setUserList(it)
         }
     }
 }

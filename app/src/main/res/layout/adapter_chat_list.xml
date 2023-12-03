@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+
     <data>
         <import type="android.view.View"/>
 
@@ -25,14 +26,16 @@
         android:onClick="@{()->viewModel.clickChatRoom(chatRoom)}"
         android:onLongClick="@{()->viewModel.longClickChatRoom(chatRoom)}">
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imageView"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/circle"/>
+            android:src="@color/Gray_500"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:paddingVertical="2dp"
             android:layout_marginLeft="10dp"
             android:layout_gravity="center"
             android:orientation="vertical">
@@ -44,6 +47,9 @@
                 android:ellipsize="end"
                 android:maxWidth="150dp"
                 android:maxLines="1"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/black"
                 android:text="@{viewModel.getChatRoomName(chatRoom)}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -56,6 +62,7 @@
                 android:layout_marginLeft="8dp"
                 android:ellipsize="end"
                 android:maxLines="1"
+                android:textSize="15sp"
                 android:text="@{chatRoom.member_cnt}"
                 app:layout_constraintStart_toEndOf="@+id/name"
                 app:layout_constraintTop_toTopOf="parent"
@@ -68,7 +75,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="end"
-                android:text="@{chatRoom.last_message_at}"
+                android:textStyle="bold"
+                android:text="@{chatRoom.lastMsgAt}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="날짜" />
@@ -78,10 +86,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginLeft="2dp"
                 android:ellipsize="end"
                 android:maxWidth="180dp"
                 android:maxLines="1"
-                android:text="@{chatRoom.last_message}"
+                android:textColor="@color/black"
+                android:text="@{viewModel.isTextType(chatRoom.last_message)}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 tools:text="메세지" />
@@ -94,7 +104,8 @@
                 android:text="1"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/date" />
+                app:layout_constraintTop_toBottomOf="@+id/date"
+                android:visibility="gone"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

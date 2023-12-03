@@ -9,7 +9,7 @@
     </style>
 
     <style name="CustomAlertDialog">
-        <!-- 꽉 채운 화면에 배경 없이 (custom view 영역만 보일 것이다.) -->
+        <!-- 꽉 채운 화면에 배경 없이 -->
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowMinWidthMajor">100%</item>
         <item name="android:windowMinWidthMinor">100%</item>
@@ -19,16 +19,30 @@
         <item name="android:colorBackground">?attr/colorBackgroundFloating</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
 
-        <!-- Dialog 가 센터에 나오도록 하자. -->
+
+        <!-- Dialog 센터 -->
         <item name="android:windowIsFloating">true</item>
     </style>
 
+    <style name="TopPopupStyle">
+        <item name="android:windowEnterAnimation">@anim/open</item>
+        <item name="android:windowExitAnimation">@anim/close</item>
+    </style>
+
+    <style name="AppTheme.SlideBottomSheetDialog" parent="Theme.Design.BottomSheetDialog">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowAnimationStyle">@style/SlideBottomSheetAnimation</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="SlideBottomSheetAnimation" parent="android:Animation.Dialog">
+        <item name="android:windowEnterAnimation">@android:anim/slide_in_left</item>
+        <item name="android:windowExitAnimation">@android:anim/slide_out_right</item>
+    </style>
+
+
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
-
-
-
-
 
 
 

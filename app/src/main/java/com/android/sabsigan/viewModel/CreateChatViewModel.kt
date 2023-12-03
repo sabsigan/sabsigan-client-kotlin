@@ -1,36 +1,55 @@
 package com.android.sabsigan.viewModel
 
 import android.util.Log
+import android.widget.SearchView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.android.sabsigan.data.SimpleUser
 import com.android.sabsigan.data.User
 
 class CreateChatViewModel: WiFiViewModel() {
-    private val _userList = MutableLiveData<List<SimpleUser>>()
+    private lateinit var userList: List<SimpleUser>
+    private val _searchedList = MutableLiveData<List<SimpleUser>>()
     private val _selectedList = MutableLiveData<List<SimpleUser>>()
 
-    val userList: LiveData<List<SimpleUser>> get() = _userList
+    val searchedList: LiveData<List<SimpleUser>> get() = _searchedList
     val selectedList: LiveData<List<SimpleUser>> get() = _selectedList
+    val inputTxt = MutableLiveData<String>()
+
+    var temp = false
 
     fun setUserList(list: List<User>) {
         // User 리스트를 SimpleUser 리스트로
-        _userList.value = list.map { user -> SimpleUser(id = user.id, name = user.name) }
-//        _searchedList.value = userList
-//        _selectedList.value = listOf<User>()
+        userList = list.map { user -> SimpleUser(id = user.id, name = user.name) }
+        _searchedList.value = userList
+    }
+
+    fun isSelectedZero(): Boolean {
+        if (selectedList.value!!.size > 0)
+            return false
+
+        return true
+    }
+
+    fun removeUser(user: SimpleUser) {
+        val index = userList.withIndex()
+            .first  { user.id == it.value.id }
+            .index
+
+        userList.get(index).checked = !userList.get(index).checked
+        _searchedList.value = _searchedList.value
+
+        (_selectedList.value as ArrayList<SimpleUser>).remove(user)
+        _selectedList.value = _selectedList.value
     }
 
     fun clickUser(user: SimpleUser) {
-        val index = userList.value!!.withIndex()
-            .first  {user.id == it.value.id}
+        val index = userList.withIndex()
+            .first { user.id == it.value.id}
             .index
-//        val sIndex = _searchedList.value!!.withIndex()
-//            .first  {user.id == it.value.id}
-//            .index
 
-        userList.value!!.get(index).checked = !userList.value!!.get(index).checked
-//        _searchedList.value!!.get(sIndex).checked = !_searchedList.value!!.get(sIndex).checked
-//        _searchedList.value = _searchedList.value
+        userList.get(index).checked = !userList.get(index).checked
+        _searchedList.value = _searchedList.value
 
         // _selectedList를 ArrayList로 형변환 해서 사용하기 위한 temp
         // _selectedList가 비어있을 때도 사용할 수 있도록 _selectedList.value as ArrayList 사용X
@@ -48,7 +67,24 @@ class CreateChatViewModel: WiFiViewModel() {
             temp.remove(user)
 
         _selectedList.value = temp
+    }
 
-//        Log.d("test", _searchedList.value.toString())
+    fun searchUser(search: String?) {
+        //검색이 필요없을 경우를 위해 원본 배열을 복제
+        val list = ArrayList<SimpleUser>()
+        //공백제외 아무런 값이 없을 경우 -> 원본 배열
+        if (search?.trim { it <= ' ' }!!.isEmpty()) {
+            _searchedList.value = userList
+
+            return
+        } else { //공백제외 -> 이름으로 or 초성 // 초성은 아직X
+            for (user in userList) {
+                if (user.name.contains(search)) {
+                    list.add(user)
+                }
+            }
+        }
+
+        _searchedList.value = list
     }
 }

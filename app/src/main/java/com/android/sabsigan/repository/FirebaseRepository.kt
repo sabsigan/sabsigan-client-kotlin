@@ -10,20 +10,19 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
+import java.util.Date
 
 open class FirebaseRepository {
     var auth = Firebase.auth
     val db = Firebase.firestore
+    val storage = Firebase.storage
+
     val uid = auth.currentUser?.uid
 
-    fun getTime(): String {
-        val currentTime : Long = System.currentTimeMillis() // ms로 반환
-        val dataFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
-        val time = dataFormat.format(currentTime)
-        
-        return time
-    }
+    fun getTime() = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
 }

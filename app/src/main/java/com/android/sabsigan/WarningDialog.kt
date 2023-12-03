@@ -54,6 +54,5 @@ class WarningDialog(val warningText: String): DialogFragment() {
             binding.warningTxt.text = warningText
         else
             binding.warningTxt.visibility = View.GONE
-
     }
 }
