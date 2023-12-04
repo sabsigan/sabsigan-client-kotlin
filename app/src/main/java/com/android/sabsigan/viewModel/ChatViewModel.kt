@@ -4,7 +4,6 @@ import android.net.Uri
 import android.text.Layout
 import android.util.Log
 import android.view.View
-import androidx.core.view.OneShotPreDrawListener.add
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -97,13 +96,13 @@ class ChatViewModel: WiFiViewModel() {
         } else {
             // postValue를 사용하여 LiveData를 메인 스레드에서 업데이트
             _messageList.postValue(_messageList.value?.apply {
-                add(chatMsg)
+                (this as ArrayList<ChatMessage>).add(chatMsg)
                 sortedWith(msgComparator) // 시간 순으로 정렬
             } ?: mutableListOf(chatMsg))
 
 
-            (_messageList.value as ArrayList<ChatMessage>).add(chatMsg)
-            _messageList.value = _messageList.value!!.sortedWith(msgComparator).toMutableList() // 시간 순으로 정렬
+//            (this as ArrayList<ChatMessage>).add(chatMsg)
+//            _messageList.value = _messageList.value!!.sortedWith(msgComparator).toMutableList() // 시간 순으로 정렬
         }
     }
 
