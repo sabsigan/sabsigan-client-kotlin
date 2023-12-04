@@ -6,9 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
-
+import androidx.compose.ui.tooling.preview.Preview
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,9 +17,10 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    @Preview
     @Composable
     fun ArtistCard() {
-        Text(text = "Adddddd",
+        Text(text = "ddddd",
             color = Color(250, 0, 0)
         )
     }

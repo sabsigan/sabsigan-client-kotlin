@@ -32,6 +32,7 @@ class MainViewModel: WiFiViewModel() {
 
     val myName = MutableLiveData<String>()
     val myState = MutableLiveData<String>()
+    val temp = MutableLiveData<ChatRoom>()
 
     init {
         viewModelScope.launch {
@@ -47,6 +48,12 @@ class MainViewModel: WiFiViewModel() {
             fbRepository.getChangeChatList()
         }
     }
+
+    fun updateMyInfo(nickName: String, state: String, wifi: String) {
+        fbRepository.updateUser(nickName, state, wifi)
+    }
+
+    fun getUID() = fbRepository.uid
 
     private fun getOtherUserName(chatRoom: ChatRoom): String {
         // chatRoom에 있는 사용자를 제외한 첫번째 유저 ID
@@ -178,6 +185,14 @@ class MainViewModel: WiFiViewModel() {
             }
         }
     }
+
+    fun changeChatRoomName(chatRoom: ChatRoom, text: String) {
+        fbRepository.changeChatRoomName(chatRoom, text)
+    }
+
+    fun exitChatRoom(chatRoom: ChatRoom) {
+        fbRepository.exitChatRoom(chatRoom, getUID()!!)
+    }
     
     fun clickUser(otherUser: User) {
         Log.d("userFragment", "유저 클릭")
@@ -204,6 +219,8 @@ class MainViewModel: WiFiViewModel() {
 
     fun longClickChatRoom(chatRoom: ChatRoom): Boolean {
         Log.d("chatRoomFragment", "채팅방 long클릭")
+
+        temp.value = chatRoom
 
         return true
     }
