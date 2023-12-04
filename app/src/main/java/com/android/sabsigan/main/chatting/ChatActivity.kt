@@ -12,13 +12,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
-import android.net.InetAddresses
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -44,7 +41,7 @@ import com.android.sabsigan.repository.FileHelper
 import com.android.sabsigan.viewModel.ChatViewModel
 import java.net.InetAddress
 
-class ChatActivity : AppCompatActivity(), View.OnClickListener {
+class ChatActivity : AppCompatActivity(), View.OnClickListener, SocketHandler.MessageListener {
     private var mBinding: ActivityChatBinding? = null // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
     private val binding get() = mBinding!!
 
@@ -139,11 +136,21 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun startSocekt(isServer : Boolean, address: InetAddress) {
-        socketHandler = SocketHandler(port,isServer,address) { message -> //받는거
+        socketHandler = SocketHandler(port,isServer,address)   //받는거
 //            runOnUiThread {
 //                binding.sendedText.text = "Client: $message\n"
 //            }
-            //TODO: 리스트에 메시지를 추가해주면됨
+        socketHandler?.setMessageListener(this)
+
+        val directThread = Thread(socketHandler)
+        directThread.start()
+    }
+    // MessageListener의 메서드 구현
+    override fun onMessageReceived(message: String) {
+        // 받은 텍스트 처리
+        // 여기에서 UI 업데이트 등을 수행할 수 있습니다.
+        Log.d("onMessageReceived", message)
+        //TODO: 리스트에 메시지를 추가해주면됨
             val time = viewModel.getTime()
 
             viewModel.addMsg(
@@ -157,10 +164,6 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener {
                     updated_at = time,
                 )
             )
-        }
-
-        val directThread = Thread(socketHandler)
-        directThread.start()
     }
 
     //TODO : 전송 버튼 누르면 메시지 보낼도록 연결해야함

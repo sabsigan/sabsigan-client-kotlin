@@ -95,14 +95,13 @@ class ChatViewModel: WiFiViewModel() {
         if (_messageList.value == null) {
             _messageList.value = arrayListOf(chatMsg)
         } else {
-//            _messageList.postValue(_messageList.value?.apply {
-//                add(chatMsg)
-//                sortedWith(msgComparator) // 시간 순으로 정렬
-//                val newList = ArrayList(this) // 현재 리스트를 복사
-//                newList.add(chatMsg)
-//                sortedWith(msgComparator) // 시간 순으로 정렬 (정렬된 리스트를 반환하지만 반환된 리스트를 사용하지 않음)
-//                newList
-//            } ?: mutableListOf(chatMsg))
+            // postValue를 사용하여 LiveData를 메인 스레드에서 업데이트
+            _messageList.postValue(_messageList.value?.apply {
+                add(chatMsg)
+                sortedWith(msgComparator) // 시간 순으로 정렬
+            } ?: mutableListOf(chatMsg))
+
+
             (_messageList.value as ArrayList<ChatMessage>).add(chatMsg)
             _messageList.value = _messageList.value!!.sortedWith(msgComparator).toMutableList() // 시간 순으로 정렬
         }

@@ -1,8 +1,6 @@
 package com.android.sabsigan.main.chatting
 
 import android.util.Log
-import com.android.sabsigan.wifidirectsample.event.ConnectionInfoEvent
-import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +16,7 @@ import java.net.Socket
 import java.net.SocketException
 
 class SocketHandler(private val port: Int, private val isServer: Boolean,
-                    private val hostAddress: InetAddress, private val onMessageReceived: (String) -> Unit) : Runnable {
+                    private val hostAddress: InetAddress) : Runnable {
     private var serverSocket: ServerSocket? = null
     private lateinit var Socket: Socket
     private lateinit var reader: BufferedReader
@@ -43,15 +41,17 @@ class SocketHandler(private val port: Int, private val isServer: Boolean,
                 while (isRunning) {
                     val message = reader.readLine() ?: break // 연결이 종료되면 루프 종료
                     Log.d("receivedmsg: ", message)
-                    onMessageReceived.invoke(message)
+//                    onMessageReceived.invoke(message)
+                    notifyMessageReceived(message)
                 }
             } catch (e: Exception) {
                 Log.d("Server", "socket Connection Failed")
                 e.printStackTrace()
-            } finally {
-                // 스레드가 종료되면 소켓을 닫음
-                closeSocket()
             }
+//            finally {
+//                // 스레드가 종료되면 소켓을 닫음
+//                closeSocket()
+//            }
 
         }else {
             Log.d("SocketHandler", "Socket!!")
@@ -75,19 +75,38 @@ class SocketHandler(private val port: Int, private val isServer: Boolean,
                 while (isRunning) {
                     val message = reader.readLine() ?: break // 연결이 종료되면 루프 종료
                     Log.d("receivedmsg: ", message)
-                    onMessageReceived.invoke(message)
+//                    onMessageReceived.invoke(message)
+                    notifyMessageReceived(message) // 받은 텍스트를 리스너를 통해 전달
                 }
 
             } catch (e: Exception) {
                 Log.d("Client", "socket Connection Failed")
                 e.printStackTrace()
-            } finally {
-                // 스레드가 종료되면 소켓을 닫음
-                closeSocket()
             }
+//            finally {
+//                // 스레드가 종료되면 소켓을 닫음
+//                closeSocket()
+//            }
 
         }
     }
+
+    private var messageListener: MessageListener? = null
+    interface MessageListener {
+        fun onMessageReceived(message: String)
+    }
+
+    fun setMessageListener(listener: ChatActivity) {
+        this.messageListener = listener
+    }
+
+    private fun notifyMessageReceived(message: String) {
+        messageListener?.onMessageReceived(message)
+    }
+
+
+
+
 
 //    fun sendMessage(message: String) {
 //        writer.println(message)
@@ -98,37 +117,24 @@ class SocketHandler(private val port: Int, private val isServer: Boolean,
 //        writer = PrintWriter(OutputStreamWriter(Socket.getOutputStream()), true)
 //        Log.d("SocketHandler", "Sending message: $message")
 //            writer.println(message)
-        coroutineScope.launch {
-            // 백그라운드 스레드에서 네트워크 작업 수행
-            withContext(Dispatchers.IO) {
-                writer = PrintWriter(OutputStreamWriter(Socket.getOutputStream()), true)
-                Log.d("SocketHandler", "Sending message: $message")
-                writer.println(message)
+        try {
+            if (!Socket.isClosed) {
+                coroutineScope.launch {
+                    withContext(Dispatchers.IO) {
+                        writer = PrintWriter(OutputStreamWriter(Socket.getOutputStream()), true)
+                        Log.d("SocketHandler", "Sending message: $message")
+                        writer.println(message)
+                    }
+                }
+            } else {
+                Log.d("SocketHandler", "Socket is closed. Cannot send message.")
             }
+        } catch (e: Exception) {
+            Log.e("SocketHandler", "Error sending message: $e")
         }
     }
 
-//    private fun getOwnerAddress(): Observable<InetAddress>? {
-//        return ConnectionInfoEvent.receive()
-//            .subscribeOn(Schedulers.io())
-//            .filter { it.groupFormed }
-//            .map { it.groupOwnerAddress }
-//            .doOnNext{
-//                hostAddress = it
-//                Log.d("getOwnerAddress: ","$hostAddress")
-//            }
-//    }
 
-//    private fun getOwnerAddress() {
-//        Observable.just("")
-//            .subscribeOn(Schedulers.io())
-//            .map { it.groupOwnerAddress.hostName }
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe {
-//                // 호스트 이름
-//                binding.hostName.text = it
-//            }
-//    }
 
 
     fun closeSocket() {
