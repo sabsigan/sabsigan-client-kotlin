@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.ContentValues.TAG
 import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.wifi.p2p.WifiP2pConfig
@@ -23,7 +24,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.android.sabsigan.R
+import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.databinding.ActivityMain3Binding
+import com.android.sabsigan.main.chatting.ChatActivity
 import com.android.sabsigan.wifidirectsample.WifiDirectReceiver
 import com.android.sabsigan.wifidirectsample.event.ConnectionInfoEvent
 import com.android.sabsigan.wifidirectsample.event.MyDeviceInfoEvent
@@ -38,6 +41,7 @@ import karrel.kr.co.wifidirectsample.view.ClientFragment
 import karrel.kr.co.wifidirectsample.view.DefaultFragment
 import karrel.kr.co.wifidirectsample.view.DiscoverFragment
 import karrel.kr.co.wifidirectsample.view.ServerFragment
+import java.io.Serializable
 
 
 class MainActivity3 : AppCompatActivity() {
@@ -118,18 +122,35 @@ class MainActivity3 : AppCompatActivity() {
 
     private fun setupConnectInfo(info: WifiP2pInfo) {
         this.wifiInfo = info
-
         groupformed = info.groupFormed // 그룹 형성 여부
+        val chatRoom = ChatRoom(
+            name = null,
+            users = arrayListOf()
+        )
 
-        if (info.groupFormed) {
-            // 그룹오너 여부
-            if (info.isGroupOwner) {
-                // 그룹 오너이면 서버 화면을 보여주고
-                replaceFragment(ServerFragment(info))
-            } else {
-                // 게스트 이면 클라이언트 화면을 보여준다
-                replaceFragment(ClientFragment(info))
+        if (groupformed) {
+            // Intent에 Bundle 추가
+            val intent = Intent(this, ChatActivity::class.java)
+            intent.putExtra("chatRoom", chatRoom as Serializable) //chatRoom
+
+            if(info.isGroupOwner) {// 그룹 오너
+                intent.putExtra("myName", "owner")
+                intent.putExtra("chatName", "direct")
+            }else{  // 클라이언트
+                intent.putExtra("myName","client" )
+                intent.putExtra("chatName","direct")
+                intent.putExtra("groupOwnerAddress",info.groupOwnerAddress)
             }
+            // 화면 전환
+            startActivity(intent)
+
+//            if (info.isGroupOwner) {
+//                // 그룹 오너이면 서버 화면을 보여주고
+//                replaceFragment(ServerFragment(info))
+//            } else {
+//                // 게스트 이면 클라이언트 화면을 보여준다
+//                replaceFragment(ClientFragment(info))
+//            }
         } else {
             Log.d("setupConnectInfo", groupformed.toString() )
         }
@@ -245,16 +266,17 @@ class MainActivity3 : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         registerReceiver()
+        Log.d("onResume:","registerReceiver")
     }
 
     override fun onPause() {
         super.onPause()
-        unregisterRecevier()
+//        unregisterRecevier()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterRecevier()
+//        unregisterRecevier()
     }
 
     private fun registerReceiver() {

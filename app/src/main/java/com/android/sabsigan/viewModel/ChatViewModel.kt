@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.android.sabsigan.data.ChatMessage
 import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.data.FileTemp
+import com.android.sabsigan.main.chatting.SocketHandler
 import com.android.sabsigan.repository.ChatFbRepository
 import com.android.sabsigan.repository.FileHelper
 import kotlinx.coroutines.launch
@@ -26,12 +27,14 @@ class ChatViewModel: WiFiViewModel() {
     private val _clickedMessage = MutableLiveData<ChatMessage?>()
     private val _clickedFile = MutableLiveData<FileTemp?>()
 
+    private var socketHandler: SocketHandler? = null
     val messageList: LiveData<List<ChatMessage>> get() = _messageList
     val clickedMessage: LiveData<ChatMessage?> get() = _clickedMessage
     val clickedFile : LiveData<FileTemp?> get() = _clickedFile
 
     val imgMap = HashMap<String, Uri>()
 
+    val directInputText = MutableLiveData<String>()
     val inputTxt = MutableLiveData<String>()
     val MsgNotEmpty = MutableLiveData<Boolean>()
 
@@ -86,6 +89,16 @@ class ChatViewModel: WiFiViewModel() {
 
         return ""
     }
+
+    fun addMsg(chatMsg: ChatMessage) {
+        if (_messageList.value == null) {
+            _messageList.value = arrayListOf(chatMsg)
+        } else {
+            (_messageList.value as ArrayList<ChatMessage>).add(chatMsg)
+            _messageList.value = _messageList.value!!.sortedWith(msgComparator).toMutableList() // 시간 순으로 정렬
+        }
+    }
+
 
     fun addMsgList(chatMsg: ChatMessage) {
         val index = _messageList.value!!.withIndex()
@@ -162,7 +175,28 @@ class ChatViewModel: WiFiViewModel() {
 
         if (MsgNotEmpty.value!!) {
             Log.d("click", "메시지 전송")
-            fbRepository.sendMessage("msg", inputTxt.value!!, chatRoom.id, myName)
+
+            if (chatRoom.id != "") {
+                fbRepository.sendMessage("msg", inputTxt.value!!, chatRoom.id, myName)
+            } else {
+                //TODO SocketHandler에서 메시지 보내는 함수 바로 적어 (inputTxt.value의 값을 보내는거야)
+                directInputText.value = inputTxt.value!!
+//                socketHandler?.sendMessage(inputTxt.value!!)
+                val time = getTime()
+
+                addMsg(
+                    ChatMessage(
+                        cid = "",
+                        uid = getUID()!!,
+                        userName = "who?",
+                        text = inputTxt.value!!,
+                        type = "msg",
+                        created_at = time,
+                        updated_at = time,
+                    )
+                )
+            }
+
             inputTxt.value = ""
         }
     }

@@ -16,38 +16,31 @@ import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.MimeTypeMap
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.PopupMenu
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import com.android.sabsigan.R
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.data.ChatMessage
 import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.data.GlideApp
-import com.android.sabsigan.data.User
 import com.android.sabsigan.databinding.ActivityChatBinding
-import com.android.sabsigan.main.user.UserListAdapter
 import com.android.sabsigan.repository.FileHelper
 import com.android.sabsigan.viewModel.ChatViewModel
-import io.getstream.chat.android.ui.common.utils.Utils.getMimeType
-import io.reactivex.annotations.NonNull
 
 class ChatActivity : AppCompatActivity(), View.OnClickListener {
     private var mBinding: ActivityChatBinding? = null // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
@@ -67,6 +60,9 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener {
 
     private var msgType: String? = null
 
+    private var socketHandler: SocketHandler? = null
+    private val port = 8988
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_chat)
@@ -77,10 +73,27 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener {
         val myName = intent.getStringExtra("myName")
         val chatName = intent.getStringExtra("chatName")
 
-//        if (일반 채팅)
-        viewModel.setChatInfo(chatRoom, myName!!, chatName!!)
-//        else (다이렉트 채팅)
-//        viewModel.setChatInfo(myName!!, chatName!!)
+        if(chatRoom.id != "")  {//(일반 채팅)
+            viewModel.setChatInfo(chatRoom, myName!!, chatName!!)
+        }
+        else{//(다이렉트 채팅)
+
+            viewModel.setChatInfo(myName!!, chatName!!)
+
+            if(myName == "owner"){ //서버
+                startSocekt(true)
+                viewModel.directInputText.observe(this, Observer {
+                    sendMessageToSocket(it)
+                })
+            }else{ //클라이언트
+                startSocekt(false)
+                viewModel.directInputText.observe(this, Observer {
+                    sendMessageToSocket(it)
+                })
+//                val groupOwnerAddress = intent.getStringExtra("groupOwnerAddress")
+            }
+        }
+
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
@@ -119,7 +132,40 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener {
                 fileHelper.saveAllFile(it.uri!!, it.name)
             }
         })
+
+
     }
+
+    private fun startSocekt(isServer : Boolean) {
+        socketHandler = SocketHandler(port,isServer) { message -> //받는거
+//            runOnUiThread {
+//                binding.sendedText.text = "Client: $message\n"
+//            }
+            //TODO: 리스트에 메시지를 추가해주면됨
+            val time = viewModel.getTime()
+
+            viewModel.addMsg(
+                    ChatMessage(
+                    cid = "",
+                    uid =  "aaaaaaaaaaaaaaaa",
+                    userName = "who?",
+                    text = message,
+                    type = "msg",
+                    created_at = time,
+                    updated_at = time,
+                )
+            )
+        }
+
+        val directThread = Thread(socketHandler)
+        directThread.start()
+    }
+
+    //TODO : 전송 버튼 누르면 메시지 보낼도록 연결해야함
+    private fun sendMessageToSocket(message: String) { //보내는거
+        socketHandler?.sendMessage(message)
+    }
+
 
     override fun onPause() {
         super.onPause()
@@ -140,6 +186,8 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener {
 
         if (isReceiverRegistered(this))
             unregisterReceiver(wifiConnectReceiver)
+
+        socketHandler?.stopThread() // 스레드 중지
     }
 
     override fun onClick(v: View?) {

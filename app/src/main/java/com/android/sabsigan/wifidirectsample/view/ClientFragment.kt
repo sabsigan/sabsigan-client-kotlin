@@ -76,7 +76,7 @@ class ClientFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
                     handler.post {
                         binding.sendedText.text = "Server: $message\n"
                     }
-                    receiveAndDisplayImage()
+//                    receiveAndDisplayImage()
                 }
 
 
