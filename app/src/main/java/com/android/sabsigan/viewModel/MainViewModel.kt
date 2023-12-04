@@ -58,14 +58,17 @@ class MainViewModel: WiFiViewModel() {
     private fun getOtherUserName(chatRoom: ChatRoom): String {
         // chatRoom에 있는 사용자를 제외한 첫번째 유저 ID
         val otherUserID = chatRoom.users.withIndex()
-            .first { fbRepository.uid != it.value }
-            .value
+            .firstOrNull() { fbRepository.uid != it.value }
+            ?.value
+
+        if (otherUserID == null)
+            return "상대방이 나간 채팅방입니다."
 
         // 유저 ID로 유저 이름 얻어오기
         val user = _userList.value!!.withIndex()
             .first { otherUserID == it.value.id }
             .value
-        
+
         return user.name
     }
 
