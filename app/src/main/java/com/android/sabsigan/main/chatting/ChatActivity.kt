@@ -61,6 +61,7 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener, SocketHandler.Me
 
     private var socketHandler: SocketHandler? = null
     private val port = 8988
+    private var groupOwnerAddress : String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,7 +79,7 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener, SocketHandler.Me
         else{//(다이렉트 채팅)
 
             viewModel.setChatInfo(myName!!, chatName!!)
-            val groupOwnerAddress = intent.getStringExtra("groupOwnerAddress")
+            groupOwnerAddress = intent.getStringExtra("groupOwnerAddress")
             val groupOwnerInetAddress: InetAddress = InetAddress.getByName(groupOwnerAddress)
             if(myName == "owner"){ //서버
                 startSocekt(true,groupOwnerInetAddress)
@@ -149,14 +150,14 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener, SocketHandler.Me
         Log.d("onMessageReceived", message)
         //TODO: 리스트에 메시지를 추가해주면됨
             val time = viewModel.getTime()
-            val uid = viewModel.getUID()
-            val userName = myname
+            val uuu = viewModel.getUID()
+            val uid = viewModel.customHash(arrayListOf(groupOwnerAddress!!))
 
             viewModel.addMsg(
                     ChatMessage(
                     cid = "",
-                    uid =  "aaaaaaaaaaaaaaaa",
-                    userName = "who?",
+                    uid =  uid,
+                    userName = "익명",
                     text = message,
                     type = "msg",
                     created_at = time,
