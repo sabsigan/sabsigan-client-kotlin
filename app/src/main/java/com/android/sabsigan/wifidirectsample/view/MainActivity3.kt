@@ -277,7 +277,18 @@ class MainActivity3 : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-//        unregisterRecevier()
+
+        manager?.removeGroup(channel, object : WifiP2pManager.ActionListener {
+            override fun onSuccess() {
+                Log.d("removeGroup:","Success")
+            }
+
+            override fun onFailure(p0: Int) {
+                Log.d("removeGroup:","Failure")
+            }
+
+        })
+        unregisterRecevier()
     }
 
     private fun registerReceiver() {
