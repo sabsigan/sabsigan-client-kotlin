@@ -12,6 +12,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.net.InetAddresses
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -41,6 +42,7 @@ import com.android.sabsigan.data.GlideApp
 import com.android.sabsigan.databinding.ActivityChatBinding
 import com.android.sabsigan.repository.FileHelper
 import com.android.sabsigan.viewModel.ChatViewModel
+import java.net.InetAddress
 
 class ChatActivity : AppCompatActivity(), View.OnClickListener {
     private var mBinding: ActivityChatBinding? = null // 매번 null 체크를 할 필요 없이 편의성을 위해 바인딩 변수 재 선언
@@ -79,18 +81,18 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener {
         else{//(다이렉트 채팅)
 
             viewModel.setChatInfo(myName!!, chatName!!)
-
+            val groupOwnerAddress = intent.getStringExtra("groupOwnerAddress")
+            val groupOwnerInetAddress: InetAddress = InetAddress.getByName(groupOwnerAddress)
             if(myName == "owner"){ //서버
-                startSocekt(true)
+                startSocekt(true,groupOwnerInetAddress)
                 viewModel.directInputText.observe(this, Observer {
                     sendMessageToSocket(it)
                 })
             }else{ //클라이언트
-                startSocekt(false)
+                startSocekt(false,groupOwnerInetAddress)
                 viewModel.directInputText.observe(this, Observer {
                     sendMessageToSocket(it)
                 })
-//                val groupOwnerAddress = intent.getStringExtra("groupOwnerAddress")
             }
         }
 
@@ -136,8 +138,8 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener {
 
     }
 
-    private fun startSocekt(isServer : Boolean) {
-        socketHandler = SocketHandler(port,isServer) { message -> //받는거
+    private fun startSocekt(isServer : Boolean, address: InetAddress) {
+        socketHandler = SocketHandler(port,isServer,address) { message -> //받는거
 //            runOnUiThread {
 //                binding.sendedText.text = "Client: $message\n"
 //            }

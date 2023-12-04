@@ -33,6 +33,7 @@ import com.android.sabsigan.wifidirectsample.event.MyDeviceInfoEvent
 import com.android.sabsigan.wifidirectsample.event.ResetDataEvent
 import com.android.sabsigan.wifidirectsample.event.StatusChangedEvent
 import com.android.sabsigan.wifidirectsample.event.WifiEnable
+import com.google.common.net.InetAddresses
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.normal.TedPermission
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -132,14 +133,14 @@ class MainActivity3 : AppCompatActivity() {
             // Intent에 Bundle 추가
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra("chatRoom", chatRoom as Serializable) //chatRoom
-
+            intent.putExtra("groupOwnerAddress",info.groupOwnerAddress.hostAddress)
+            Log.d("메인->chat 오너_주소: ", info.groupOwnerAddress.hostAddress!!)
             if(info.isGroupOwner) {// 그룹 오너
                 intent.putExtra("myName", "owner")
                 intent.putExtra("chatName", "direct")
             }else{  // 클라이언트
                 intent.putExtra("myName","client" )
                 intent.putExtra("chatName","direct")
-                intent.putExtra("groupOwnerAddress",info.groupOwnerAddress)
             }
             // 화면 전환
             startActivity(intent)

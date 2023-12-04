@@ -4,6 +4,7 @@ import android.net.Uri
 import android.text.Layout
 import android.util.Log
 import android.view.View
+import androidx.core.view.OneShotPreDrawListener.add
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -94,6 +95,14 @@ class ChatViewModel: WiFiViewModel() {
         if (_messageList.value == null) {
             _messageList.value = arrayListOf(chatMsg)
         } else {
+//            _messageList.postValue(_messageList.value?.apply {
+//                add(chatMsg)
+//                sortedWith(msgComparator) // 시간 순으로 정렬
+//                val newList = ArrayList(this) // 현재 리스트를 복사
+//                newList.add(chatMsg)
+//                sortedWith(msgComparator) // 시간 순으로 정렬 (정렬된 리스트를 반환하지만 반환된 리스트를 사용하지 않음)
+//                newList
+//            } ?: mutableListOf(chatMsg))
             (_messageList.value as ArrayList<ChatMessage>).add(chatMsg)
             _messageList.value = _messageList.value!!.sortedWith(msgComparator).toMutableList() // 시간 순으로 정렬
         }

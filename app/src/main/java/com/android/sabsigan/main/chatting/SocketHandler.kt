@@ -4,6 +4,9 @@ import android.util.Log
 import com.android.sabsigan.wifidirectsample.event.ConnectionInfoEvent
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
@@ -13,12 +16,13 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
 
-class SocketHandler(private val port: Int, private val isServer: Boolean, private val onMessageReceived: (String) -> Unit) : Runnable {
-    private lateinit var serverSocket: ServerSocket
+class SocketHandler(private val port: Int, private val isServer: Boolean,
+                    private val hostAddress: InetAddress, private val onMessageReceived: (String) -> Unit) : Runnable {
+    private var serverSocket: ServerSocket? = null
     private lateinit var Socket: Socket
     private lateinit var reader: BufferedReader
     private lateinit var writer: PrintWriter
-    private lateinit var hostAddress : InetAddress
+//    private lateinit var hostAddress : InetAddress
     private var isRunning = true
     override fun run() {
 
@@ -26,12 +30,18 @@ class SocketHandler(private val port: Int, private val isServer: Boolean, privat
             Log.d("SocketHandler", "ServerSocket!!")
             try {
                 serverSocket = ServerSocket(port)
-                Socket = serverSocket.accept()
+                Socket = serverSocket!!.accept()
+                if(Socket.isConnected) {
+                    Log.d("서버측 Socket: ","연결됨")
+                }else{
+                    Log.d("서버측 Socket: ","연결안됨")
+                }
                 reader = BufferedReader(InputStreamReader(Socket.getInputStream()))
                 writer = PrintWriter(OutputStreamWriter(Socket.getOutputStream()), true)
 
                 while (isRunning) {
                     val message = reader.readLine() ?: break // 연결이 종료되면 루프 종료
+                    Log.d("receivedmsg: ", message)
                     onMessageReceived.invoke(message)
                 }
             } catch (e: Exception) {
@@ -44,24 +54,27 @@ class SocketHandler(private val port: Int, private val isServer: Boolean, privat
 
         }else {
             Log.d("SocketHandler", "Socket!!")
-//            getOwnerAddress()
             try {
-                val hostAddress = getOwnerAddress()?.blockingFirst() // Observable을 동기적으로 호출
+//                val hostAddress = getOwnerAddress()?.blockingFirst() // Observable을 동기적으로 호출
+                hostAddress.hostAddress?.let { Log.d("getOwnerAddress", it) }
 
-                if (hostAddress != null) {
-                    Socket = Socket(hostAddress, port)
-                    reader = BufferedReader(InputStreamReader(Socket.getInputStream()))
-                    writer = PrintWriter(OutputStreamWriter(Socket.getOutputStream()), true)
+                Socket = Socket(hostAddress, port)
+                if(Socket.isConnected) {
+                    Log.d("클라측 Socket: ","연결됨")
+                }else{
+                    Log.d("클라측 Socket: ","연결안됨")
+                }
 
-                    Log.d("SocketHandler","Connected to Server")
+                reader = BufferedReader(InputStreamReader(Socket.getInputStream()))
+                writer = PrintWriter(OutputStreamWriter(Socket.getOutputStream()), true)
 
-                    // 서버에서 데이터를 계속 읽어오기
-                    while (isRunning) {
-                        val message = reader.readLine() ?: break // 연결이 종료되면 루프 종료
-                        onMessageReceived.invoke(message)
-                    }
-                } else {
-                    Log.d("SocketHandler", "Failed to get host address")
+                Log.d("SocketHandler","Connected to Server")
+
+                // 서버에서 데이터를 계속 읽어오기
+                while (isRunning) {
+                    val message = reader.readLine() ?: break // 연결이 종료되면 루프 종료
+                    Log.d("receivedmsg: ", message)
+                    onMessageReceived.invoke(message)
                 }
 
             } catch (e: Exception) {
@@ -75,20 +88,41 @@ class SocketHandler(private val port: Int, private val isServer: Boolean, privat
         }
     }
 
+//    fun sendMessage(message: String) {
+//        writer.println(message)
+//    }
+
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+
     fun sendMessage(message: String) {
-        writer.println(message)
+        Log.d("SocketHandler", "Sending message: $message")
+        coroutineScope.launch {
+            writer.println(message)
+        }
     }
 
-    private fun getOwnerAddress(): Observable<InetAddress>? {
-        return ConnectionInfoEvent.receive()
-            .subscribeOn(Schedulers.io())
-            .filter { it.groupFormed }
-            .map { it.groupOwnerAddress }
-            .doOnNext{
-                hostAddress = it
-                Log.d("getOwnerAddress",hostAddress.toString())
-            }
-    }
+//    private fun getOwnerAddress(): Observable<InetAddress>? {
+//        return ConnectionInfoEvent.receive()
+//            .subscribeOn(Schedulers.io())
+//            .filter { it.groupFormed }
+//            .map { it.groupOwnerAddress }
+//            .doOnNext{
+//                hostAddress = it
+//                Log.d("getOwnerAddress: ","$hostAddress")
+//            }
+//    }
+
+//    private fun getOwnerAddress() {
+//        Observable.just("")
+//            .subscribeOn(Schedulers.io())
+//            .map { it.groupOwnerAddress.hostName }
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe {
+//                // 호스트 이름
+//                binding.hostName.text = it
+//            }
+//    }
+
 
     fun closeSocket() {
         try {
