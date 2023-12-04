@@ -73,6 +73,7 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener, SocketHandler.Me
         val myName = intent.getStringExtra("myName")
         val chatName = intent.getStringExtra("chatName")
 
+
         if(chatRoom.id != "")  {//(일반 채팅)
             viewModel.setChatInfo(chatRoom, myName!!, chatName!!)
         }
@@ -93,6 +94,7 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener, SocketHandler.Me
                 })
             }
         }
+
 
 
         binding.viewModel = viewModel
@@ -369,10 +371,10 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener, SocketHandler.Me
 
                     return@setOnMenuItemClickListener true
                 }
-                R.id.msg_modify -> {
-                    Log.d("msg_modify", "sss")
-                    return@setOnMenuItemClickListener true
-                }
+//                R.id.msg_modify -> {
+//                    Log.d("msg_modify", "sss")
+//                    return@setOnMenuItemClickListener true
+//                }
                 R.id.msg_delete -> {
                     viewModel.deleteMsg(chatMessage.id)
                     return@setOnMenuItemClickListener true

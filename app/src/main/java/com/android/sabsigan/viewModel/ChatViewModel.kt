@@ -102,11 +102,9 @@ class ChatViewModel: WiFiViewModel() {
                 sortedWith(msgComparator) // 시간 순으로 정렬
             } ?: mutableListOf(chatMsg))
 
-
-//            (this as ArrayList<ChatMessage>).add(chatMsg)
-//            _messageList.value = _messageList.value!!.sortedWith(msgComparator).toMutableList() // 시간 순으로 정렬
         }
     }
+
 
 
     fun addMsgList(chatMsg: ChatMessage) {
@@ -177,6 +175,8 @@ class ChatViewModel: WiFiViewModel() {
         this.chatRoom = ChatRoom(name = null, users = arrayListOf())
         this.myName = myName
         this.chatName = chatName
+
+        _messageList.value
     }
 
     fun sendBtnClick() {

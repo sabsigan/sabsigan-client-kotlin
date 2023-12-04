@@ -2,6 +2,8 @@ package com.android.sabsigan.main
 
 import android.app.Activity
 import android.app.PendingIntent
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -13,8 +15,15 @@ import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MenuItem
+import android.view.View
+import android.view.WindowManager
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupMenu
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -28,6 +37,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.android.sabsigan.R
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
+import com.android.sabsigan.data.ChatMessage
 import com.android.sabsigan.data.ChatRoom
 import com.android.sabsigan.data.NotificationHelper
 import com.android.sabsigan.data.User
@@ -36,6 +46,8 @@ import com.android.sabsigan.main.chatting.ChatActivity
 import com.android.sabsigan.main.chatting.CreateChatActivity
 import com.android.sabsigan.viewModel.MainViewModel
 import com.android.sabsigan.wifidirectsample.view.MainActivity3
+import de.hdodenhof.circleimageview.CircleImageView
+import org.w3c.dom.Text
 
 class MainActivity2 : AppCompatActivity() {
     private var mBinding: ActivityMain2Binding? = null
@@ -67,9 +79,23 @@ class MainActivity2 : AppCompatActivity() {
         val drawer = binding.navDrawer // 왼쪽 드로우어
         val navController = findNavController(R.id.nav_host_fragment_activity_main2) // 네비 컨트롤러
 
+        val navLayout = drawer.getHeaderView(0)
+        val myImg = navLayout.findViewById<CircleImageView>(R.id.myImage)
+        val myName = navLayout.findViewById<TextView>(R.id.myName)
+        val myState = navLayout.findViewById<TextView>(R.id.myState)
+        val myWifi = navLayout.findViewById<TextView>(R.id.myWifi)
+
+        myImg.setImageBitmap(viewModel.generateAvatar(viewModel.getUID()!!))
+
         //네비와 연결 셋업
         navView.setupWithNavController(navController)
         drawer.setupWithNavController(navController) //drawerNavigation 설정하여 동기화
+
+        viewModel.myState.observe(this, Observer {
+            myName.text = viewModel.myName.value
+            myState.text = it
+            myWifi.text = viewModel.getwifiInfo().value
+        })
 
         viewModel.chatRoom.observe(this, Observer {
             Log.d("chatRoomFragment", "변경")
@@ -87,7 +113,11 @@ class MainActivity2 : AppCompatActivity() {
 
         binding.addChat.setOnClickListener {
             val layoutInflater = LayoutInflater.from(this)
+
             val view = layoutInflater.inflate(R.layout.top_dialog_layout, null)
+            val backButton = view.findViewById<ImageView>(R.id.backButton)
+            val directChat =  view.findViewById<LinearLayout>(R.id.directChat)
+            val groupChat =  view.findViewById<LinearLayout>(R.id.groupChat)
 
             val alertDialog = AlertDialog.Builder(this, R.style.CustomAlertDialog)
                 .setView(view)
@@ -95,11 +125,9 @@ class MainActivity2 : AppCompatActivity() {
             alertDialog.window?.setGravity(Gravity.TOP)
             alertDialog.window?.setWindowAnimations(R.style.TopPopupStyle)
 
-            val backButton = view.findViewById<ImageView>(R.id.backButton)
-            val directChat =  view.findViewById<LinearLayout>(R.id.directChat)
-            val groupChat =  view.findViewById<LinearLayout>(R.id.groupChat)
 
             backButton.setOnClickListener { alertDialog.dismiss() }
+
             directChat.setOnClickListener {
                 val intent =  Intent(this, MainActivity3::class.java) // 와이파이 다이렉트 채팅
                 intent.addFlags (Intent.FLAG_ACTIVITY_NO_ANIMATION)
@@ -107,6 +135,7 @@ class MainActivity2 : AppCompatActivity() {
 
                 startActivity(intent)
                 alertDialog.dismiss() }
+
             groupChat.setOnClickListener {
                 val intent =  Intent(this, CreateChatActivity::class.java) // 그룹 채팅 생성 액티비티
                 intent.addFlags (Intent.FLAG_ACTIVITY_NO_ANIMATION)
@@ -122,9 +151,47 @@ class MainActivity2 : AppCompatActivity() {
         //drawer wifi선택시 와이파이 다이렉트 이동
         drawer.setNavigationItemSelectedListener {
             when(it.itemId) {
-                R.id.navigation_wifi -> {
-                    val intent = Intent(this, MainActivity3::class.java)
-                    startActivity(intent)
+                R.id.navigation_name -> {
+                    onBackPressed()
+
+                    val layoutInflater = LayoutInflater.from(this)
+                    val view = layoutInflater.inflate(R.layout.signin_popup, null)
+                    val alertDialog = AlertDialog.Builder(this, R.style.CustomAlertDialog)
+                        .setView(view)
+                        .create()
+
+                    val userImg = view.findViewById<CircleImageView>(R.id.UserImg)
+                    val textTitle = view.findViewById<TextView>(R.id.Title)
+                    val inputNickname =  view.findViewById<EditText>(R.id.inputNickname)
+                    val inputTemp =  view.findViewById<EditText>(R.id.inputTemp)
+                    val buttonConfirm =  view.findViewById<Button>(R.id.Button)
+
+                    userImg.setImageBitmap(viewModel.generateAvatar(viewModel.getUID()!!))
+                    textTitle.text = "프로필 편집"
+                    inputNickname.setText(viewModel.myName.value)
+                    inputNickname.hint = "닉네임을 입력하세요"
+                    if (viewModel.myState.value != "")
+                        inputTemp.setText(viewModel.myState.value)
+                    inputTemp.hint = "상태 메시지를 입력해주세요"
+                    buttonConfirm.text = "변경하기"
+
+                    buttonConfirm.setOnClickListener {
+                        val nickName = inputNickname.text.toString()
+                        val state = inputTemp.text.toString()
+                        Log.d("프로필 편집", "id: $nickName, temp: $state")
+
+                        if (nickName == null || nickName.equals(""))
+                            Toast.makeText(this, "닉네임을 다시 입력해주세요", Toast.LENGTH_SHORT).show()
+                        else if (nickName == viewModel.myName.value && state == viewModel.myState.value) {
+                            Toast.makeText(this, "변경된 것이 없습니다.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            viewModel.updateMyInfo(nickName, state, viewModel.getwifiInfo().value!!)
+                            viewModel.myName.value = nickName
+                            viewModel.myState.value = state
+                            alertDialog.dismiss()
+                        }
+                    }
+                    alertDialog.show()
                     true
                 }
 

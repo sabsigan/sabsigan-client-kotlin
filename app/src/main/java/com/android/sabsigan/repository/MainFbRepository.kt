@@ -292,4 +292,44 @@ class MainFbRepository(val viewModel: MainViewModel): FirebaseRepository() {
 
         return if(result) chatRoom else null
     }
+
+    fun updateUser(nickName: String, state: String, wifi: String) {
+        val update = hashMapOf<String, Any?>(
+            "name" to nickName,
+            "state" to state,
+            "wifi" to wifi
+        )
+
+        val userRef = db.collection("users").document(uid!!)
+        userRef.update(update)
+            .addOnSuccessListener { Log.d("editUser", "DocumentSnapshot Success") }
+            .addOnFailureListener { Log.e("editUser", "Error adding document", it) }
+    }
+
+    fun changeChatRoomName(chatRoom: ChatRoom, text: String) {
+        val update = hashMapOf<String, Any?>(
+            "name" to text,
+        )
+
+        val chatRef = db.collection("chatRooms").document(chatRoom.id)
+        chatRef.update(update)
+            .addOnSuccessListener { Log.d("changeChatRoomName", "DocumentSnapshot Success") }
+            .addOnFailureListener { Log.e("changeChatRoomName", "Error adding document", it) }
+    }
+
+    fun exitChatRoom(chatRoom: ChatRoom, id: String) {
+        val users = chatRoom.users
+        users.remove(id)
+
+        val update = hashMapOf<String, Any?>(
+            "users" to users,
+        )
+
+        Log.d("exitChatRoom", "$users")
+
+        val chatRef = db.collection("chatRooms").document(chatRoom.id)
+        chatRef.update(update)
+            .addOnSuccessListener { Log.d("exitChatRoom", "DocumentSnapshot Success") }
+            .addOnFailureListener { Log.e("exitChatRoom", "Error adding document", it) }
+    }
 }
