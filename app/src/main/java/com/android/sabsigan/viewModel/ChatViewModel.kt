@@ -87,6 +87,15 @@ class ChatViewModel: WiFiViewModel() {
         return ""
     }
 
+    fun addMsg(chatMsg: ChatMessage) {
+        if (_messageList.value == null) {
+            _messageList.value = arrayListOf(chatMsg)
+        } else {
+            (_messageList.value as ArrayList<ChatMessage>).add(chatMsg)
+            _messageList.value = _messageList.value!!.sortedWith(msgComparator).toMutableList() // 시간 순으로 정렬
+        }
+    }
+
     fun addMsgList(chatMsg: ChatMessage) {
         val index = _messageList.value!!.withIndex()
             .firstOrNull  {chatMsg.id == it.value.id}
@@ -155,6 +164,8 @@ class ChatViewModel: WiFiViewModel() {
         this.chatRoom = ChatRoom(name = null, users = arrayListOf())
         this.myName = myName
         this.chatName = chatName
+
+        _messageList.value
     }
 
     fun sendBtnClick() {

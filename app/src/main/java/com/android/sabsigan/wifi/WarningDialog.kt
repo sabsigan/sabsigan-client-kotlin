@@ -1,4 +1,4 @@
-package com.android.sabsigan
+package com.android.sabsigan.wifi
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable

@@ -33,7 +33,6 @@ import com.android.sabsigan.main.MainActivity2
 import com.android.sabsigan.R
 
 import com.android.sabsigan.viewModel.WifiSelectorViewModel
-import com.android.sabsigan.WarningDialog
 import com.android.sabsigan.broadcastReceiver.WifiConnectReceiver
 import com.android.sabsigan.data.User
 import com.android.sabsigan.databinding.ActivityWifiSelectorBinding

@@ -64,7 +64,7 @@ open class WiFiViewModel: ViewModel() {
 
         var combinedString = ""
         sortedStrings.forEach { combinedString += it}
-        combinedString += getwifiInfo().value // 채팅방에 포함된 유저 id와 wifi 이름으로 해시키 생성
+//        combinedString += getwifiInfo().value // 채팅방에 포함된 유저 id와 wifi 이름으로 해시키 생성
 
         // SHA-256 해시 함수 사용
         val bytes = MessageDigest.getInstance("SHA-256").digest(combinedString.toByteArray())

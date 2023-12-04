@@ -4,15 +4,15 @@
     <item
         android:id="@+id/navigation_name"
         android:icon="@drawable/baseline_person_24"
-        android:title="프로필" />
+        android:title="프로필 편집" />
 
-    <item
-        android:id="@+id/navigation_wifi"
-        android:icon="@drawable/baseline_chat_bubble_outline_24"
-        android:title="WIFI" />
-    <item
-        android:id="@+id/navigation_setting"
-        android:icon="@drawable/baseline_settings_24"
-        android:title="설정" />
+<!--    <item-->
+<!--        android:id="@+id/navigation_wifi"-->
+<!--        android:icon="@drawable/wifi_on"-->
+<!--        android:title="WIFI" />-->
+<!--    <item-->
+<!--        android:id="@+id/navigation_setting"-->
+<!--        android:icon="@drawable/baseline_settings_24"-->
+<!--        android:title="설정" />-->
 
 </menu>

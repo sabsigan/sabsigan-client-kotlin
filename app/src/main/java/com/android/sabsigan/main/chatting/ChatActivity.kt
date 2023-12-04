@@ -80,7 +80,6 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener {
 //        if (일반 채팅)
         viewModel.setChatInfo(chatRoom, myName!!, chatName!!)
 //        else (다이렉트 채팅)
-//        viewModel.setChatInfo(myName!!, chatName!!)
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
@@ -314,10 +313,10 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener {
 
                     return@setOnMenuItemClickListener true
                 }
-                R.id.msg_modify -> {
-                    Log.d("msg_modify", "sss")
-                    return@setOnMenuItemClickListener true
-                }
+//                R.id.msg_modify -> {
+//                    Log.d("msg_modify", "sss")
+//                    return@setOnMenuItemClickListener true
+//                }
                 R.id.msg_delete -> {
                     viewModel.deleteMsg(chatMessage.id)
                     return@setOnMenuItemClickListener true
