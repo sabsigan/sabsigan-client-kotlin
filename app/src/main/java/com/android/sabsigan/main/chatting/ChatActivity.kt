@@ -137,9 +137,6 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener, SocketHandler.Me
 
     private fun startSocekt(isServer : Boolean, address: InetAddress) {
         socketHandler = SocketHandler(port,isServer,address)   //받는거
-//            runOnUiThread {
-//                binding.sendedText.text = "Client: $message\n"
-//            }
         socketHandler?.setMessageListener(this)
 
         val directThread = Thread(socketHandler)
@@ -152,6 +149,8 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener, SocketHandler.Me
         Log.d("onMessageReceived", message)
         //TODO: 리스트에 메시지를 추가해주면됨
             val time = viewModel.getTime()
+            val uid = viewModel.getUID()
+            val userName = myname
 
             viewModel.addMsg(
                     ChatMessage(
@@ -192,7 +191,9 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener, SocketHandler.Me
         if (isReceiverRegistered(this))
             unregisterReceiver(wifiConnectReceiver)
 
+        socketHandler?.closeSocket()
         socketHandler?.stopThread() // 스레드 중지
+
     }
 
     override fun onClick(v: View?) {

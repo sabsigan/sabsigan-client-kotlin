@@ -92,7 +92,9 @@ class ChatViewModel: WiFiViewModel() {
 
     fun addMsg(chatMsg: ChatMessage) {
         if (_messageList.value == null) {
-            _messageList.value = arrayListOf(chatMsg)
+            _messageList.postValue(_messageList.value?.apply {
+                _messageList.value = arrayListOf(chatMsg)
+            }?: mutableListOf(chatMsg))
         } else {
             // postValue를 사용하여 LiveData를 메인 스레드에서 업데이트
             _messageList.postValue(_messageList.value?.apply {
