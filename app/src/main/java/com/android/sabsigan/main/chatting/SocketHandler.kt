@@ -7,6 +7,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
@@ -37,7 +38,7 @@ class SocketHandler(private val port: Int, private val isServer: Boolean,
                     Log.d("서버측 Socket: ","연결안됨")
                 }
                 reader = BufferedReader(InputStreamReader(Socket.getInputStream()))
-                writer = PrintWriter(OutputStreamWriter(Socket.getOutputStream()), true)
+//                writer = PrintWriter(OutputStreamWriter(Socket.getOutputStream()), true)
 
                 while (isRunning) {
                     val message = reader.readLine() ?: break // 연결이 종료되면 루프 종료
@@ -66,7 +67,7 @@ class SocketHandler(private val port: Int, private val isServer: Boolean,
                 }
 
                 reader = BufferedReader(InputStreamReader(Socket.getInputStream()))
-                writer = PrintWriter(OutputStreamWriter(Socket.getOutputStream()), true)
+//                writer = PrintWriter(OutputStreamWriter(Socket.getOutputStream()), true)
 
                 Log.d("SocketHandler","Connected to Server")
 
@@ -93,11 +94,17 @@ class SocketHandler(private val port: Int, private val isServer: Boolean,
 //    }
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
-
     fun sendMessage(message: String) {
-        Log.d("SocketHandler", "Sending message: $message")
+//        writer = PrintWriter(OutputStreamWriter(Socket.getOutputStream()), true)
+//        Log.d("SocketHandler", "Sending message: $message")
+//            writer.println(message)
         coroutineScope.launch {
-            writer.println(message)
+            // 백그라운드 스레드에서 네트워크 작업 수행
+            withContext(Dispatchers.IO) {
+                writer = PrintWriter(OutputStreamWriter(Socket.getOutputStream()), true)
+                Log.d("SocketHandler", "Sending message: $message")
+                writer.println(message)
+            }
         }
     }
 
