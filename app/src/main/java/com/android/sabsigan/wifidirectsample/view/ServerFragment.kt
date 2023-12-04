@@ -85,7 +85,7 @@ class ServerFragment @SuppressLint("ValidFragment") constructor(val info: WifiP2
                 val messageType = MessageType.TEXT
                 val message = binding.sendingText.text.toString()
 
-                writer.println(messageType.name)
+//                writer.println(messageType.name)
 
                 writer.println(message)
                 binding.sendingText.text.clear()
