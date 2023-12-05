@@ -34,7 +34,6 @@ open class WiFiViewModel: ViewModel() {
     }
 
     fun updateWiFiData(wifiInfo: WifiInfo, dhcpInfo:DhcpInfo) {
-        _ssid.value = wifiInfo.ssid
         _bssid.value = wifiInfo.bssid
         _macAdress.value = wifiInfo.macAddress
         _networkId.value = wifiInfo.networkId
@@ -47,6 +46,7 @@ open class WiFiViewModel: ViewModel() {
             wIp shr 16 and 0xff,
             wIp shr 24 and 0xff
         )
+        _ssid.value = wifiInfo.ssid
     }
 
     fun getwifiInfo(): LiveData<String> {
@@ -54,6 +54,14 @@ open class WiFiViewModel: ViewModel() {
     }
 
     fun getBSSID() = _bssid;
+
+    fun getMacAdress() = _macAdress
+
+    fun getIpAdress() = _ipAdress
+
+    fun getNetworkId() = _networkId
+
+    fun getLinkSpeed() = _linkSpeed
 
     fun getTime() = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
 

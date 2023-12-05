@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import com.android.sabsigan.viewModel.WifiSelectorViewModel
 import com.android.sabsigan.databinding.FragmentWifiInfoBinding
 
@@ -34,42 +35,12 @@ class WifiInfoFragment : Fragment() {
     private var param2: String? = null
     private var info: String? = null
 
-    private val wifiStateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == WifiManager.NETWORK_STATE_CHANGED_ACTION) {
-                // 와이파이 상태 변경 액션을 받았을 때
-                val wifiManager = context?.getSystemService(Context.WIFI_SERVICE) as WifiManager
-                val wifiInfo = wifiManager.connectionInfo
-                val ssid = wifiInfo.ssid
-                val bssid = wifiInfo.bssid
-                val linkSpeed = wifiInfo.linkSpeed
-
-//                Log.d("NETWORK_STATE_CHANGED!!",ssid)
-
-                val message = "현재 연결된 와이파이: $ssid\n bssid: $bssid\n 전송속도: $linkSpeed"
-                binding.tvName1.text = message
-
-            } else if (intent?.action == "wifi.ACTION_WIFI_OFF") {
-                // 와이파이가 꺼진 액션을 받았을 때 처리할 작업
-                binding.tvName1.text = "와이파이가 꺼졌습니다."
-                //TODO 와이파이 설정 페이지로 이동하게 할까
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val wifiStateFilter = IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION)
-        wifiStateFilter.addAction("wifi.ACTION_WIFI_OFF")
-        context?.registerReceiver(wifiStateReceiver, wifiStateFilter)
-
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
-
-
     }
 
     override fun onCreateView(
@@ -82,10 +53,20 @@ class WifiInfoFragment : Fragment() {
         return binding.root
     }
 
-//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        super.onViewCreated(view, savedInstanceState)
-//
-//    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel.getwifiInfo().observe(requireActivity(), Observer {
+            if (it != "mobileInfo.isConnected" && it != "wifiInfo.null") {
+                val message = "환영합니다!\n 현재 연결된 와이파이\n $it}\n"
+                binding.tvName1.text = message
+            } else {
+                binding.tvName1.text = "와이파이가 꺼졌습니다\n 와이파이를 연결해주세요"
+            }
+        })
+    }
+
+
     companion object {
         /**
          * Use this factory method to create a new instance of
@@ -105,10 +86,4 @@ class WifiInfoFragment : Fragment() {
                 }
             }
     }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        context?.unregisterReceiver(wifiStateReceiver)
-    }
-
 }

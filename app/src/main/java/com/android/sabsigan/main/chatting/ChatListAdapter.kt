@@ -14,6 +14,13 @@ class ChatListAdapter(private val viewModel: MainViewModel): RecyclerView.Adapte
         fun bind(viewModel: MainViewModel, chatRoom: ChatRoom) {
             binding.chatRoom = chatRoom
             binding.viewModel = viewModel
+
+            val otherUserID = chatRoom.users.withIndex()
+                .firstOrNull() { viewModel.getUID() != it.value }
+                ?.value
+
+            if (otherUserID != null)
+                binding.imageView.setImageBitmap(viewModel.generateAvatar(otherUserID))
             binding.executePendingBindings()
         }
 

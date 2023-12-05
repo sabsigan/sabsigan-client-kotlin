@@ -210,7 +210,7 @@ class MainActivity2 : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        requestNotificationPermission()
+//        requestNotificationPermission()
 
         if (!isReceiverRegistered(this))
             registerReceiver(wifiConnectReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)) // 리시버 등록

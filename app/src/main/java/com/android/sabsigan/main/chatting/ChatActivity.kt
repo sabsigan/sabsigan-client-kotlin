@@ -153,7 +153,7 @@ class ChatActivity : AppCompatActivity(), View.OnClickListener, SocketHandler.Me
         //TODO: 리스트에 메시지를 추가해주면됨
             val time = viewModel.getTime()
             val uuu = viewModel.getUID()
-            val uid = viewModel.customHash(arrayListOf(groupOwnerAddress!!))
+            val uid = viewModel.customHash(arrayListOf(groupOwnerAddress!!, viewModel.getUID()!!))
 
             viewModel.addMsg(
                     ChatMessage(

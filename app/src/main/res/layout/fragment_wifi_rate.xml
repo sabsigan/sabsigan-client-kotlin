@@ -31,12 +31,63 @@
             tools:layout_editor_absoluteX="10dp">
 
             <TextView
-                android:id="@+id/tvName2"
+                android:id="@+id/ssid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="연결된 와이파이 속도"
-                android:textSize="20sp"
+                android:text="ssid"
+                android:padding="1dp"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/bssid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="bssid"
+                android:padding="1dp"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/macAdress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="macAdress"
+                android:padding="1dp"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/ipAdress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="ipAdress"
+                android:padding="1dp"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/networkId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="networkId"
+                android:padding="1dp"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/linkSpeed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="linkSpeed"
+                android:padding="1dp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
         </LinearLayout>
